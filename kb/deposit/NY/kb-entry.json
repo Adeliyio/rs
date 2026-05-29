@@ -1,0 +1,196 @@
+{
+  "id": "deposit-NY",
+  "wedge": "deposit",
+  "jurisdiction": "NY",
+  "jurisdiction_full_name": "New York",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "ny-gol-7-108",
+      "citation": "N.Y. Gen. Oblig. Law §7-108",
+      "title": "Deposits and Advances to Secure Residential Premises",
+      "summary": "As amended by the Housing Stability and Tenant Protection Act of 2019 (HSTPA), this statute governs security deposits for residential tenancies in New York. Limits deposits to one month's rent, requires return within 14 days, and requires an itemized statement.",
+      "key_provisions": [
+        {
+          "subsection": "§7-108(1-a)(a)",
+          "description": "Deposit limited to one month's rent. Landlord cannot demand additional deposits, fees (including pet deposits/fees), or last month's rent as a condition of the tenancy. (HSTPA 2019 amendment)"
+        },
+        {
+          "subsection": "§7-108(1-a)(e)",
+          "description": "Landlord must return the deposit (or provide an itemized statement of deductions with the remaining balance) within 14 days after the tenant vacates."
+        },
+        {
+          "subsection": "§7-108(1-a)(b)",
+          "description": "Landlord may only deduct for actual and reasonable costs of (1) damage beyond normal wear and tear, (2) unpaid rent or other amounts due under the lease."
+        },
+        {
+          "subsection": "§7-108(1-a)(c)",
+          "description": "Itemized statement: any deduction must be accompanied by an itemized statement showing the basis for the amount retained. Copies of receipts for actual costs must be provided."
+        },
+        {
+          "subsection": "§7-108(1-a)(d)",
+          "description": "Deposits must be held in trust for the tenant. For buildings with six or more units, deposit must be placed in an interest-bearing account at a New York banking institution. Landlord must notify tenant of the bank name and address, and the amount of the deposit."
+        }
+      ],
+      "official_url": "https://www.nysenate.gov/legislation/laws/GOB/7-108",
+      "effective_date": "1963-01-01",
+      "last_amended": "2019-06-14"
+    },
+    {
+      "statute_id": "ny-hstpa-2019",
+      "citation": "Housing Stability and Tenant Protection Act of 2019 (Part M, §25)",
+      "title": "HSTPA Security Deposit Reforms",
+      "summary": "The 2019 HSTPA significantly reformed New York security deposit law: capped deposits at one month's rent, prohibited various fees, shortened the return deadline to 14 days, and strengthened itemization requirements.",
+      "key_provisions": [
+        {
+          "subsection": "Part M, §25",
+          "description": "Amended GOL §7-108 to establish the one-month cap, 14-day return deadline, and mandatory itemized statement requirement."
+        }
+      ],
+      "official_url": "https://www.nysenate.gov/legislation/bills/2019/s6458",
+      "effective_date": "2019-06-14",
+      "last_amended": "2019-06-14"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "ny-deposit-return-14",
+      "statute_id": "ny-gol-7-108",
+      "deadline_days": 14,
+      "anchor_event": "move_out",
+      "action_at_expiry": "Landlord must return full deposit or provide itemized statement with remaining balance",
+      "description": "New York law requires the landlord to return your security deposit (or provide an itemized statement of deductions with the remaining balance) within 14 calendar days after you vacate the unit.",
+      "prompt_message": "The 14-day deadline for your landlord to return your deposit or provide an itemized statement has passed. People in this situation in New York typically send a demand letter citing N.Y. Gen. Oblig. Law §7-108.",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "ny-deposit-demand-response",
+      "statute_id": "ny-gol-7-108",
+      "deadline_days": 30,
+      "anchor_event": "letter_sent",
+      "action_at_expiry": "If no response, consider filing in Small Claims Court",
+      "description": "If your landlord has not responded to your demand letter within 30 days, people in similar situations typically consider filing in Small Claims Court.",
+      "prompt_message": "It's been 30 days since you sent your demand letter. People in similar situations in New York who haven't received a response typically consider filing in Small Claims Court.",
+      "is_statutory": false
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "ny-actual-damages",
+      "statute_id": "ny-gol-7-108",
+      "type": "actual_damages",
+      "description": "Tenant may recover the wrongfully withheld deposit amount plus potentially punitive damages if the court finds bad faith. Courts may also award reasonable attorney's fees and costs.",
+      "amount_or_formula": "Wrongfully withheld amount + potential punitive damages at court's discretion + attorney's fees",
+      "conditions": "New York does not have an explicit statutory multiplier like CA or TX, but courts have discretion to award punitive damages for bad faith retention.",
+      "citation": "N.Y. Gen. Oblig. Law §7-108"
+    },
+    {
+      "penalty_id": "ny-interest-violation",
+      "statute_id": "ny-gol-7-108",
+      "type": "forfeiture",
+      "description": "For buildings with 6+ units: if the landlord fails to place the deposit in an interest-bearing account or fails to provide notice of the bank, the tenant may demand the deposit be applied to rent.",
+      "amount_or_formula": "Tenant may demand deposit be applied to rent or returned",
+      "conditions": "Only buildings with 6 or more units",
+      "citation": "N.Y. Gen. Oblig. Law §7-108(1-a)(d)"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "ny-small-claims",
+      "type": "small_claims",
+      "name": "New York Small Claims Court",
+      "monetary_limit": 10000,
+      "filing_url": "https://nycourts.gov/courts/nyc/smallclaims/index.shtml",
+      "description": "NYC Small Claims Court hears claims up to $10,000. In towns and villages outside NYC, the limit may be $5,000. Filing fees range from $15 to $20 in NYC."
+    },
+    {
+      "venue_id": "ny-ag",
+      "type": "state_ag",
+      "name": "New York Attorney General — Consumer Protection",
+      "filing_url": "https://ag.ny.gov/consumer-frauds-bureau/file-complaint",
+      "description": "File a consumer complaint with the New York Attorney General."
+    },
+    {
+      "venue_id": "nyc-dcwp",
+      "type": "consumer_protection",
+      "name": "NYC Department of Consumer and Worker Protection (DCWP)",
+      "filing_url": "https://www.nyc.gov/site/dca/consumers/file-complaint.page",
+      "description": "For NYC residents: file a complaint with DCWP."
+    }
+  ],
+  "permissible_deductions": [
+    {
+      "category_id": "damage_beyond_wear",
+      "name": "Actual Cost of Damage Beyond Normal Wear and Tear",
+      "permissible": true,
+      "description": "Landlord may deduct actual and reasonable costs to repair damage caused by the tenant that goes beyond normal wear and tear.",
+      "typical_dispute_basis": "Challenge whether damage is beyond normal wear; require itemization and receipts; note useful life depreciation",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(b)"
+    },
+    {
+      "category_id": "unpaid_rent",
+      "name": "Unpaid Rent",
+      "permissible": true,
+      "description": "Landlord may deduct unpaid rent or other amounts owed under the lease.",
+      "typical_dispute_basis": "Dispute amounts; show evidence of payment",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(b)"
+    },
+    {
+      "category_id": "normal_wear",
+      "name": "Normal Wear and Tear",
+      "permissible": false,
+      "description": "Deductions for normal wear and tear are not permitted.",
+      "typical_dispute_basis": "Statute explicitly limits deductions to damage beyond normal wear",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(b)"
+    },
+    {
+      "category_id": "pet_deposit",
+      "name": "Pet Deposits or Fees",
+      "permissible": false,
+      "description": "HSTPA prohibits landlords from charging pet deposits, pet fees, or any deposit beyond one month's rent.",
+      "typical_dispute_basis": "Illegal charge under HSTPA; demand return",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(a)"
+    }
+  ],
+  "special_provisions": [
+    {
+      "provision_id": "ny-one-month-cap",
+      "title": "One Month's Rent Maximum Deposit",
+      "description": "Security deposit is limited to one month's rent. No additional deposits, pet fees, or last month's rent may be required. If landlord collected more, tenant can demand the excess back.",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(a)",
+      "conditions": "Applies to all residential tenancies in New York (since June 14, 2019)"
+    },
+    {
+      "provision_id": "ny-interest-bearing-account",
+      "title": "Interest-Bearing Account (6+ Unit Buildings)",
+      "description": "For buildings with six or more units, the landlord must place the security deposit in an interest-bearing account at a New York banking institution. The landlord must notify the tenant of the bank name and address and the deposit amount. Tenant is entitled to the interest earned, minus 1% administrative fee.",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(d)",
+      "conditions": "Only buildings with 6+ residential units"
+    },
+    {
+      "provision_id": "ny-14-day-return",
+      "title": "14-Day Return Deadline (Strictest Major State)",
+      "description": "New York's 14-day return deadline is the shortest among the four launch states. The clock starts when the tenant vacates.",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(e)",
+      "conditions": "Always applicable"
+    }
+  ],
+  "typical_claim_range": {
+    "min_usd": 500,
+    "max_usd": 5000,
+    "median_usd": 2000
+  },
+  "notes": "New York was significantly reformed by the HSTPA in 2019. The 14-day deadline is the shortest of our four launch states. The one-month deposit cap and prohibition on pet deposits are strong tenant protections. NYC has additional protections and enforcement through DCWP. No explicit statutory multiplier like CA/TX, but courts can award punitive damages. Interest-bearing account requirement for 6+ unit buildings is a unique leverage point.",
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": [
+      "https://www.nysenate.gov/legislation/laws/GOB/7-108",
+      "https://www.nysenate.gov/legislation/bills/2019/s6458",
+      "https://nycourts.gov/courts/nyc/smallclaims/index.shtml",
+      "https://ag.ny.gov/consumer-frauds-bureau"
+    ],
+    "next_review_due": "2026-08-20",
+    "verification_notes": "Initial research pass. HSTPA provisions verified against bill text. Requires second-pass verification by named KB owner."
+  }
+}

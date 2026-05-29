@@ -1,0 +1,43 @@
+{
+  "id": "cfpb-complaint-subscription",
+  "venue_type": "federal_agency",
+  "jurisdiction": "federal",
+  "venue_name": "Consumer Financial Protection Bureau",
+  "venue_url": "https://www.consumerfinance.gov/complaint/",
+  "forms": [
+    {
+      "form_id": "cfpb-online-complaint",
+      "name": "CFPB Online Complaint Form",
+      "official_url": "https://www.consumerfinance.gov/complaint/",
+      "fillable": false,
+      "required": true,
+      "copies_needed": 1,
+      "notes": "Filed entirely online. The CFPB forwards complaints to companies and requires a response within 15 days."
+    }
+  ],
+  "attachments_order": [
+    "Copy of cancellation email(s) sent to company",
+    "Billing statements showing unauthorized charges",
+    "Credit card dispute documentation (if filed)",
+    "Company's response (if any)",
+    "Original subscription/billing agreement"
+  ],
+  "filing_instructions": {
+    "method": "online",
+    "steps": [
+      "Go to consumerfinance.gov/complaint",
+      "Select the product type that best matches (e.g., 'Credit card or prepaid card' for unauthorized charges, or 'Money transfer, virtual currency, or money service')",
+      "Describe the issue: unauthorized recurring charges after cancellation attempt",
+      "Include: company name, subscription type, dates, amounts charged",
+      "Specify the resolution you are seeking (refund of unauthorized charges)",
+      "Attach supporting documents",
+      "Submit — the CFPB will forward to the company and track their response"
+    ]
+  },
+  "fees": [],
+  "notes": "The CFPB is most relevant for financial product subscriptions and unauthorized credit card charges. Unlike the FTC, the CFPB forwards complaints to companies and tracks responses. Companies are expected to respond within 15 days. Best used alongside a credit card chargeback under FCBA.",
+  "verification": {
+    "last_verified": "2026-05-24",
+    "verified_by": "document_verification_pass_2026-05-24"
+  }
+}

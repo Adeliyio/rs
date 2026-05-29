@@ -1,0 +1,82 @@
+{
+  "version": "1.0.0",
+  "description": "Support playbook for customer-facing interactions. All support agents must follow UPL boundaries and use canned responses for common questions.",
+  "escalation_boundaries": {
+    "never_answer": [
+      "Do I have a case?",
+      "Will I win?",
+      "What should I do?",
+      "Is my landlord violating the law?",
+      "Should I file in court?",
+      "How much will I recover?",
+      "Is this worth pursuing?"
+    ],
+    "redirect_to": "We can't evaluate individual situations or provide legal advice. For questions about your specific legal options, people in similar situations typically consult with a licensed attorney or contact their local legal aid organization at lawhelp.org."
+  },
+  "canned_responses": {
+    "do_i_have_a_case": {
+      "trigger": "User asks if they have a case or if their situation is worth pursuing",
+      "response": "We're a writing tool — we help you draft letters grounded in the statutes that apply in your state. We can't evaluate whether you have a valid claim or predict outcomes. If you'd like an assessment of your specific situation, a licensed attorney can help. Many offer free initial consultations, and your state bar association can refer you: [state bar URL]."
+    },
+    "what_should_i_do": {
+      "trigger": "User asks for strategic advice about next steps",
+      "response": "We can show you what people in similar situations in your state have commonly done — like sending a demand letter citing the applicable statute — but we can't tell you what you specifically should do. That's legal advice, which requires a licensed attorney who can evaluate your full situation."
+    },
+    "will_this_work": {
+      "trigger": "User asks about likelihood of success or recovery",
+      "response": "Individual results vary significantly based on the specific circumstances of each case. We can tell you that the letters we generate are grounded in verified state-specific statutes, but we can't predict outcomes. The tool provides writing assistance, not guarantees."
+    },
+    "refund_request_before_generation": {
+      "trigger": "User requests a refund before their letter has been generated (within 7 days of purchase)",
+      "response": "We're happy to process your refund. Since your letter hasn't been generated yet, we'll issue the refund right away. You'll see it in your account within 5-10 business days depending on your payment provider. [Process refund in Paddle dashboard]"
+    },
+    "refund_request_after_generation": {
+      "trigger": "User requests a refund after their letter has been generated",
+      "response": "Since your letter has already been generated and delivered, refunds are available only for defective outputs — such as wrong jurisdiction, system errors, or incorrect statutory citations. Could you share what the issue was with your letter? If the output was materially defective, we'll process a refund. Note: one refund per account."
+    },
+    "refund_request_change_of_mind": {
+      "trigger": "User wants a refund because they changed their mind (after generation)",
+      "response": "We understand plans change. However, once your letter has been generated and delivered, the service has been rendered. Our refund policy covers defective outputs (wrong jurisdiction, system errors, incorrect citations) but not change-of-mind after delivery. If you believe there's an issue with your letter, we'd be happy to look into it."
+    },
+    "technical_issue": {
+      "trigger": "User reports a bug or technical issue",
+      "response": "I'm sorry you're experiencing that. Could you share: (1) what you were trying to do, (2) what happened instead, and (3) a screenshot if possible? I'll escalate this to our technical team."
+    },
+    "unsupported_state": {
+      "trigger": "User's state is not supported for deposit wedge",
+      "response": "We currently support deposit cases in California, Texas, New York, and Florida. We're expanding based on demand. I've added you to our waitlist for [state] — we'll notify you when coverage is available. In the meantime, we've provided a generic demand letter template and your state's consumer protection resources."
+    },
+    "adversarial_counsel": {
+      "trigger": "User reports the other party has an attorney",
+      "response": "When the other party has legal representation, the situation has moved beyond what a writing tool can responsibly help with. This actually often means your letter had an impact. We'd recommend consulting with your own attorney at this point. Your state bar association can connect you with attorneys who handle cases like yours, often with a reduced initial consultation fee."
+    }
+  },
+  "escalation_rules": [
+    {
+      "condition": "User threatens self-harm or expresses extreme distress",
+      "action": "Provide crisis resources: 988 Suicide & Crisis Lifeline (call or text 988). Do not attempt to counsel."
+    },
+    {
+      "condition": "User reports being physically threatened by landlord or counterparty",
+      "action": "Direct to local law enforcement (911 for emergencies) and suggest contacting a domestic violence hotline if applicable."
+    },
+    {
+      "condition": "User reports our tool generated incorrect statutory citations",
+      "action": "CRITICAL: Escalate immediately to engineering. Log the case_id, jurisdiction, and the specific citation. Do not dismiss. This is a regression event per PRD §12.2."
+    },
+    {
+      "condition": "User reports receiving legal threats after sending our letter",
+      "action": "Trigger adversarial-counsel flow in the product. Recommend licensed attorney. Do not provide strategic advice about the legal threat."
+    }
+  ],
+  "quarterly_review": {
+    "description": "Review all support transcripts quarterly for UPL boundary compliance",
+    "checklist": [
+      "No support agent evaluated a user's claim or predicted outcomes",
+      "No support agent recommended specific legal strategy",
+      "All canned responses used correctly",
+      "Escalation rules followed for critical situations",
+      "Refund requests processed within policy"
+    ]
+  }
+}

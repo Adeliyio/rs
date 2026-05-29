@@ -1,0 +1,42 @@
+{
+  "test_id": "subscription-regression-05",
+  "description": "SaaS auto-renewal without consent — New York case",
+  "input_quality": "clean",
+  "expected_outcome": "generate",
+  "jurisdiction": "NY",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "NY",
+    "active_litigation": false,
+    "government_service": false,
+    "service_vertical": "saas",
+    "financed_device": false,
+    "bundled_contract": false,
+    "company_name": "ProjectTool Pro",
+    "monthly_charge": 29.99,
+    "billing_frequency": "Annually",
+    "subscription_start_date": "2025-05-10",
+    "last_charge_date": "2026-05-10",
+    "prior_cancellation_attempt": false,
+    "cancellation_barrier": "auto_renewed",
+    "has_written_contract": true,
+    "contract_length": "1 year",
+    "auto_renewal_disclosed": "No, I wasn't told",
+    "evidence_files": ["billing_statement.pdf"]
+  },
+  "expected_outputs": {
+    "email_sequence": true,
+    "sequence_steps": 3,
+    "statute_citations": ["N.Y. Gen. Bus. Law §527-a", "FTC Negative Option Rule"],
+    "vertical_specific": true,
+    "chargeback_mentioned": true
+  },
+  "validation_checks": [
+    "NY GBL §527-a auto-renewal law cited",
+    "FTC rules also cited as federal backup",
+    "SaaS-specific language and tactics",
+    "Auto-renewal without disclosure highlighted",
+    "Chargeback rights mentioned in Email 3",
+    "NY AG complaint process referenced"
+  ]
+}

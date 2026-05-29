@@ -1,0 +1,258 @@
+{
+  "id": "deposit-CA",
+  "wedge": "deposit",
+  "jurisdiction": "CA",
+  "jurisdiction_full_name": "California",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "ca-civ-1950.5",
+      "citation": "Cal. Civ. Code §1950.5",
+      "title": "Security Deposits — Residential Property",
+      "summary": "Governs security deposits for residential rental property in California. Establishes limits on deposit amounts, requires itemized statements of deductions, sets a 21-day deadline for return, and provides for damages including statutory penalties for bad faith retention.",
+      "key_provisions": [
+        {
+          "subsection": "§1950.5(a)",
+          "description": "Defines 'security' broadly to include any payment, fee, deposit or charge imposed at the beginning of the tenancy to be used for any purpose, including last month's rent."
+        },
+        {
+          "subsection": "§1950.5(c)",
+          "description": "Limits security deposit to two months' rent for unfurnished units, three months' rent for furnished units. As of July 1, 2024 (AB 12), for most landlords the limit is one month's rent regardless of furnishing status."
+        },
+        {
+          "subsection": "§1950.5(b)",
+          "description": "Landlord may claim from security only for: (1) unpaid rent, (2) cleaning to return unit to same level as at inception, (3) repair of damages beyond normal wear and tear, (4) if permitted by lease, restoration of personal property other than ordinary wear."
+        },
+        {
+          "subsection": "§1950.5(e)",
+          "description": "Landlord must furnish tenant a copy of an itemized statement indicating the basis for and amount of any security received and the disposition of the security, along with any remaining deposit, within 21 days after the tenant has vacated."
+        },
+        {
+          "subsection": "§1950.5(f)(1)",
+          "description": "Landlord must notify tenant in writing of the right to request an initial inspection and of the tenant's right to be present at the inspection. The inspection must occur no earlier than two weeks before the end of the tenancy."
+        },
+        {
+          "subsection": "§1950.5(l)",
+          "description": "Bad faith retention: the bad faith claim or retention by a landlord of the security or any portion thereof in violation of this section may subject the landlord to statutory damages of up to twice the amount of the security, in addition to actual damages."
+        },
+        {
+          "subsection": "§1950.5(g)(2)-(4)",
+          "description": "Itemized statement must include copies of documents showing charges incurred (receipts, invoices, etc.) or, if work not yet done within the 21-day period, a good-faith estimate with final accounting within 14 days of completion."
+        }
+      ],
+      "official_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1950.5.&lawCode=CIV",
+      "effective_date": "1970-01-01",
+      "last_amended": "2024-07-01"
+    },
+    {
+      "statute_id": "ca-civ-1950.7",
+      "citation": "Cal. Civ. Code §1950.7",
+      "title": "Non-Residential Security Deposits (reference only)",
+      "summary": "Applies to non-residential (commercial) properties. Included for reference to confirm that §1950.5 applies only to residential and the product correctly declines commercial cases.",
+      "key_provisions": [],
+      "official_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1950.7.&lawCode=CIV",
+      "effective_date": "1971-01-01",
+      "last_amended": "2012-01-01"
+    },
+    {
+      "statute_id": "ca-ab-12-2024",
+      "citation": "AB 12 (2023, effective July 1, 2024)",
+      "title": "Security Deposit Limit Reduction",
+      "summary": "Reduced the maximum security deposit to one month's rent for most landlords, regardless of whether the unit is furnished or unfurnished. Small landlord exemption (two properties/four units) for two months' rent expired July 1, 2025. As of July 1, 2025, the standard limit of one month's rent applies to most landlords, with a narrow exception under §1950.5(c)(5)(A) for natural persons/LLCs owning no more than 2 properties with max 4 units (still 2 months).",
+      "key_provisions": [
+        {
+          "subsection": "§1950.5(c)(1)",
+          "description": "Standard limit: one month's rent (in addition to first month's rent), regardless of furnishing status."
+        },
+        {
+          "subsection": "§1950.5(c)(5)(A)",
+          "description": "Narrow exception: natural person or LLC with all natural person members owning no more than 2 residential properties with max 4 dwelling units may collect up to 2 months' rent."
+        }
+      ],
+      "official_url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB12",
+      "effective_date": "2024-07-01",
+      "last_amended": "2024-07-01"
+    },
+    {
+      "statute_id": "ca-ab-414-2025",
+      "citation": "AB 414 (Stats. 2025, Ch. 340, Sec. 1, amending Cal. Civ. Code §1950.5)",
+      "title": "Security Deposit — Electronic Return and Itemization Requirements",
+      "summary": "Amends Section 1950.5 to revise security deposit return provisions. Key changes: (1) requires return by check or electronic transfer if security was received electronically, (2) requires written notice of right to electronic return, (3) requires itemized statements with supporting documentation including photographic evidence of claimed damage, (4) implements new rules for multiple-tenant units.",
+      "key_provisions": [
+        {
+          "subsection": "Amended §1950.5 — Electronic Return",
+          "description": "If the security deposit was received via electronic payment, the landlord must return the deposit by check or electronic transfer. Landlord must provide written notice of tenant's right to receive the deposit electronically."
+        },
+        {
+          "subsection": "Amended §1950.5(g) — Photographic Documentation",
+          "description": "When a landlord claims deductions for damage beyond normal wear and tear, the itemized statement must include photographic documentation of the claimed damage. Photographs must be taken within a reasonable time after the tenant vacates."
+        },
+        {
+          "subsection": "Multiple-Tenant Units",
+          "description": "New rules for handling security deposits when multiple tenants are on a lease and one or more vacate before the lease terminates."
+        }
+      ],
+      "official_url": "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260AB414",
+      "effective_date": "2026-01-01",
+      "last_amended": "2025-10-06"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "ca-deposit-return-21",
+      "statute_id": "ca-civ-1950.5",
+      "deadline_days": 21,
+      "anchor_event": "move_out",
+      "action_at_expiry": "Landlord must return full deposit or provide itemized statement of deductions with remaining balance",
+      "description": "California law requires the landlord to return your security deposit (or provide an itemized statement of deductions and remaining balance) within 21 calendar days after you vacate the unit.",
+      "prompt_message": "The 21-day deadline for your landlord to return your deposit or provide an itemized statement has passed. People in this situation in California typically send a demand letter citing Cal. Civ. Code §1950.5(e).",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "ca-deposit-good-faith-estimate-14",
+      "statute_id": "ca-civ-1950.5",
+      "deadline_days": 14,
+      "anchor_event": "landlord_notice_received",
+      "action_at_expiry": "If landlord provided a good-faith estimate (repairs not yet completed within 21 days), final accounting with actual receipts must be provided within 14 days of completion",
+      "description": "If your landlord provided a good-faith estimate instead of actual receipts within the 21-day period, they must provide the final accounting within 14 days of completing the repairs.",
+      "prompt_message": "If your landlord gave you an estimate instead of actual receipts, check whether the final accounting has arrived.",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "ca-deposit-demand-letter-sent",
+      "statute_id": "ca-civ-1950.5",
+      "deadline_days": 30,
+      "anchor_event": "letter_sent",
+      "action_at_expiry": "If no response to demand letter, consider escalation to small claims court",
+      "description": "If your landlord has not responded within 30 days of your demand letter, people in similar situations typically consider filing in small claims court.",
+      "prompt_message": "It's been 30 days since you sent your demand letter. People who haven't received a response at this point typically consider filing a small claims court case. We can help you prepare the filing packet.",
+      "is_statutory": false
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "ca-bad-faith-2x",
+      "statute_id": "ca-civ-1950.5",
+      "type": "statutory_damages",
+      "description": "Bad faith retention of security deposit may result in statutory damages up to twice the deposit amount, in addition to actual damages.",
+      "amount_or_formula": "Up to 2x the security deposit amount + actual damages",
+      "conditions": "Requires showing landlord acted in bad faith in retaining the deposit",
+      "citation": "Cal. Civ. Code §1950.5(l)"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "ca-small-claims",
+      "type": "small_claims",
+      "name": "California Small Claims Court",
+      "monetary_limit": 12500,
+      "filing_url": "https://www.courts.ca.gov/selfhelp-smallclaims.htm",
+      "description": "Small claims court for individual plaintiffs can hear claims up to $12,500. No attorneys allowed. Filing fees range from $30 to $75 depending on claim amount."
+    },
+    {
+      "venue_id": "ca-ag",
+      "type": "state_ag",
+      "name": "California Attorney General — Consumer Protection",
+      "filing_url": "https://oag.ca.gov/contact/consumer-complaint-against-business-or-company",
+      "description": "File a consumer complaint with the California Attorney General's office."
+    },
+    {
+      "venue_id": "ca-dca",
+      "type": "consumer_protection",
+      "name": "California Department of Consumer Affairs",
+      "filing_url": "https://www.dca.ca.gov/consumers/complaints/consumer.shtml",
+      "description": "File a complaint with the CA Department of Consumer Affairs."
+    }
+  ],
+  "permissible_deductions": [
+    {
+      "category_id": "unpaid_rent",
+      "name": "Unpaid Rent",
+      "permissible": true,
+      "description": "Landlord may deduct unpaid rent from the security deposit.",
+      "typical_dispute_basis": "Dispute the amount owed, show evidence of payments made",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(1)"
+    },
+    {
+      "category_id": "cleaning",
+      "name": "Cleaning Beyond Move-In Condition",
+      "permissible": true,
+      "description": "Landlord may deduct cleaning costs to return the unit to the condition at the start of tenancy (not better).",
+      "typical_dispute_basis": "Normal wear and tear is not deductible; cleaning to make unit better than move-in condition is not permitted; excessive charges",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(3)"
+    },
+    {
+      "category_id": "damage_beyond_wear",
+      "name": "Damage Beyond Normal Wear and Tear",
+      "permissible": true,
+      "description": "Landlord may deduct costs to repair damage caused by the tenant, excluding normal wear and tear.",
+      "typical_dispute_basis": "Distinguish normal wear (faded paint, worn carpet, minor scuffs) from actual damage; pre-existing conditions; useful life depreciation",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)"
+    },
+    {
+      "category_id": "personal_property",
+      "name": "Restoration of Personal Property (if permitted by lease)",
+      "permissible": true,
+      "description": "If the lease allows it, landlord may deduct costs to restore or replace personal property (e.g., furnished unit items) for damage beyond ordinary wear.",
+      "typical_dispute_basis": "Check if lease actually permits; ordinary wear exception applies",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(4)"
+    },
+    {
+      "category_id": "painting_normal",
+      "name": "Painting (Normal Wear)",
+      "permissible": false,
+      "description": "Landlord cannot charge for repainting due to normal wear. Nail holes, faded paint, and minor scuffs after a reasonable tenancy are normal wear.",
+      "typical_dispute_basis": "Duration of tenancy establishes what is normal wear for paint. CA guidelines suggest 2-3+ years = full depreciation of paint.",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)-(3)"
+    },
+    {
+      "category_id": "carpet_normal",
+      "name": "Carpet (Normal Wear)",
+      "permissible": false,
+      "description": "Normal carpet wear (matting, minor stains from regular use) is not deductible. Carpet has a useful life (~8-10 years) and landlord must prorate replacement by remaining useful life.",
+      "typical_dispute_basis": "Age of carpet at move-in; useful life depreciation; distinguishing wear from damage",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)"
+    }
+  ],
+  "special_provisions": [
+    {
+      "provision_id": "ca-initial-inspection",
+      "title": "Right to Initial Inspection",
+      "description": "Landlord must offer tenant an initial inspection of the unit before move-out, to identify potential deductions the tenant could remedy. Must be offered in writing. Tenant has the right to be present.",
+      "statute_ref": "Cal. Civ. Code §1950.5(f)(1)",
+      "conditions": "Must be offered no earlier than two weeks before lease end"
+    },
+    {
+      "provision_id": "ca-receipts-required",
+      "title": "Receipts and Documentation Required",
+      "description": "Itemized statement must include copies of documents showing charges incurred (receipts for materials, supplies, labor). If repairs not completed within 21 days, a good-faith estimate is allowed with actual invoices due within 14 days of completion.",
+      "statute_ref": "Cal. Civ. Code §1950.5(g)(2)-(4)",
+      "conditions": "Applies to all deductions"
+    },
+    {
+      "provision_id": "ca-ab12-deposit-cap",
+      "title": "One Month's Rent Deposit Cap (AB 12)",
+      "description": "Effective July 1, 2024, maximum security deposit is one month's rent for most landlords. Small landlords (2 properties / 4 units max) exempt until July 1, 2025.",
+      "statute_ref": "AB 12 (amending Cal. Civ. Code §1950.5(c))",
+      "conditions": "Applies to deposits collected on or after July 1, 2024"
+    }
+  ],
+  "typical_claim_range": {
+    "min_usd": 300,
+    "max_usd": 8000,
+    "median_usd": 1800
+  },
+  "notes": "California is one of the most tenant-friendly states for deposit law. The 21-day deadline is strict and well-established in case law. The 2x bad-faith penalty is the strongest lever. AB 12 (2024) changed deposit caps to 1 month for most landlords; small landlord exemption (2 properties/4 units) expired July 1, 2025 — all landlords now capped at 1 month. AB 414 (Stats. 2025, Ch. 340, effective Jan 1, 2026) adds electronic return requirements and photographic documentation for deductions. For rent-controlled units, additional local ordinances may apply (SF, LA, Oakland) — not covered in v1 but flagged during generation. Service member protections effective April 1, 2025 per §1950.5(c)(4).",
+  "verification": {
+    "last_verified": "2026-05-24",
+    "verified_by": "document_verification_pass_2026-05-24",
+    "primary_sources_checked": [
+      "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1950.5.&lawCode=CIV",
+      "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202320240AB12",
+      "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202520260AB414",
+      "https://www.courts.ca.gov/selfhelp-smallclaims.htm"
+    ],
+    "next_review_due": "2026-08-24",
+    "verification_notes": "VERIFIED 2026-05-24: Cal. Civ. Code §1950.5 confirmed current per Stats. 2025, Ch. 340, Sec. 1 (AB 414), effective January 1, 2026. Deposit limit: 1 month's rent (§1950.5(c)(1)); small landlord exception (2 properties/4 units) for 2 months per §1950.5(c)(5)(A) — AB 12 small landlord exemption expired July 1, 2025. 21-day return confirmed at §1950.5(h)(1). AB 414 adds electronic return and photo documentation requirements."
+  }
+}

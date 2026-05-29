@@ -1,0 +1,34 @@
+{
+  "id": "sc-FL-broward-deposit",
+  "venue_id": "fl-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "FL",
+  "county": "Broward",
+  "venue_name": "Broward County Court — Small Claims Division",
+  "venue_address": { "street": "201 SE 6th Street", "city": "Fort Lauderdale", "state": "FL", "zip": "33301" },
+  "venue_url": "https://www.17th.flcourts.org/",
+  "monetary_limit": 8000,
+  "filing_instructions": {
+    "method": "mixed",
+    "e_filing_url": "https://www.myflcourtaccess.com/",
+    "steps": [
+      { "step_number": 1, "instruction": "Complete Statement of Claim (Form 7.010)." },
+      { "step_number": 2, "instruction": "File via myflcourtaccess.com or in person at the Broward County Courthouse." },
+      { "step_number": 3, "instruction": "Pay filing fee and arrange service." },
+      { "step_number": 4, "instruction": "Attend pre-trial mediation (required in Florida)." },
+      { "step_number": 5, "instruction": "If unresolved, attend trial." }
+    ]
+  },
+  "fees": {
+    "filing_fee": [
+      { "amount_usd": 55, "condition": "Up to $500" },
+      { "amount_usd": 170, "condition": "$501-$2,500" },
+      { "amount_usd": 300, "condition": "$2,501-$8,000" }
+    ],
+    "fee_waiver_available": true
+  },
+  "mediation_required": true,
+  "statute_of_limitations": { "years": 5, "statute_ref": "Fla. Stat. §95.11(2)(b)" },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.17th.flcourts.org/"], "next_review_due": "2026-08-20" }
+}

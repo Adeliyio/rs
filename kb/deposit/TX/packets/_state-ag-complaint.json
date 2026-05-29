@@ -1,0 +1,35 @@
+{
+  "id": "ag-TX-deposit",
+  "venue_id": "tx-ag",
+  "venue_type": "state_ag",
+  "wedge": "deposit",
+  "jurisdiction": "TX",
+  "venue_name": "Texas Attorney General — Consumer Protection Division",
+  "venue_url": "https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint",
+  "forms": [
+    {
+      "form_id": "TX-AG-ONLINE",
+      "name": "Online Consumer Complaint Form",
+      "description": "File a consumer complaint with the TX AG Consumer Protection Division.",
+      "official_url": "https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint",
+      "fillable": false,
+      "required": true
+    }
+  ],
+  "attachments_order": [
+    { "position": 1, "attachment_type": "demand_letter_copy", "description": "Demand letter copy", "required": true, "source": "generated" },
+    { "position": 2, "attachment_type": "lease_copy", "description": "Lease", "required": false, "source": "user_upload" },
+    { "position": 3, "attachment_type": "correspondence", "description": "Correspondence", "required": false, "source": "user_upload" }
+  ],
+  "filing_instructions": {
+    "method": "online_portal",
+    "steps": [
+      { "step_number": 1, "instruction": "Go to the TX AG consumer complaint page: https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint" },
+      { "step_number": 2, "instruction": "Complete the online form with your information, the landlord's information, and a description of the dispute." },
+      { "step_number": 3, "instruction": "Upload supporting documents." },
+      { "step_number": 4, "instruction": "Submit and save your confirmation number." }
+    ]
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 0, "condition": "No fee" }] },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint"], "next_review_due": "2026-08-20" }
+}

@@ -1,0 +1,135 @@
+{
+  "id": "subscription-NY",
+  "wedge": "subscription",
+  "jurisdiction": "NY",
+  "jurisdiction_full_name": "New York",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "ny-gbl-527a",
+      "citation": "N.Y. Gen. Bus. Law §527-a",
+      "title": "New York Automatic Renewal Law",
+      "summary": "Requires businesses making automatic renewal or continuous service offers to consumers to clearly and conspicuously present the terms, obtain affirmative consent, and provide a mechanism for cancellation. Violations are deceptive business practices.",
+      "key_provisions": [
+        {
+          "subsection": "§527-a(1)",
+          "description": "Definitions: 'automatic renewal' means an offer that automatically renews unless the consumer takes affirmative steps to cancel."
+        },
+        {
+          "subsection": "§527-a(2)(a)",
+          "description": "Clear and conspicuous disclosure of the automatic renewal terms before the purchase."
+        },
+        {
+          "subsection": "§527-a(2)(b)",
+          "description": "Affirmative consent from the consumer to the automatic renewal terms."
+        },
+        {
+          "subsection": "§527-a(2)(c)",
+          "description": "Acknowledgment of the automatic renewal terms in a manner that can be retained by the consumer, including the cancellation policy."
+        },
+        {
+          "subsection": "§527-a(3)",
+          "description": "Non-compliance: if the business fails to comply, the consumer may demand cancellation and a refund of all charges incurred after the initial term."
+        },
+        {
+          "subsection": "§527-a(4)",
+          "description": "Violation is a deceptive business practice under GBL §349, which provides for private right of action with statutory damages of $50 per violation (minimum) and potential treble damages up to $1,000."
+        }
+      ],
+      "official_url": "https://www.nysenate.gov/legislation/laws/GBS/527-A",
+      "effective_date": "2021-02-11",
+      "last_amended": "2021-02-11"
+    },
+    {
+      "statute_id": "ny-gbl-349",
+      "citation": "N.Y. Gen. Bus. Law §349 (as amended by the FAIR Business Practices Act, effective Feb. 17, 2026)",
+      "title": "Deceptive, Unfair, and Abusive Acts and Practices",
+      "summary": "Significantly expanded by the Fostering Affordability and Integrity Through Reasonable (FAIR) Business Practices Act (signed Dec. 19, 2025, effective Feb. 17, 2026). Now prohibits three categories: (1) deceptive practices (unchanged — AG + private right of action), (2) UNFAIR practices (NEW — AG only; conduct causing substantial injury not reasonably avoidable, not outweighed by countervailing benefits), (3) ABUSIVE practices (NEW — AG only; conduct that materially interferes with ability to understand terms or takes unreasonable advantage of consumers). Violations of §527-a are automatically actionable under §349.",
+      "key_provisions": [
+        {
+          "subsection": "§349(a) — Deceptive (existing)",
+          "description": "Deceptive acts or practices in the conduct of any business, trade, or commerce are unlawful. Private right of action preserved."
+        },
+        {
+          "subsection": "§349 — Unfair (new, FAIR Act)",
+          "description": "Unfair acts or practices: conduct causing or likely to cause substantial injury to consumers, not reasonably avoidable by consumers, and not outweighed by countervailing benefits. AG enforcement only."
+        },
+        {
+          "subsection": "§349 — Abusive (new, FAIR Act)",
+          "description": "Abusive acts or practices: conduct that materially interferes with a person's ability to understand terms/conditions, or takes unreasonable advantage of lack of understanding, consumer interests, or reliance on the actor. AG enforcement only."
+        },
+        {
+          "subsection": "§349(b)(3) (new, FAIR Act)",
+          "description": "AG enforcement is not limited to 'consumer-oriented' conduct — can enforce regardless of whether the practice has broad consumer impact."
+        },
+        {
+          "subsection": "§349(h)",
+          "description": "Private right of action: any person injured by a deceptive act may bring an action for actual damages or $50 (whichever is greater), plus reasonable attorney's fees. Court may award treble damages up to $1,000. Note: private actions remain limited to deceptive practices only."
+        }
+      ],
+      "official_url": "https://www.nysenate.gov/legislation/laws/GBS/349",
+      "effective_date": "1980-01-01",
+      "last_amended": "2026-02-17"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "ny-sub-cancellation-7",
+      "statute_id": "ny-gbl-527a",
+      "deadline_days": 7,
+      "anchor_event": "cancellation_requested",
+      "action_at_expiry": "Send follow-up if cancellation not confirmed",
+      "description": "If the company hasn't confirmed cancellation within 7 days, send the follow-up.",
+      "prompt_message": "Time to send Follow-Up Email 2.",
+      "is_statutory": false
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "ny-refund-right",
+      "statute_id": "ny-gbl-527a",
+      "type": "forfeiture",
+      "description": "Consumer may cancel and receive a refund for all charges after the initial term if business didn't comply with disclosure/consent requirements.",
+      "amount_or_formula": "Full refund of charges after initial term",
+      "conditions": "Business failed to properly disclose or obtain consent",
+      "citation": "N.Y. Gen. Bus. Law §527-a(3)"
+    },
+    {
+      "penalty_id": "ny-349-damages",
+      "statute_id": "ny-gbl-349",
+      "type": "statutory_damages",
+      "description": "Private right of action: minimum $50 per violation, potential treble damages up to $1,000, plus attorney's fees.",
+      "amount_or_formula": "Actual damages or $50 minimum + up to 3x (capped at $1,000) + attorney's fees",
+      "conditions": "Deceptive practice proven",
+      "citation": "N.Y. Gen. Bus. Law §349(h)"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "ny-ag-subscription",
+      "type": "state_ag",
+      "name": "New York Attorney General — Consumer Complaint",
+      "filing_url": "https://ag.ny.gov/consumer-frauds-bureau/file-complaint",
+      "description": "File a complaint with the NY AG about auto-renewal violations."
+    },
+    {
+      "venue_id": "nyc-dcwp-subscription",
+      "type": "consumer_protection",
+      "name": "NYC Department of Consumer and Worker Protection",
+      "filing_url": "https://www.nyc.gov/site/dca/consumers/file-complaint.page",
+      "description": "For NYC residents: file a complaint with DCWP."
+    }
+  ],
+  "permissible_deductions": [],
+  "notes": "NY auto-renewal law (§527-a, effective Feb 2021) provides strong consumer protections. Key advantage: ties into GBL §349 which provides a private right of action with statutory damages, making this actionable for individual consumers. NYC DCWP is an additional enforcement venue for NYC residents.",
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": [
+      "https://www.nysenate.gov/legislation/laws/GBS/527-A",
+      "https://www.nysenate.gov/legislation/laws/GBS/349",
+      "https://ag.ny.gov/consumer-frauds-bureau"
+    ],
+    "next_review_due": "2026-08-20"
+  }
+}

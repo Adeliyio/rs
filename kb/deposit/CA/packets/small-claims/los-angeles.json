@@ -1,0 +1,111 @@
+{
+  "id": "sc-CA-los-angeles-deposit",
+  "venue_id": "ca-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "CA",
+  "county": "Los Angeles",
+  "venue_name": "Los Angeles County Superior Court — Small Claims Division",
+  "venue_address": {
+    "street": "111 N. Hill Street",
+    "city": "Los Angeles",
+    "state": "CA",
+    "zip": "90012"
+  },
+  "venue_url": "https://www.lacourt.org/division/smallclaims/smallclaims.aspx",
+  "monetary_limit": 12500,
+  "forms": [
+    {
+      "form_id": "SC-100",
+      "name": "Plaintiff's Claim and ORDER to Go to Small Claims Court",
+      "description": "The primary small claims filing form. Lists the plaintiff, defendant, claim amount, and basis for the claim.",
+      "official_url": "https://www.courts.ca.gov/documents/sc100.pdf",
+      "fillable": true,
+      "field_mapping": [
+        { "pdf_field": "plaintiff_name", "source": "user.full_name" },
+        { "pdf_field": "plaintiff_address", "source": "user.current_address" },
+        { "pdf_field": "defendant_name", "source": "case.landlord_name" },
+        { "pdf_field": "defendant_address", "source": "case.landlord_address" },
+        { "pdf_field": "claim_amount", "source": "case.demand_amount", "transform": "currency" },
+        { "pdf_field": "claim_basis", "source": "generated.claim_summary" }
+      ],
+      "required": true,
+      "copies_needed": 2
+    },
+    {
+      "form_id": "SC-104",
+      "name": "Declaration of Nonmilitary Status (Federal)",
+      "description": "Required declaration that the defendant is not on active military duty (Servicemembers Civil Relief Act).",
+      "official_url": "https://www.courts.ca.gov/documents/sc104.pdf",
+      "fillable": true,
+      "required": true,
+      "copies_needed": 1
+    },
+    {
+      "form_id": "SC-100A",
+      "name": "Other Plaintiffs or Defendants (if needed)",
+      "description": "Only needed if there are additional plaintiffs or defendants beyond those listed on SC-100.",
+      "official_url": "https://www.courts.ca.gov/documents/sc100a.pdf",
+      "fillable": true,
+      "required": false,
+      "copies_needed": 1
+    }
+  ],
+  "attachments_order": [
+    { "position": 1, "attachment_type": "claim_form", "description": "SC-100 Plaintiff's Claim (completed)", "required": true, "source": "form_template" },
+    { "position": 2, "attachment_type": "demand_letter_copy", "description": "Copy of the demand letter sent to landlord", "required": true, "source": "generated" },
+    { "position": 3, "attachment_type": "proof_of_service", "description": "Proof that demand letter was sent (certified mail receipt)", "required": false, "source": "user_upload" },
+    { "position": 4, "attachment_type": "lease_copy", "description": "Copy of the lease agreement", "required": true, "source": "user_upload" },
+    { "position": 5, "attachment_type": "itemization", "description": "Landlord's itemized deduction statement (if received)", "required": false, "source": "user_upload" },
+    { "position": 6, "attachment_type": "photos", "description": "Move-in/move-out photos", "required": false, "source": "user_upload" },
+    { "position": 7, "attachment_type": "correspondence", "description": "Any correspondence with landlord", "required": false, "source": "user_upload" },
+    { "position": 8, "attachment_type": "receipts", "description": "Receipts or estimates contradicting landlord's charges", "required": false, "source": "user_upload" }
+  ],
+  "filing_instructions": {
+    "method": "mixed",
+    "e_filing_url": "https://www.lacourt.org/forms/smallclaims",
+    "steps": [
+      { "step_number": 1, "instruction": "Complete form SC-100 (Plaintiff's Claim). Fill in your name, address, the landlord/property management company name and address, the amount you're claiming, and a brief description of your claim.", "note": "The claim amount should be the deposit amount you're demanding, up to $12,500 for individuals." },
+      { "step_number": 2, "instruction": "Complete form SC-104 (Declaration of Nonmilitary Status)." },
+      { "step_number": 3, "instruction": "Make 2 copies of all forms and supporting documents." },
+      { "step_number": 4, "instruction": "File at the clerk's office of the LA County Superior Court courthouse nearest to the rental property, or file online at the court's website.", "note": "Filing can be done in person or by mail at most courthouses." },
+      { "step_number": 5, "instruction": "Pay the filing fee (see fees below). Fee waiver available for qualifying individuals (form FW-001)." },
+      { "step_number": 6, "instruction": "After filing, the court will schedule a hearing date and provide you with the Order to appear (on the SC-100 form)." },
+      { "step_number": 7, "instruction": "Serve the defendant: you must have someone other than yourself (not a party to the case) serve a copy of the filed SC-100 on the landlord. Service must be completed at least 15 days before the hearing (20 days if outside the county).", "note": "Service can be by personal service, substituted service, or certified mail with acknowledgment of receipt." },
+      { "step_number": 8, "instruction": "File the Proof of Service (form SC-104A or POS-030) with the court before the hearing date." },
+      { "step_number": 9, "instruction": "Attend the hearing on the scheduled date. Bring all original documents, photos, and evidence organized in order.", "note": "No attorneys are allowed in CA small claims court. The judge will hear both sides and make a decision, usually the same day or by mail." }
+    ],
+    "service_of_process": {
+      "method": "Personal service by someone other than plaintiff; OR substituted service; OR certified mail with acknowledgment of receipt",
+      "deadline_days": 15,
+      "proof_form": "SC-104A (Proof of Service) or POS-030"
+    },
+    "hearing_info": "Hearing is typically scheduled 30-70 days after filing. Both parties present their case to the judge. No attorneys. Decision is usually made the same day or mailed within a few days."
+  },
+  "fees": {
+    "filing_fee": [
+      { "amount_usd": 30, "condition": "Claim $1,500 or less" },
+      { "amount_usd": 50, "condition": "Claim $1,501 to $5,000" },
+      { "amount_usd": 75, "condition": "Claim $5,001 to $12,500" }
+    ],
+    "service_fee": 40,
+    "fee_waiver_available": true,
+    "fee_waiver_form": "FW-001 (Request to Waive Court Fees)",
+    "payment_methods": ["Cash", "Check", "Money order", "Credit/debit card (varies by courthouse)"]
+  },
+  "statute_of_limitations": {
+    "years": 4,
+    "statute_ref": "Cal. Civ. Proc. Code §337 (written contract) or §339 (oral contract, 2 years)",
+    "description": "For security deposit claims based on a written lease: 4 years. For oral agreements: 2 years. Clock starts when the deposit should have been returned (21 days after move-out)."
+  },
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": [
+      "https://www.courts.ca.gov/selfhelp-smallclaims.htm",
+      "https://www.lacourt.org/division/smallclaims/smallclaims.aspx",
+      "https://www.courts.ca.gov/documents/sc100.pdf"
+    ],
+    "next_review_due": "2026-08-20"
+  }
+}

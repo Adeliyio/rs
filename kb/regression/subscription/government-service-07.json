@@ -1,0 +1,25 @@
+{
+  "test_id": "subscription-regression-07",
+  "description": "MUST DECLINE — Government-mandated utility service",
+  "input_quality": "clean",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "subscription-government-contract",
+  "jurisdiction": "FL",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "FL",
+    "active_litigation": false,
+    "government_service": true
+  },
+  "expected_outputs": {
+    "email_sequence": false,
+    "decline_triggered": true,
+    "decline_rule": "subscription-government-contract",
+    "resources_shown": "general_info"
+  },
+  "validation_checks": [
+    "Flow terminates at government service check",
+    "Decline copy shown",
+    "No generation attempted"
+  ]
+}

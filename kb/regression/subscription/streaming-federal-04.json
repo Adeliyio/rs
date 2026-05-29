@@ -1,0 +1,44 @@
+{
+  "test_id": "subscription-regression-04",
+  "description": "Streaming service cancellation — federal baseline state (no deep state coverage)",
+  "input_quality": "clean",
+  "expected_outcome": "generate",
+  "jurisdiction": "OH",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "OH",
+    "active_litigation": false,
+    "government_service": false,
+    "service_vertical": "streaming",
+    "financed_device": false,
+    "bundled_contract": false,
+    "company_name": "StreamPlus",
+    "monthly_charge": 14.99,
+    "billing_frequency": "Monthly",
+    "subscription_start_date": "2024-06-01",
+    "last_charge_date": "2026-05-01",
+    "prior_cancellation_attempt": true,
+    "cancellation_date": "2026-04-15",
+    "cancellation_method": "Used website/app",
+    "cancellation_result": "They said it was cancelled but I was still charged",
+    "has_written_contract": false,
+    "auto_renewal_disclosed": "I don't remember",
+    "evidence_files": []
+  },
+  "expected_outputs": {
+    "email_sequence": true,
+    "sequence_steps": 3,
+    "statute_citations": ["FTC Click-to-Cancel Rule", "16 CFR Part 425"],
+    "grounding_tier": "federal_baseline_with_tavily",
+    "vertical_specific": true
+  },
+  "validation_checks": [
+    "Ohio accepted (subscription is near-national)",
+    "Federal law cited (not state-specific — OH not deeply covered)",
+    "FTC click-to-cancel rule referenced",
+    "Streaming-specific sequence template used",
+    "Tavily used for any Ohio-specific consumer protection info",
+    "Three-step sequence generated",
+    "No payment required"
+  ]
+}

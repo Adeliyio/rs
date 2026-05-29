@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "description": "Adversarial-counsel detection mechanism per PRD §6.7 and §7.10. This is a v1 requirement — the single highest-UPL-risk moment in the product. Uses explicit branching questions, NOT natural-language analysis of uploaded letters (NL-detection deferred beyond v1).",
+  "trigger_id": "adversarial-counsel-engaged",
+  "priority": "critical",
+  "mechanism": "explicit_branching_question",
+  "activation_point": "after_user_marks_counterparty_response_received",
+  "questions": [
+    {
+      "step": 1,
+      "question": "Has the other party or anyone representing them contacted you since you sent the letter?",
+      "field_id": "counterparty_responded",
+      "answer_type": "boolean",
+      "trigger_on": true,
+      "next_step": 2,
+      "non_trigger_action": "continue_normal_flow"
+    },
+    {
+      "step": 2,
+      "question": "Did they mention a lawyer, an attorney, or legal action?",
+      "field_id": "attorney_mentioned",
+      "answer_type": "boolean",
+      "trigger_on": true,
+      "next_step": "fire_trigger",
+      "non_trigger_action": "continue_to_step_3"
+    },
+    {
+      "step": 3,
+      "question": "Did they threaten to sue you, file a countersuit, or take you to court?",
+      "field_id": "countersuit_threatened",
+      "answer_type": "boolean",
+      "trigger_on": true,
+      "next_step": "fire_trigger",
+      "non_trigger_action": "continue_normal_flow"
+    }
+  ],
+  "trigger_response": {
+    "heading": "This Situation Has Moved Beyond Writing Assistance",
+    "body": "Based on what you've described, the other party has involved legal representation or threatened legal action. At this point, the situation involves legal strategy and judgment that goes beyond what a writing tool can responsibly help with.",
+    "reassurance": "This is actually common in disputes like yours — it often means the other party is taking your claim seriously. People in this situation typically consult with a licensed attorney to understand their options.",
+    "action_items": [
+      "Do not respond to the attorney or legal threat without consulting your own legal representation.",
+      "Keep all documents and correspondence you've received — they may be important.",
+      "The letter and materials you've already generated are yours to share with any attorney you consult."
+    ],
+    "resources": "legal_representation",
+    "case_status_update": "escalation_blocked_counsel_detected"
+  },
+  "audit_log": {
+    "event_type": "adversarial_counsel_trigger_fired",
+    "fields_to_log": [
+      "case_id",
+      "trigger_step",
+      "user_answers",
+      "timestamp"
+    ]
+  },
+  "notes": "The question-based mechanism is chosen deliberately over NL-detection because for the single highest-UPL-risk moment the reliable mechanism beats the elegant one. NL-detection of uploaded adversarial letters is explicitly deferred beyond v1 per PRD §7.10."
+}

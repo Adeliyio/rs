@@ -1,0 +1,267 @@
+{
+  "version": "1.1.0",
+  "wedge": "subscription",
+  "description": "Directed-graph diagnostic schema for the subscription cancellation wedge. Accepts any US state. Per PRD §7.1. v1.1: Added account_identifier, billing_email, cancellation_effective_date, refund_request nodes for richer email generation.",
+  "entry_node": "jurisdiction",
+  "nodes": {
+    "jurisdiction": {
+      "id": "jurisdiction",
+      "type": "select",
+      "question": "In which state do you live?",
+      "field": "jurisdiction_state",
+      "options_source": "all_us_states",
+      "required": true,
+      "next": "refusal_check_litigation"
+    },
+    "refusal_check_litigation": {
+      "id": "refusal_check_litigation",
+      "type": "boolean",
+      "question": "Is there currently a lawsuit or legal dispute pending between you and this company?",
+      "field": "active_litigation",
+      "branches": {
+        "true": "refusal_litigation",
+        "false": "refusal_check_government"
+      }
+    },
+    "refusal_litigation": {
+      "id": "refusal_litigation",
+      "type": "terminal",
+      "terminal_type": "out_of_scope",
+      "refusal_rule": "subscription-active-litigation"
+    },
+    "refusal_check_government": {
+      "id": "refusal_check_government",
+      "type": "boolean",
+      "question": "Is this a government-run service or a service mandated by your municipality (like a utility)?",
+      "field": "government_service",
+      "branches": {
+        "true": "refusal_government",
+        "false": "service_vertical"
+      }
+    },
+    "refusal_government": {
+      "id": "refusal_government",
+      "type": "terminal",
+      "terminal_type": "out_of_scope",
+      "refusal_rule": "subscription-government-contract"
+    },
+    "service_vertical": {
+      "id": "service_vertical",
+      "type": "select",
+      "question": "What type of service or subscription is this?",
+      "field": "service_vertical",
+      "options": [
+        { "value": "gym", "label": "Gym or fitness membership", "next": "refusal_check_financed" },
+        { "value": "telecom", "label": "Phone, internet, or cable/TV service", "next": "refusal_check_financed" },
+        { "value": "saas", "label": "Software or online service", "next": "refusal_check_financed" },
+        { "value": "streaming", "label": "Streaming service (video, music, etc.)", "next": "refusal_check_financed" },
+        { "value": "mobile_app", "label": "Mobile app subscription", "next": "refusal_check_financed" },
+        { "value": "other", "label": "Other subscription or membership", "next": "refusal_check_financed" }
+      ],
+      "required": true
+    },
+    "refusal_check_financed": {
+      "id": "refusal_check_financed",
+      "type": "boolean",
+      "question": "Is this subscription tied to a financed device, equipment loan, or installment payment plan?",
+      "field": "financed_device",
+      "branches": {
+        "true": "refusal_financed",
+        "false": "refusal_check_bundled"
+      }
+    },
+    "refusal_financed": {
+      "id": "refusal_financed",
+      "type": "terminal",
+      "terminal_type": "out_of_scope",
+      "refusal_rule": "subscription-financed-device"
+    },
+    "refusal_check_bundled": {
+      "id": "refusal_check_bundled",
+      "type": "boolean",
+      "question": "Is this subscription part of a bundled contract with other services (e.g., phone + internet + TV)?",
+      "field": "bundled_contract",
+      "branches": {
+        "true": "bundled_warning",
+        "false": "company_name"
+      }
+    },
+    "bundled_warning": {
+      "id": "bundled_warning",
+      "type": "info",
+      "message": "Bundled contracts may have different cancellation terms for each component. We can help you draft a cancellation request, but the bundle terms may affect what can be cancelled separately. We'll include a note about this in your cancellation emails.",
+      "field": "bundled_warning_acknowledged",
+      "next": "company_name"
+    },
+    "company_name": {
+      "id": "company_name",
+      "type": "text",
+      "question": "What is the name of the company or service?",
+      "field": "company_name",
+      "required": true,
+      "placeholder": "e.g., Planet Fitness, Netflix, Comcast",
+      "next": "account_identifier"
+    },
+    "account_identifier": {
+      "id": "account_identifier",
+      "type": "text",
+      "question": "What is your account number, customer ID, or username with this company?",
+      "field": "account_identifier",
+      "required": true,
+      "help_text": "This helps the company locate your account quickly. Check your billing email or account settings page. If you only have a billing email, enter that.",
+      "placeholder": "e.g., CUS-12345, john.doe, or your billing email",
+      "next": "subscription_details"
+    },
+    "subscription_details": {
+      "id": "subscription_details",
+      "type": "group",
+      "question": "Tell us about your subscription:",
+      "fields": [
+        { "field": "monthly_charge", "label": "How much are you being charged?", "type": "currency", "required": true },
+        { "field": "billing_frequency", "label": "How often?", "type": "select", "options": ["Weekly", "Monthly", "Quarterly", "Annually", "Other"], "required": true },
+        { "field": "billing_email", "label": "What email address is on this account?", "type": "email", "required": true, "help_text": "The email associated with your subscription account — this may be different from your Resolvaio login email." },
+        { "field": "subscription_start_date", "label": "When did the subscription start (approximate is fine)?", "type": "date", "required": false, "document_extractable": true },
+        { "field": "last_charge_date", "label": "Date of the most recent charge", "type": "date", "required": true, "document_extractable": true, "extract_from": "statement.last_charge_date" }
+      ],
+      "next": "cancellation_attempts"
+    },
+    "cancellation_attempts": {
+      "id": "cancellation_attempts",
+      "type": "boolean",
+      "question": "Have you already tried to cancel this subscription?",
+      "field": "prior_cancellation_attempt",
+      "branches": {
+        "true": "cancellation_attempt_details",
+        "false": "cancellation_difficulty"
+      }
+    },
+    "cancellation_attempt_details": {
+      "id": "cancellation_attempt_details",
+      "type": "group",
+      "question": "Tell us about your cancellation attempt:",
+      "fields": [
+        { "field": "cancellation_date", "label": "When did you try to cancel?", "type": "date", "required": true },
+        { "field": "cancellation_method", "label": "How did you try?", "type": "select", "options": ["Called customer service", "Used website/app", "Sent email", "Visited in person", "Sent letter", "Other"], "required": true },
+        { "field": "cancellation_result", "label": "What happened?", "type": "select", "options": [
+          "They refused to cancel",
+          "They said it was cancelled but I was still charged",
+          "They offered a discount/retention offer",
+          "I couldn't find how to cancel",
+          "I was put on hold/transferred and gave up",
+          "They said there's a cancellation fee",
+          "They said I'm in a contract period",
+          "Other"
+        ], "required": true },
+        { "field": "cancellation_confirmation_number", "label": "Did you get a confirmation number?", "type": "text", "required": false }
+      ],
+      "next": "cancellation_effective_date"
+    },
+    "cancellation_difficulty": {
+      "id": "cancellation_difficulty",
+      "type": "select",
+      "question": "What's preventing you from cancelling?",
+      "field": "cancellation_barrier",
+      "options": [
+        { "value": "cant_find_how", "label": "I can't find how to cancel" },
+        { "value": "requires_call", "label": "They require a phone call to cancel" },
+        { "value": "early_termination_fee", "label": "There's an early termination or cancellation fee" },
+        { "value": "contract_period", "label": "They say I'm locked into a contract" },
+        { "value": "auto_renewed", "label": "It auto-renewed without my clear consent" },
+        { "value": "other", "label": "Other reason" }
+      ],
+      "required": true,
+      "next": "cancellation_effective_date"
+    },
+    "cancellation_effective_date": {
+      "id": "cancellation_effective_date",
+      "type": "select",
+      "question": "When should the cancellation take effect?",
+      "field": "cancellation_effective_date",
+      "options": [
+        { "value": "immediately", "label": "Immediately — stop all charges now" },
+        { "value": "end_of_period", "label": "End of current billing period" }
+      ],
+      "required": true,
+      "next": "refund_request"
+    },
+    "refund_request": {
+      "id": "refund_request",
+      "type": "boolean",
+      "question": "Are you requesting a refund for charges made after you tried to cancel, or for unauthorized charges?",
+      "field": "wants_refund",
+      "help_text": "If you were charged after requesting cancellation, or if you were auto-renewed without clear consent, you may want to request a refund for those charges.",
+      "branches": {
+        "true": "refund_details",
+        "false": "contract_terms"
+      }
+    },
+    "refund_details": {
+      "id": "refund_details",
+      "type": "group",
+      "question": "Tell us about the refund you are requesting:",
+      "fields": [
+        { "field": "refund_amount", "label": "How much are you requesting back?", "type": "currency", "required": true, "help_text": "The total amount you believe you were charged incorrectly or after your cancellation attempt." },
+        { "field": "refund_reason", "label": "Why?", "type": "select", "options": [
+          "Charged after I requested cancellation",
+          "Auto-renewed without clear consent",
+          "Service was not as described",
+          "Other"
+        ], "required": true }
+      ],
+      "next": "contract_terms"
+    },
+    "contract_terms": {
+      "id": "contract_terms",
+      "type": "group",
+      "question": "About the contract terms (answer what you can):",
+      "fields": [
+        { "field": "has_written_contract", "label": "Do you have a written contract or terms of service?", "type": "boolean" },
+        { "field": "contract_length", "label": "Is there a minimum commitment period?", "type": "select", "options": ["No minimum / month-to-month", "1 year", "2 years", "Other", "I'm not sure"], "required": false },
+        { "field": "auto_renewal_disclosed", "label": "Were you clearly told about auto-renewal before you signed up?", "type": "select", "options": ["Yes, clearly disclosed", "Buried in fine print", "I don't remember", "No, I wasn't told"], "required": false }
+      ],
+      "next": "evidence_upload"
+    },
+    "evidence_upload": {
+      "id": "evidence_upload",
+      "type": "file_upload",
+      "question": "Upload any documents that may help (all optional):",
+      "field": "evidence_files",
+      "required": false,
+      "accepted_types": ["billing_statement", "contract_terms", "cancellation_receipt", "correspondence", "screenshots"],
+      "max_files": 5,
+      "max_size_mb": 10,
+      "help_text": "Common uploads: recent billing statement, contract/terms, cancellation confirmation or denial, any correspondence with the company.",
+      "next": "review_and_generate"
+    },
+    "review_and_generate": {
+      "id": "review_and_generate",
+      "type": "summary",
+      "summary_type": "diagnostic_complete",
+      "next": "generation"
+    },
+    "generation": {
+      "id": "generation",
+      "type": "generation",
+      "generation_type": "subscription_sequence",
+      "outputs": ["email_sequence_3_step"],
+      "notes": "Subscription cancellation is free at launch — no paywall step",
+      "next": "delivery"
+    },
+    "delivery": {
+      "id": "delivery",
+      "type": "delivery",
+      "delivery_options": ["in_app_view", "copy_paste", "mailto_link"],
+      "next": "outcome_tracking"
+    },
+    "outcome_tracking": {
+      "id": "outcome_tracking",
+      "type": "tracking",
+      "checkpoints": [
+        { "trigger": "T+7", "question": "Have you sent Email 1? Time for Email 2." },
+        { "trigger": "T+14", "question": "Have you sent Email 2? Time for Email 3." },
+        { "trigger": "T+21", "question": "Any response from the company?" },
+        { "trigger": "T+30", "question": "Has the subscription been cancelled?" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-05-20",
+  "reviewed_by": "NEEDS_LEGAL_REVIEW",
+  "description": "All disclaimer variants used across the product. Per PRD Principle 5: disclaimers are UI primitives, not afterthoughts. Inline on every page showing statute information, required acknowledgment before generation, on the letter, in delivery emails, in marketing.",
+  "disclaimers": {
+    "inline_statute": {
+      "id": "disclaimer-inline-statute",
+      "placement": "Inline, adjacent to every statute citation or deadline reference",
+      "text": "This information is provided for general informational purposes. Verify current statutes and deadlines with official sources before relying on them.",
+      "style": "subtle_text",
+      "dismissible": false
+    },
+    "pre_generation_acknowledgment": {
+      "id": "disclaimer-pre-generation",
+      "placement": "Required acknowledgment checkbox before letter/sequence generation",
+      "text": "I understand that this tool provides writing assistance and general information about how similar disputes are typically handled. It does not provide legal advice, does not evaluate whether I have a valid claim, and does not guarantee any outcome. The generated letter is a starting point that I should review and may want to have reviewed by a licensed attorney before sending. I am responsible for verifying the accuracy of all information and for my own decisions about how to proceed.",
+      "style": "checkbox_acknowledgment",
+      "required": true,
+      "must_be_checked_to_proceed": true
+    },
+    "on_letter": {
+      "id": "disclaimer-on-letter",
+      "placement": "Footer of every generated letter and email sequence",
+      "text": "This letter was drafted with the assistance of a writing tool. It is not legal advice. The sender has been advised to verify all factual claims and legal references independently. This tool and its operators do not represent the sender as legal counsel.",
+      "style": "footer_text",
+      "visible_to": "sender_only",
+      "notes": "This appears on the user's copy, NOT on the version sent to the counterparty. The sent version contains no tool branding."
+    },
+    "delivery_screen": {
+      "id": "disclaimer-delivery",
+      "placement": "Delivery/download screen after generation",
+      "text": "Your letter has been generated. This is a writing tool, not legal advice. We do not guarantee any outcome. Review your letter carefully before sending. Consider consulting a licensed attorney if you have questions about your specific situation. Refunds are available for defective outputs per our refund policy.",
+      "style": "info_box"
+    },
+    "confirmation_email": {
+      "id": "disclaimer-email",
+      "placement": "Transactional email sent after purchase/generation",
+      "subject_line_disclaimer": false,
+      "body_text": "Important: [Product Name] is a writing assistance tool. The letter attached to this email is not legal advice and does not create an attorney-client relationship. We do not evaluate cases, predict outcomes, or substitute for a licensed attorney. Review all content carefully and verify any legal references with official sources before sending. If the other party responds with legal representation or threats of legal action, consider consulting with a licensed attorney.",
+      "style": "email_section"
+    },
+    "marketing_landing": {
+      "id": "disclaimer-marketing",
+      "placement": "Footer of every marketing/SEO page",
+      "text": "[Product Name] is a writing assistance tool. It does not provide legal advice, does not evaluate cases, and does not guarantee outcomes. Generated letters and documents should be reviewed before use. Consider consulting a licensed attorney for advice about your specific situation.",
+      "style": "page_footer"
+    },
+    "checkout": {
+      "id": "disclaimer-checkout",
+      "placement": "Inline on Paddle checkout screen, above payment button",
+      "text": "You are purchasing access to a writing tool that helps draft dispute letters and filing paperwork. This is not legal advice and does not guarantee any outcome. See our refund policy for details.",
+      "style": "checkout_notice"
+    },
+    "evidence_authenticity": {
+      "id": "disclaimer-evidence",
+      "placement": "Document upload screen",
+      "text": "Documents you upload are used to help draft your letter. We do not independently verify the authenticity or accuracy of uploaded materials. You are responsible for the truthfulness of all information provided.",
+      "style": "info_text",
+      "acknowledgment_stored": true
+    },
+    "testimonial": {
+      "id": "disclaimer-testimonial",
+      "placement": "Adjacent to any testimonial display",
+      "text": "Individual results vary. This testimonial reflects one person's experience and is not a guarantee of any outcome.",
+      "style": "caption_text"
+    },
+    "packet_filing": {
+      "id": "disclaimer-packet",
+      "placement": "On escalation packet delivery screen",
+      "text": "This filing packet is prepared based on publicly available court/agency forms and procedures. Court procedures and forms may change. Verify current requirements with the court or agency before filing. This is writing and research assistance, not legal advice.",
+      "style": "info_box"
+    }
+  }
+}

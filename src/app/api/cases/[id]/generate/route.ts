@@ -1,0 +1,591 @@
+/**
+ * POST /api/cases/[id]/generate
+ *
+ * Triggers generation for a case. Supports both wedges:
+ * - subscription: generates a 3-step email sequence
+ * - deposit: generates a demand letter
+ *
+ * Validates: authenticated user, case belongs to user, case status is
+ * 'intake', diagnostic is complete, refusal check passes.
+ * For deposit: also validates payment_status === 'paid' (or subscription active).
+ */
+
+import { NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
+
+import { createClient } from '@/lib/supabase/server';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { checkRefusal } from '@/lib/refusal/refusal-checker';
+import {
+  generateSequence,
+  type DiagnosticAnswers,
+} from '@/features/subscription/generation/sequence-generator';
+import {
+  generateLetter,
+  type DepositDiagnosticAnswers,
+} from '@/features/deposit/generation/letter-generator';
+import { AI_CONFIG } from '@/config/ai.config';
+import {
+  enqueueLetterDeliveryEmail,
+  enqueueLetterGeneration,
+  getGenerationQueueDepth,
+} from '@/lib/queue/enqueue';
+import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund';
+import { computeDeadlines } from '@/lib/deadlines/calculator';
+import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
+import { loadKbEntry } from '@/lib/kb/loader';
+import { DEPOSIT_JURISDICTION, JURISDICTION_TIMEZONE, type DepositJurisdiction } from '@/types/enums';
+import type { DiagnosticState } from '@/types/diagnostic.types';
+import type { Tables } from '@/types/database.types';
+import type { Deduction, ItemizationStatus } from '@/lib/ai/deposit-generation';
+import type { GeneratedSequence } from '@/types/generation.types';
+
+/**
+ * Circuit breaker threshold: if total generation jobs in the queue
+ * exceed this value, enqueue the job instead of processing synchronously,
+ * and tell the user to check their email.
+ *
+ * PRD §8.4: circuit breaker for viral-spike survival.
+ */
+const CIRCUIT_BREAKER_THRESHOLD = 50;
+
+/** User identity info for personalizing generated content. */
+interface UserInfo {
+  fullName: string;
+  email: string;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Types                                                             */
+/* ------------------------------------------------------------------ */
+
+type CaseRow = Pick<
+  Tables<'cases'>,
+  'id' | 'user_id' | 'status' | 'wedge' | 'jurisdiction' | 'diagnostic_state' | 'payment_status'
+>;
+
+/* ------------------------------------------------------------------ */
+/*  Shared helpers                                                    */
+/* ------------------------------------------------------------------ */
+
+async function createAuditEntry(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  payload: Record<string, unknown>,
+) {
+  const { error } = await supabase
+    .from('audit_log')
+    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
+    .insert(payload);
+
+  if (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to create audit_log entry:', error.message);
+  }
+}
+
+async function updateCaseStatus(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  caseId: string,
+  previousStatus: string,
+) {
+  const caseUpdatePayload: Record<string, unknown> = {
+    status: 'generated',
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error: caseUpdateError } = await supabase
+    .from('cases')
+    // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type from manual Database definition
+    .update(caseUpdatePayload)
+    .eq('id', caseId);
+
+  if (caseUpdateError) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to update case status to generated:', caseUpdateError.message);
+  }
+
+  const historyPayload: Record<string, unknown> = {
+    case_id: caseId,
+    previous_status: previousStatus,
+    new_status: 'generated',
+  };
+
+  const { error: historyError } = await supabase
+    .from('case_status_history')
+    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
+    .insert(historyPayload);
+
+  if (historyError) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to create case_status_history entry:', historyError.message);
+  }
+}
+
+/**
+ * Replace LLM placeholders ([YOUR NAME], [YOUR EMAIL], [DATE]) in
+ * generated email bodies and subjects with actual user data.
+ */
+function personalizeSequenceSteps(
+  steps: GeneratedSequence['steps'],
+  userInfo: UserInfo,
+): GeneratedSequence['steps'] {
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
+  return steps.map((step) => ({
+    ...step,
+    subject: replaceUserPlaceholders(step.subject, userInfo, today),
+    body: replaceUserPlaceholders(step.body, userInfo, today),
+  }));
+}
+
+function replaceUserPlaceholders(
+  text: string,
+  userInfo: UserInfo,
+  today: string,
+): string {
+  return text
+    .replace(/\[YOUR NAME\]/gi, userInfo.fullName)
+    .replace(/\[YOUR EMAIL\]/gi, userInfo.email)
+    .replace(/\[DATE\]/gi, today)
+    .replace(/\[YOUR FULL NAME\]/gi, userInfo.fullName)
+    .replace(/\[FULL NAME\]/gi, userInfo.fullName)
+    .replace(/\[NAME\]/gi, userInfo.fullName)
+    .replace(/\[EMAIL\]/gi, userInfo.email)
+    .replace(/\[EMAIL ADDRESS\]/gi, userInfo.email)
+    .replace(/\[TODAY'S DATE\]/gi, today)
+    .replace(/\[TODAYS DATE\]/gi, today)
+    .replace(/\[CURRENT DATE\]/gi, today);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Subscription generation handler                                   */
+/* ------------------------------------------------------------------ */
+
+async function handleSubscriptionGeneration(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  caseId: string,
+  caseRow: CaseRow,
+  answers: Record<string, unknown>,
+  userId: string,
+  userInfo: UserInfo,
+) {
+  const diagnosticAnswers: DiagnosticAnswers = {
+    wedge: 'subscription',
+    jurisdiction: caseRow.jurisdiction,
+    vertical: (answers['vertical'] ?? answers['service_vertical']) as DiagnosticAnswers['vertical'],
+    company_name: answers['company_name'] as string | undefined,
+    service_type: answers['service_type'] as string | undefined,
+    account_identifier: answers['account_identifier'] as string | undefined,
+    billing_email: answers['billing_email'] as string | undefined,
+    monthly_charge: answers['monthly_charge'] as string | undefined,
+    billing_frequency: answers['billing_frequency'] as string | undefined,
+    last_charge_date: answers['last_charge_date'] as string | undefined,
+    cancellation_effective_date: answers['cancellation_effective_date'] as string | undefined,
+    prior_cancellation_attempt: answers['prior_cancellation_attempt'] as boolean | undefined,
+    cancellation_date: answers['cancellation_date'] as string | undefined,
+    cancellation_method: answers['cancellation_method'] as string | undefined,
+    cancellation_result: answers['cancellation_result'] as string | undefined,
+    wants_refund: answers['wants_refund'] as boolean | undefined,
+    refund_amount: answers['refund_amount'] as string | undefined,
+    refund_reason: answers['refund_reason'] as string | undefined,
+    cancellation_barriers: answers['cancellation_barriers'] as string[] | undefined,
+    additional_details: answers['additional_details'] as string | undefined,
+    ...answers,
+  };
+
+  const correlationId = randomUUID();
+  const result = await generateSequence(caseId, diagnosticAnswers);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error.message, code: result.error.code },
+      { status: 500 },
+    );
+  }
+
+  const generatedSequence = result.sequence;
+
+  // Replace [YOUR NAME], [YOUR EMAIL], [DATE] placeholders with real user data
+  generatedSequence.steps = personalizeSequenceSteps(
+    generatedSequence.steps,
+    userInfo,
+  );
+
+  const sequencePayload: Record<string, unknown> = {
+    case_id: caseId,
+    vertical: generatedSequence.vertical,
+    current_step: 1,
+    next_send_at: null,
+    steps: {
+      steps: generatedSequence.steps,
+      jurisdiction: generatedSequence.jurisdiction,
+      sent_dates: {},
+    },
+    grounding_context_ids: generatedSequence.grounding_context_ids,
+    citation_validation: {
+      valid: generatedSequence.citation_validation.valid,
+      stripped: generatedSequence.citation_validation.stripped,
+      pass: generatedSequence.citation_validation.pass,
+    },
+  };
+
+  const { data: sequenceData, error: seqError } = await supabase
+    .from('sequences')
+    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
+    .insert(sequencePayload)
+    .select()
+    .single();
+
+  if (seqError) {
+    return NextResponse.json(
+      { error: `Failed to save sequence: ${seqError.message}` },
+      { status: 500 },
+    );
+  }
+
+  const sequenceRow = sequenceData as unknown as { id: string };
+
+  await createAuditEntry(supabase, {
+    case_id: caseId,
+    user_id: userId,
+    correlation_id: correlationId,
+    grounding_context_ids: generatedSequence.grounding_context_ids,
+    model_version: AI_CONFIG.generation.model,
+    prompt_version: 'subscription_v1',
+    citation_validation_result: {
+      valid_count: generatedSequence.citation_validation.valid.length,
+      stripped_count: generatedSequence.citation_validation.stripped.length,
+      pass: generatedSequence.citation_validation.pass,
+    },
+  });
+
+  await updateCaseStatus(supabase, caseId, 'intake');
+
+  return NextResponse.json({ sequence_id: sequenceRow.id });
+}
+
+/* ------------------------------------------------------------------ */
+/*  Deposit generation handler                                        */
+/* ------------------------------------------------------------------ */
+
+async function handleDepositGeneration(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  caseId: string,
+  caseRow: CaseRow,
+  answers: Record<string, unknown>,
+  userId: string,
+) {
+  // Payment and jurisdiction gates are enforced in the POST handler
+  // before routing here. This function handles generation only.
+
+  const diagnosticAnswers: DepositDiagnosticAnswers = {
+    wedge: 'deposit',
+    jurisdiction: caseRow.jurisdiction,
+    tenant_name: answers['tenant_name'] as string | undefined,
+    property_address: answers['property_address'] as string | undefined,
+    landlord_name: answers['landlord_name'] as string | undefined,
+    landlord_address: answers['landlord_address'] as string | undefined,
+    move_out_date: answers['move_out_date'] as string | undefined,
+    lease_start_date: answers['lease_start_date'] as string | undefined,
+    lease_end_date: answers['lease_end_date'] as string | undefined,
+    original_deposit_amount: answers['original_deposit_amount'] as number | undefined,
+    amount_returned: answers['amount_returned'] as number | undefined,
+    amount_withheld: answers['amount_withheld'] as number | undefined,
+    demand_amount: answers['demand_amount'] as number | undefined,
+    days_since_move_out: answers['days_since_move_out'] as number | undefined,
+    itemization_received: answers['itemization_received'] as boolean | undefined,
+    itemization_status: answers['itemization_status'] as ItemizationStatus | undefined,
+    forwarding_address_provided: answers['forwarding_address_provided'] as boolean | undefined,
+    forwarding_address_date: answers['forwarding_address_date'] as string | undefined,
+    walkthrough_completed: answers['walkthrough_completed'] as boolean | undefined,
+    deductions: answers['deductions'] as Deduction[] | undefined,
+    additional_context: answers['additional_context'] as string | undefined,
+    ...answers,
+  };
+
+  const correlationId = randomUUID();
+  const result = await generateLetter(caseId, diagnosticAnswers);
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error.message, code: result.error.code },
+      { status: 500 },
+    );
+  }
+
+  const generatedLetter = result.letter;
+
+  const letterPayload: Record<string, unknown> = {
+    case_id: caseId,
+    content: generatedLetter.content,
+    pdf_url: null,
+    grounding_context_ids: generatedLetter.grounding_context_ids,
+    citation_validation: {
+      valid: generatedLetter.citation_validation.valid,
+      stripped: generatedLetter.citation_validation.stripped,
+      pass: generatedLetter.citation_validation.pass,
+    },
+  };
+
+  const { data: letterData, error: letterError } = await supabase
+    .from('letters')
+    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
+    .insert(letterPayload)
+    .select()
+    .single();
+
+  if (letterError) {
+    return NextResponse.json(
+      { error: `Failed to save letter: ${letterError.message}` },
+      { status: 500 },
+    );
+  }
+
+  const letterRow = letterData as unknown as { id: string };
+
+  await createAuditEntry(supabase, {
+    case_id: caseId,
+    user_id: userId,
+    correlation_id: correlationId,
+    grounding_context_ids: generatedLetter.grounding_context_ids,
+    model_version: AI_CONFIG.generation.model,
+    prompt_version: 'deposit_v1',
+    citation_validation_result: {
+      valid_count: generatedLetter.citation_validation.valid.length,
+      stripped_count: generatedLetter.citation_validation.stripped.length,
+      pass: generatedLetter.citation_validation.pass,
+    },
+  });
+
+  await updateCaseStatus(supabase, caseId, 'intake');
+
+  /* ---- Schedule deadline events (best-effort) ---- */
+  try {
+    const kbEntry = loadKbEntry('deposit', caseRow.jurisdiction);
+    const timezone =
+      JURISDICTION_TIMEZONE[caseRow.jurisdiction as DepositJurisdiction] ??
+      'America/New_York';
+    const { deadlines } = computeDeadlines(
+      kbEntry.deadline_rules,
+      answers as Record<string, string | undefined>,
+      timezone,
+    );
+    if (deadlines.length > 0) {
+      // @ts-expect-error — Supabase SSR generic mismatch with SupabaseClient<Database>
+      await scheduleDeadlines(supabase, caseId, deadlines, timezone);
+    }
+  } catch (deadlineErr) {
+    // Non-critical — log but don't fail generation
+    // eslint-disable-next-line no-console
+    console.error('Failed to schedule deadlines:', deadlineErr);
+  }
+
+  /* ---- Queue letter delivery email (best-effort) ---- */
+  try {
+    const { data: userData } = await supabase.auth.admin.getUserById(userId);
+    const userEmail = userData?.user?.email;
+    if (userEmail) {
+      const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
+      const downloadUrl = `${appUrl}/case/${caseId}`;
+      const propertyAddress = (answers['property_address'] as string) ?? 'your property';
+      await enqueueLetterDeliveryEmail(
+        userEmail,
+        caseRow.jurisdiction,
+        propertyAddress,
+        downloadUrl,
+        caseId,
+      );
+    }
+  } catch (emailErr) {
+    // Non-critical — log but don't fail generation
+    // eslint-disable-next-line no-console
+    console.error('Failed to enqueue letter delivery email:', emailErr);
+  }
+
+  return NextResponse.json({ letter_id: letterRow.id });
+}
+
+/* ------------------------------------------------------------------ */
+/*  POST                                                              */
+/* ------------------------------------------------------------------ */
+
+export async function POST(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id: caseId } = await params;
+
+    /* ---- Auth ---- */
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 },
+      );
+    }
+
+    /* ---- Rate limit ---- */
+    const rateResult = await checkRateLimit('generation', user.id);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Please wait before generating again.' },
+        { status: 429, headers: rateLimitHeaders(rateResult) },
+      );
+    }
+
+    /* ---- Load case (RLS enforces ownership) ---- */
+    const { data, error: fetchError } = await supabase
+      .from('cases')
+      .select('id, user_id, status, wedge, jurisdiction, diagnostic_state, payment_status')
+      .eq('id', caseId)
+      .single();
+
+    if (fetchError || !data) {
+      return NextResponse.json(
+        { error: 'Case not found' },
+        { status: 404 },
+      );
+    }
+
+    const caseRow = data as unknown as CaseRow;
+
+    /* ---- Validate case state ---- */
+    if (caseRow.status !== 'intake') {
+      return NextResponse.json(
+        { error: `Cannot generate: case status is '${caseRow.status}', expected 'intake'.` },
+        { status: 409 },
+      );
+    }
+
+    /* ---- Validate diagnostic completion ---- */
+    const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
+
+    if (!diagnosticState || !diagnosticState.is_completed) {
+      return NextResponse.json(
+        { error: 'Diagnostic is not complete. Finish all diagnostic steps before generating.' },
+        { status: 400 },
+      );
+    }
+
+    const answers = diagnosticState.answers as Record<string, unknown>;
+
+    /* ---- Final refusal check ---- */
+    const refusalResult = checkRefusal(answers, caseRow.wedge as 'deposit' | 'subscription');
+
+    if (refusalResult.triggered && refusalResult.severity === 'hard_block') {
+      return NextResponse.json(
+        {
+          error: 'This case cannot proceed with generation.',
+          refusal_trigger: refusalResult.rule?.rule_id,
+          decline_reason: refusalResult.rule?.decline_reason,
+        },
+        { status: 422 },
+      );
+    }
+
+    /* ---- Validate wedge ---- */
+    const wedge = caseRow.wedge as 'deposit' | 'subscription';
+    if (wedge !== 'deposit' && wedge !== 'subscription') {
+      return NextResponse.json(
+        { error: `Unsupported wedge: ${caseRow.wedge}` },
+        { status: 400 },
+      );
+    }
+
+    /* ---- Deposit-specific gates (must run before enqueue) ---- */
+    if (wedge === 'deposit') {
+      if (caseRow.payment_status !== 'paid') {
+        return NextResponse.json(
+          { error: 'Payment required before letter generation.' },
+          { status: 402 },
+        );
+      }
+
+      const isSupported = DEPOSIT_JURISDICTION.includes(
+        caseRow.jurisdiction as DepositJurisdiction,
+      );
+      if (!isSupported) {
+        try {
+          const { data: txnData } = await supabase
+            .from('cases')
+            .select('paddle_transaction_id')
+            .eq('id', caseId)
+            .single();
+          const txnId = (txnData as unknown as { paddle_transaction_id?: string })?.paddle_transaction_id;
+          if (txnId) {
+            await processAutoRefundIfNeeded(caseId, txnId);
+          }
+        } catch (refundErr) {
+          // eslint-disable-next-line no-console
+          console.error('Auto-refund attempt failed:', refundErr);
+        }
+
+        return NextResponse.json(
+          {
+            error: `Jurisdiction '${caseRow.jurisdiction}' is not supported for deposit cases. Supported: ${DEPOSIT_JURISDICTION.join(', ')}. If you were charged, a refund has been initiated.`,
+          },
+          { status: 422 },
+        );
+      }
+    }
+
+    /* ---- Circuit breaker: check generation queue depth ---- */
+    let queueDepth = 0;
+    try {
+      queueDepth = await getGenerationQueueDepth();
+    } catch {
+      // If Redis is unreachable, fall through to synchronous generation
+    }
+
+    if (queueDepth >= CIRCUIT_BREAKER_THRESHOLD) {
+      // Queue is deep — enqueue and tell user to check email
+      const jobId = await enqueueLetterGeneration(
+        caseId,
+        user.id,
+        wedge,
+        caseRow.jurisdiction,
+      );
+
+      return NextResponse.json({
+        queued: true,
+        job_id: jobId,
+        queue_depth: queueDepth,
+        message:
+          'We are experiencing high demand. Your letter is being generated ' +
+          'and will be emailed to you when ready. You can also check back on ' +
+          'this page in a few minutes.',
+      });
+    }
+
+    /* ---- Extract user identity for personalization ---- */
+    const userInfo: UserInfo = {
+      fullName:
+        (user.user_metadata?.full_name as string | undefined) ??
+        user.email?.split('@')[0] ??
+        '',
+      email: user.email ?? '',
+    };
+
+    /* ---- Normal path: generate synchronously ---- */
+    if (wedge === 'subscription') {
+      return await handleSubscriptionGeneration(supabase, caseId, caseRow, answers, user.id, userInfo);
+    }
+
+    return await handleDepositGeneration(supabase, caseId, caseRow, answers, user.id);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Internal error';
+    // eslint-disable-next-line no-console
+    console.error('POST /api/cases/[id]/generate error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

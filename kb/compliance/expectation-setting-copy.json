@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-05-20",
+  "reviewed_by": "NEEDS_LEGAL_REVIEW",
+  "description": "Expectation-setting copy shown at checkout, confirmation email, and delivery screen. Per PRD §9.5: the primary lever for keeping Paddle-monitored chargeback rates low.",
+  "copy_blocks": {
+    "checkout_above_button": {
+      "placement": "Paddle inline checkout, directly above the pay button",
+      "heading": "What you're getting",
+      "body": "A professionally drafted demand letter grounded in your state's security deposit statutes, an itemized rebuttal table for disputed deductions, and access to escalation filing packets if needed. This is a writing tool — it produces documents, not legal advice. The counterparty may or may not respond to your letter. We do not guarantee any specific outcome.",
+      "refund_note": "Refunds available before generation or for defective outputs. See our refund policy."
+    },
+    "checkout_subscription": {
+      "placement": "Paddle inline checkout for monthly/annual plans",
+      "heading": "What you're getting",
+      "body": "Unlimited access to our dispute writing tool for the plan period. Generate demand letters, rebuttal tables, cancellation emails, and filing packets. Cancel anytime — no proration. This is a writing tool that produces documents, not legal advice.",
+      "refund_note": "Cancel anytime. No proration on current billing period."
+    },
+    "confirmation_email_deposit": {
+      "placement": "Transactional email after deposit case purchase",
+      "subject": "Your deposit demand letter is ready",
+      "body_sections": [
+        {
+          "heading": "What happens now",
+          "text": "Your demand letter and rebuttal table are ready to review and send. Most people send their letter within a few days of generating it."
+        },
+        {
+          "heading": "What to expect",
+          "text": "After sending your letter, your state's law typically gives the landlord a specific deadline to respond (we've calculated this date in your case). Some landlords respond quickly; some don't respond at all. If there's no response by the deadline, we'll help you prepare a filing packet for the appropriate next step."
+        },
+        {
+          "heading": "What this tool is (and isn't)",
+          "text": "We've drafted your letter using verified statutes and deadlines for your state, grounded in how similar disputes are typically handled. We are not attorneys and this is not legal advice. We do not evaluate whether your claim will succeed. The letter is a tool — how you use it and what happens next depends on your specific situation."
+        }
+      ]
+    },
+    "confirmation_email_subscription": {
+      "placement": "Transactional email after subscription cancellation case (free)",
+      "subject": "Your cancellation emails are ready",
+      "body_sections": [
+        {
+          "heading": "Your three-step email sequence",
+          "text": "We've prepared three emails spaced over 14 days. The first demands cancellation citing the applicable consumer protection rules. The second follows up. The third is a final demand referencing the regulatory complaint option."
+        },
+        {
+          "heading": "What to expect",
+          "text": "Many companies process cancellation requests after receiving a clear, well-cited demand. Some require multiple contacts. If the company doesn't respond after all three emails, we'll help you file a complaint with the relevant consumer protection agency."
+        }
+      ]
+    },
+    "delivery_screen_deposit": {
+      "placement": "In-app delivery screen for deposit cases",
+      "primary_cta": "Review & Download Your Letter",
+      "reassurance_text": "People in situations like yours commonly send a demand letter as their first step. Your letter cites your state's specific deposit return statutes and deadlines.",
+      "honest_framing": "Sending this letter doesn't guarantee your deposit will be returned. It puts your position in writing, establishes a record, and gives your landlord a clear deadline. If they don't respond, the next step is typically a small claims filing — and we can help you prepare that paperwork too.",
+      "next_steps_preview": "After sending: We'll check in at 14 days to see if you've sent it, and at 30 days to see if there's been a response."
+    },
+    "delivery_screen_subscription": {
+      "placement": "In-app delivery screen for subscription cases",
+      "primary_cta": "Review Your First Email",
+      "reassurance_text": "People dealing with difficult cancellations commonly escalate through written demands citing consumer protection rules. Your emails are customized for your specific service and situation.",
+      "honest_framing": "Most companies process clearly stated cancellation requests, but some resist. That's what the follow-up emails and the regulatory complaint option are for.",
+      "next_steps_preview": "Your sequence: Email 1 today, Email 2 in 7 days, Email 3 in 14 days. We'll remind you when it's time for each one."
+    }
+  },
+  "reassurance_ux": {
+    "description": "Per PRD §7.12 (Principle 10): minimal but real v1 requirements for emotional momentum. Descriptive social proof, never predictive.",
+    "send_step_normalization": {
+      "text": "People in situations like yours commonly take this step. Sending a written demand is typically the first step in resolving a dispute.",
+      "placement": "send_instructions_screen"
+    },
+    "escalation_step_normalization": {
+      "text": "Filing a small claims case or regulatory complaint is a standard next step when a demand letter doesn't get a response. People do this regularly — courts and agencies have processes specifically designed for cases like yours.",
+      "placement": "escalation_packet_screen"
+    },
+    "one_clear_next_action": {
+      "principle": "Never show the full road. Surface only the immediate next action. Later steps summarized as 'we'll guide you if it comes to that.'",
+      "implementation_note": "The UI renders only the current step prominently. Future steps appear as a collapsed summary: 'If no response by [date], we'll help you with the next step.'"
+    },
+    "momentum_surfacing": {
+      "principle": "Visible progress through the case (steps completed, what is now in motion) rather than an open-ended waiting state.",
+      "implementation_note": "Show completed steps with checkmarks, current status clearly, and a single upcoming milestone."
+    }
+  }
+}

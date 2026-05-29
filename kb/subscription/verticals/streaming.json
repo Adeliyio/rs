@@ -1,0 +1,68 @@
+{
+  "id": "vertical-streaming",
+  "vertical": "streaming",
+  "display_name": "Streaming Service (Video, Music, etc.)",
+  "description": "Streaming service subscription cancellations. Most streaming services have relatively easy cancellation but issues arise with free-trial-to-paid conversions, bundled packages, and continued charges.",
+  "common_companies": ["Netflix", "Hulu", "Disney+", "HBO Max/Max", "Paramount+", "Peacock", "Apple TV+", "Amazon Prime Video", "Spotify", "YouTube Premium", "Audible"],
+  "typical_barriers": [
+    "Free trial converted to paid without clear notice",
+    "Bundled with another service (e.g., phone plan)",
+    "Annual plan with no prorated refund",
+    "Difficulty finding cancellation in app/website",
+    "Charged after cancellation"
+  ],
+  "sequence_template": {
+    "email_1": {
+      "subject": "Cancellation of Subscription — {{company_name}} — Account: {{account_identifier}}",
+      "tone": "firm_professional",
+      "key_points": [
+        "Clear cancellation request",
+        "If free-trial-to-paid issue, cite FTC rule and state ARL",
+        "Request confirmation and refund of unauthorized charges",
+        "Note date of original cancellation attempt if applicable"
+      ],
+      "legal_citations": {
+        "federal": "FTC Click-to-Cancel Rule; ROSCA",
+        "ca": "Cal. Bus. & Prof. Code §17602(c) (free-trial-to-paid notice requirement)",
+        "ny": "N.Y. Gen. Bus. Law §527-a"
+      }
+    },
+    "email_2": {
+      "subject": "Follow-Up: Subscription Cancellation — SECOND REQUEST",
+      "timing": "Day 7",
+      "tone": "firm_escalating",
+      "key_points": [
+        "Reference first email",
+        "Note continued charges",
+        "Mention credit card dispute option"
+      ]
+    },
+    "email_3": {
+      "subject": "Final Notice: Subscription Cancellation — {{company_name}}",
+      "timing": "Day 14",
+      "tone": "final_notice",
+      "key_points": [
+        "Final demand with regulatory references",
+        "State intent to file complaint and dispute charges"
+      ]
+    }
+  },
+  "platform_specific_cancellation": {
+    "apple_tv_plus": {
+      "cancel_via": "Settings > Apple ID > Subscriptions on iOS; or reportaproblem.apple.com for refunds",
+      "refund_url": "https://reportaproblem.apple.com/",
+      "notes": "Managed through Apple subscription system, not the streaming service directly"
+    },
+    "subscriptions_via_app_store": {
+      "cancel_via": "Settings > Apple ID > Subscriptions on iOS device",
+      "refund_url": "https://reportaproblem.apple.com/",
+      "notes": "If subscribed through App Store, must cancel through Apple, not the service"
+    },
+    "subscriptions_via_google_play": {
+      "cancel_via": "Google Play Store > Menu > Subscriptions",
+      "refund_url": "https://play.google.com/store/account/subscriptions",
+      "notes": "If subscribed through Google Play, must cancel through Google"
+    }
+  },
+  "notes": "Streaming cancellations are usually lower-friction than gym or telecom, but free-trial-to-paid conversions and platform-mediated subscriptions (App Store/Play Store) create issues. Key point: if subscribed through Apple or Google, cancellation must go through them, not the streaming service."
+}

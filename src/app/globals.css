@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ------------------------------------------------------------------ */
+    /*  Resolvaio — Premium Minimalism Palette                            */
+    /*  Warm stone background, refined grayscale, single blue accent.     */
+    /* ------------------------------------------------------------------ */
+
+    --background: 40 20% 97%;          /* #F7F7F5 — warm stone */
+    --foreground: 0 0% 7%;             /* #111111 — near-black, not pure */
+    --card: 0 0% 100%;                 /* #FFFFFF */
+    --card-foreground: 0 0% 7%;        /* #111111 */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 217 91% 60%;            /* #3B82F6 — single accent blue */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 12% 95%;           /* warm light gray */
+    --secondary-foreground: 0 0% 7%;
+    --muted: 40 12% 95%;
+    --muted-foreground: 0 0% 37%;      /* #5F5F5F — secondary text */
+    --accent: 217 100% 96%;            /* #EEF4FF — accent soft */
+    --accent-foreground: 217 71% 45%;  /* deeper blue for text-on-accent */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 8% 91%;               /* #E8E8E5 — warm border */
+    --input: 40 8% 88%;                /* slightly stronger for input borders */
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;                 /* 12px base — up from 10px */
+
+    /* Status colors */
+    --success: 152 60% 42%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 100%;
+
+    /* Sidebar — refined dark, not pitch-black */
+    --sidebar-background: 220 16% 7%;     /* #0F1117 — warm dark */
+    --sidebar-foreground: 220 10% 76%;    /* #B8BBC3 */
+    --sidebar-primary: 217 91% 60%;       /* matches accent */
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 12%;        /* #191C23 */
+    --sidebar-accent-foreground: 220 10% 92%;
+    --sidebar-border: 220 12% 14%;        /* #1F2229 */
+    --sidebar-ring: 217 91% 60%;
+    --sidebar-muted: 220 8% 46%;          /* #6B7080 */
+  }
+
+  .dark {
+    --background: 220 16% 5%;
+    --foreground: 220 10% 94%;
+    --card: 220 16% 8%;
+    --card-foreground: 220 10% 94%;
+    --popover: 220 16% 8%;
+    --popover-foreground: 220 10% 94%;
+    --primary: 217 91% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 12%;
+    --secondary-foreground: 220 10% 94%;
+    --muted: 220 14% 12%;
+    --muted-foreground: 220 10% 50%;
+    --accent: 217 50% 14%;
+    --accent-foreground: 217 80% 72%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 14% 14%;
+    --input: 220 14% 14%;
+    --ring: 217 91% 64%;
+
+    --success: 152 60% 48%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 56%;
+    --warning-foreground: 0 0% 100%;
+    --info: 217 91% 64%;
+    --info-foreground: 0 0% 100%;
+
+    --sidebar-background: 220 18% 4%;
+    --sidebar-foreground: 220 10% 76%;
+    --sidebar-primary: 217 91% 64%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 10%;
+    --sidebar-accent-foreground: 220 10% 92%;
+    --sidebar-border: 220 14% 10%;
+    --sidebar-ring: 217 91% 64%;
+    --sidebar-muted: 220 8% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/*  Resolvaio Design System Utilities                                 */
+/* ------------------------------------------------------------------ */
+
+@layer utilities {
+  /* Status badge variants — refined, muted tones */
+  .status-intake {
+    @apply bg-blue-50 text-blue-700 border-blue-200/60;
+  }
+  .status-generated {
+    @apply bg-purple-50 text-purple-700 border-purple-200/60;
+  }
+  .status-sent {
+    @apply bg-amber-50 text-amber-700 border-amber-200/60;
+  }
+  .status-awaiting {
+    @apply bg-orange-50 text-orange-700 border-orange-200/60;
+  }
+  .status-escalation_drafted {
+    @apply bg-red-50 text-red-700 border-red-200/60;
+  }
+  .status-resolved {
+    @apply bg-emerald-50 text-emerald-700 border-emerald-200/60;
+  }
+  .status-closed {
+    @apply bg-gray-50 text-gray-500 border-gray-200/60;
+  }
+
+  /* Smooth page transitions */
+  .page-enter {
+    @apply animate-in fade-in-0 slide-in-from-bottom-2 duration-300;
+  }
+
+  /* Card hover lift — refined for premium feel */
+  .card-interactive {
+    @apply transition-all duration-200 ease-out hover:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_8px_24px_rgba(0,0,0,0.03)] hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400;
+  }
+
+  /* Premium card shadow — subtle, layered */
+  .shadow-premium {
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.04),
+      0 8px 24px rgba(0,0,0,0.03);
+  }
+
+  /* Section spacing rhythm — 8px scale */
+  .section-padding {
+    @apply py-16 sm:py-20 px-6;
+  }
+}

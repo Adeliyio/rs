@@ -1,0 +1,132 @@
+{
+  "version": "1.0.0",
+  "wedge": "deposit",
+  "description": "Shared deposit wedge configuration. Defines the generation template structure, output format, and common elements used across all deposit jurisdictions.",
+  "generation_config": {
+    "model": "claude-sonnet",
+    "max_tokens": 4096,
+    "temperature": 0.3,
+    "system_prompt_key": "deposit_letter_generation",
+    "grounding_mode": "kb_first_tavily_fallback",
+    "citation_validation": true,
+    "citation_strip_ungrounded": true
+  },
+  "output_artifacts": {
+    "demand_letter": {
+      "type": "pdf",
+      "format": "us_letter",
+      "template": "deposit-demand-letter",
+      "sections": [
+        "sender_block",
+        "recipient_block",
+        "date",
+        "re_line",
+        "opening_paragraph",
+        "factual_background",
+        "statutory_basis",
+        "itemized_disputes",
+        "demand_paragraph",
+        "deadline_paragraph",
+        "escalation_notice",
+        "closing",
+        "signature_block"
+      ],
+      "required_elements": [
+        "property_address",
+        "lease_dates",
+        "deposit_amount",
+        "move_out_date",
+        "at_least_one_statute_citation",
+        "specific_demand_amount",
+        "response_deadline"
+      ]
+    },
+    "itemized_rebuttal_table": {
+      "type": "html_table_in_pdf",
+      "columns": [
+        { "header": "Landlord's Deduction", "source": "deductions[].description" },
+        { "header": "Amount Claimed", "source": "deductions[].amount" },
+        { "header": "Status", "values": ["Accepted", "Disputed", "Missing Evidence"] },
+        { "header": "Basis for Dispute", "source": "generated_per_row" },
+        { "header": "Supporting Evidence", "source": "evidence_reference_per_row" }
+      ],
+      "footer": "Total disputed amount and net demand"
+    },
+    "photo_evidence_index": {
+      "type": "attachment_page",
+      "optional": true,
+      "condition": "user_uploaded_photos",
+      "format": "numbered_photo_grid_with_captions"
+    }
+  },
+  "letter_principles": {
+    "framing": "third_person_collective",
+    "examples": [
+      "Tenants in [State] in similar circumstances typically cite [Statute]",
+      "Under [State] law, landlords are generally required to...",
+      "The typical remedy available in these circumstances includes..."
+    ],
+    "prohibited_phrases": [
+      "you have a strong case",
+      "you are entitled to",
+      "you should receive",
+      "you will recover",
+      "your landlord violated",
+      "your landlord is liable",
+      "I demand"
+    ],
+    "required_disclaimer": "This letter was prepared with the assistance of a writing tool and does not constitute legal advice."
+  },
+  "common_deduction_categories": [
+    {
+      "id": "cleaning",
+      "name": "Cleaning",
+      "typical_dispute": "Normal wear and tear vs. damage; excessive cleaning charges beyond reasonable cost"
+    },
+    {
+      "id": "painting",
+      "name": "Painting / Wall Repair",
+      "typical_dispute": "Normal wear (nail holes, faded paint) vs. damage; useful life of paint"
+    },
+    {
+      "id": "carpet",
+      "name": "Carpet / Flooring",
+      "typical_dispute": "Normal wear vs. damage; depreciated value based on carpet age/useful life"
+    },
+    {
+      "id": "appliance_repair",
+      "name": "Appliance Repair / Replacement",
+      "typical_dispute": "Pre-existing condition; normal wear; replacement vs. repair cost"
+    },
+    {
+      "id": "fixtures",
+      "name": "Fixtures / Hardware",
+      "typical_dispute": "Normal wear; pre-existing condition; excessive charges"
+    },
+    {
+      "id": "landscaping",
+      "name": "Landscaping / Exterior",
+      "typical_dispute": "Tenant responsibility per lease; normal seasonal changes"
+    },
+    {
+      "id": "pest_control",
+      "name": "Pest Control",
+      "typical_dispute": "Pre-existing infestation; landlord maintenance responsibility"
+    },
+    {
+      "id": "unpaid_rent",
+      "name": "Unpaid Rent / Utilities",
+      "typical_dispute": "Disputed amount; improper calculation; already paid"
+    },
+    {
+      "id": "key_replacement",
+      "name": "Key / Lock Replacement",
+      "typical_dispute": "Keys returned; excessive lock replacement cost"
+    },
+    {
+      "id": "general_damage",
+      "name": "General Damage",
+      "typical_dispute": "Normal wear and tear; pre-existing; insufficient documentation"
+    }
+  ]
+}

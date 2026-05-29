@@ -1,0 +1,30 @@
+{
+  "id": "ag-FL-deposit",
+  "venue_id": "fl-ag",
+  "venue_type": "state_ag",
+  "wedge": "deposit",
+  "jurisdiction": "FL",
+  "venue_name": "Florida Attorney General — Consumer Protection",
+  "venue_url": "https://www.myfloridalegal.com/consumer-protection/file-a-complaint",
+  "forms": [
+    {
+      "form_id": "FL-AG-ONLINE",
+      "name": "Online Consumer Complaint Form",
+      "description": "File a consumer complaint with the FL AG.",
+      "official_url": "https://www.myfloridalegal.com/consumer-protection/file-a-complaint",
+      "fillable": false,
+      "required": true
+    }
+  ],
+  "filing_instructions": {
+    "method": "online_portal",
+    "steps": [
+      { "step_number": 1, "instruction": "Go to https://www.myfloridalegal.com/consumer-protection/file-a-complaint" },
+      { "step_number": 2, "instruction": "Complete the online form." },
+      { "step_number": 3, "instruction": "Upload supporting documents." },
+      { "step_number": 4, "instruction": "Also consider filing with FL DACS: https://www.fdacs.gov/Consumer-Resources/File-a-Complaint" }
+    ]
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 0, "condition": "No fee" }] },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.myfloridalegal.com/consumer-protection/file-a-complaint"], "next_review_due": "2026-08-20" }
+}

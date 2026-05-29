@@ -1,0 +1,51 @@
+{
+  "id": "sc-FL-miami-dade-deposit",
+  "venue_id": "fl-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "FL",
+  "county": "Miami-Dade",
+  "venue_name": "Miami-Dade County Court — Small Claims Division",
+  "venue_url": "https://www.jud11.flcourts.org/small-claims",
+  "monetary_limit": 8000,
+  "forms": [
+    {
+      "form_id": "7.010",
+      "name": "Statement of Claim (Small Claims)",
+      "description": "Florida Small Claims Rule Form 7.010. The primary small claims filing form.",
+      "official_url": "https://www.flcourts.gov/Resources-Services/Court-Improvement/Family-Courts/Family-Law-Forms",
+      "fillable": true,
+      "required": true,
+      "copies_needed": 2
+    }
+  ],
+  "filing_instructions": {
+    "method": "mixed",
+    "e_filing_url": "https://www.myflcourtaccess.com/",
+    "steps": [
+      { "step_number": 1, "instruction": "Complete the Statement of Claim form (Form 7.010)." },
+      { "step_number": 2, "instruction": "File electronically via myflcourtaccess.com or in person at the Miami-Dade County Courthouse.", "note": "E-filing is available and encouraged. In-person filing at 73 W. Flagler Street, Miami, FL 33130." },
+      { "step_number": 3, "instruction": "Pay the filing fee." },
+      { "step_number": 4, "instruction": "Serve the defendant. Service can be by certified mail (clerk handles), sheriff, or process server." },
+      { "step_number": 5, "instruction": "Attend pre-trial mediation. Florida requires mediation before trial in small claims cases.", "note": "Mediation is typically free or low-cost. If mediation doesn't resolve the case, it goes to trial." },
+      { "step_number": 6, "instruction": "If mediation fails, attend the trial. Bring all documents, photos, and evidence organized." }
+    ],
+    "service_of_process": { "method": "Certified mail (clerk handles), sheriff, or process server", "deadline_days": 14 },
+    "hearing_info": "Pre-trial mediation first, then trial if needed. Total timeline typically 60-90 days."
+  },
+  "fees": {
+    "filing_fee": [
+      { "amount_usd": 55, "condition": "Claim up to $500" },
+      { "amount_usd": 170, "condition": "Claim $501 to $2,500" },
+      { "amount_usd": 300, "condition": "Claim $2,501 to $8,000" }
+    ],
+    "service_fee": 10,
+    "fee_waiver_available": true,
+    "fee_waiver_form": "Application for Determination of Civil Indigent Status",
+    "payment_methods": ["Cash", "Check", "Money order", "Credit/debit card"]
+  },
+  "mediation_required": true,
+  "mediation_info": "Florida requires pre-trial mediation in small claims cases. Mediation is typically conducted by a county mediator at no cost to the parties. If both parties agree to a resolution in mediation, it becomes a binding agreement. If not, the case proceeds to trial.",
+  "statute_of_limitations": { "years": 5, "statute_ref": "Fla. Stat. §95.11(2)(b) (written contract)", "description": "5 years for written contract; 4 years for oral contract." },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.jud11.flcourts.org/small-claims", "https://www.myflcourtaccess.com/"], "next_review_due": "2026-08-20" }
+}

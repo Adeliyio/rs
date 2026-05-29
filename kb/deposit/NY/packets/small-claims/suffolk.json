@@ -1,0 +1,27 @@
+{
+  "id": "sc-NY-suffolk-deposit",
+  "venue_id": "ny-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "NY",
+  "county": "Suffolk",
+  "venue_name": "Suffolk County District Court — Small Claims",
+  "venue_address": { "street": "400 Carleton Avenue", "city": "Central Islip", "state": "NY", "zip": "11722" },
+  "venue_url": "https://www.nycourts.gov/courts/10jd/suffolk/districtcourt/",
+  "monetary_limit": 5000,
+  "forms": [
+    { "form_id": "SC-CLAIM", "name": "Small Claims Statement of Claim", "description": "Filed at court clerk.", "fillable": false, "required": true, "copies_needed": 1 }
+  ],
+  "filing_instructions": {
+    "method": "in_person",
+    "steps": [
+      { "step_number": 1, "instruction": "File at Suffolk County District Court." },
+      { "step_number": 2, "instruction": "Complete claim form, pay fee." },
+      { "step_number": 3, "instruction": "Court handles service." },
+      { "step_number": 4, "instruction": "Attend hearing." }
+    ]
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 15, "condition": "Claims up to $5,000" }], "fee_waiver_available": true },
+  "statute_of_limitations": { "years": 6, "statute_ref": "N.Y. CPLR §213" },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.nycourts.gov/courts/10jd/suffolk/"], "next_review_due": "2026-08-20" }
+}

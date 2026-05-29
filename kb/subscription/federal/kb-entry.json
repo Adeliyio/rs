@@ -1,0 +1,149 @@
+{
+  "id": "subscription-federal",
+  "wedge": "subscription",
+  "jurisdiction": "federal",
+  "jurisdiction_full_name": "Federal (United States)",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "ftc-negative-option-rule-1973",
+      "citation": "16 CFR Part 425 (Original Negative Option Rule, 1973)",
+      "title": "FTC Negative Option Rule (Original 1973 Rule — Currently in Effect)",
+      "summary": "The original 1973 FTC Negative Option Rule governing pre-notification negative option plans (e.g., book/record clubs). NOTE: The FTC's 2024 'Click-to-Cancel' amendments to this rule were VACATED by the 8th Circuit Court of Appeals in July 2025. The original 1973 rule remains in effect. ROSCA (15 U.S.C. §8401-8405) is now the primary federal consumer protection for online subscription cancellation.",
+      "key_provisions": [
+        {
+          "subsection": "Pre-Notification Plans",
+          "description": "The original rule requires sellers using pre-notification negative option plans to clearly disclose the terms of the plan before the consumer subscribes."
+        },
+        {
+          "subsection": "Selection/Rejection Period",
+          "description": "Consumers must be given at least 10 days to reject a selection before the seller may ship it and charge the consumer."
+        },
+        {
+          "subsection": "Cancellation Rights",
+          "description": "Consumers must be able to cancel their membership at any time. The seller must process cancellations promptly."
+        }
+      ],
+      "official_url": "https://www.ftc.gov/legal-library/browse/rules/negative-option-rule",
+      "effective_date": "1973-10-18",
+      "last_amended": "2025-07-01",
+      "vacatur_note": "The FTC's October 2024 'Click-to-Cancel' amendments were vacated in their entirety by the 8th Circuit Court of Appeals on July 8, 2025 in Custom Communications, Inc. v. Federal Trade Commission, No. 24-3137, 2025 WL 1873489. The court held the FTC failed to conduct a required preliminary regulatory analysis when the estimated annual economic effect exceeded $100 million, constituting a procedural deficiency in the rulemaking process. The original 1973 Negative Option Rule remains in effect. Consumers should rely on ROSCA and state consumer protection laws (especially CA ARL Bus. & Prof. Code §17602 and NY GBL §349) for online subscription cancellation rights."
+    },
+    {
+      "statute_id": "rosca",
+      "citation": "15 U.S.C. §8401-8405",
+      "title": "Restore Online Shoppers' Confidence Act (ROSCA)",
+      "summary": "Federal law prohibiting charging consumers for goods or services sold through negative option features on the internet unless the seller: (1) clearly discloses all material terms before obtaining billing information, (2) obtains informed consent, and (3) provides a simple mechanism for stopping recurring charges.",
+      "key_provisions": [
+        {
+          "subsection": "15 U.S.C. §8403",
+          "description": "Prohibits charging consumers through negative option features online unless all material terms are clearly disclosed, the consumer's informed consent is obtained, and a simple mechanism for cancellation is provided."
+        },
+        {
+          "subsection": "15 U.S.C. §8404",
+          "description": "Violations are treated as unfair or deceptive acts under FTC Act §5, enforceable by the FTC and state attorneys general."
+        }
+      ],
+      "official_url": "https://www.congress.gov/bill/111th-congress/senate-bill/3386/text",
+      "effective_date": "2010-12-29",
+      "last_amended": "2010-12-29"
+    },
+    {
+      "statute_id": "fcba",
+      "citation": "15 U.S.C. §1666 (Fair Credit Billing Act)",
+      "title": "Fair Credit Billing Act — Dispute Rights for Unauthorized Charges",
+      "summary": "Provides consumers the right to dispute unauthorized or incorrect charges on credit card accounts. Relevant when a subscription continues to charge after cancellation — the consumer can dispute charges as unauthorized with their credit card issuer.",
+      "key_provisions": [
+        {
+          "subsection": "15 U.S.C. §1666(a)",
+          "description": "Consumer may dispute a billing error in writing within 60 days of the statement. Unauthorized charges and charges for goods/services not delivered as agreed are billing errors."
+        },
+        {
+          "subsection": "15 U.S.C. §1666(b)",
+          "description": "Card issuer must acknowledge the dispute within 30 days and resolve within two billing cycles (not more than 90 days)."
+        }
+      ],
+      "official_url": "https://www.law.cornell.edu/uscode/text/15/1666",
+      "effective_date": "1974-10-28",
+      "last_amended": "2010-01-01"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "fed-cancellation-request-sent",
+      "statute_id": "ftc-negative-option-rule-1973",
+      "deadline_days": 7,
+      "anchor_event": "cancellation_requested",
+      "action_at_expiry": "If company has not confirmed cancellation, send follow-up",
+      "description": "If the company hasn't confirmed cancellation within 7 days of your request, it's time for a follow-up email.",
+      "prompt_message": "It's been 7 days since your cancellation request. If you haven't received confirmation, it's time to send the follow-up email.",
+      "is_statutory": false
+    },
+    {
+      "rule_id": "fed-chargeback-window",
+      "statute_id": "fcba",
+      "deadline_days": 60,
+      "anchor_event": "last_charge_date",
+      "action_at_expiry": "Dispute unauthorized charges with credit card issuer within 60 days of statement",
+      "description": "Under the Fair Credit Billing Act, you have 60 days from the date of the statement containing an unauthorized charge to dispute it with your credit card issuer.",
+      "prompt_message": "If charges have continued after your cancellation, you have 60 days from the statement date to dispute them with your credit card company. People in this situation typically file a chargeback for unauthorized recurring charges.",
+      "is_statutory": true
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "ftc-enforcement",
+      "statute_id": "ftc-negative-option-rule-1973",
+      "type": "civil_penalty",
+      "description": "FTC enforcement: violations subject to civil penalties, injunctions, and consumer redress. The FTC can bring action on behalf of consumers.",
+      "amount_or_formula": "Up to $50,120 per violation (FTC civil penalty, adjusted annually)",
+      "conditions": "FTC enforcement action required — individual consumers file complaints, FTC decides whether to act",
+      "citation": "FTC Act §5; 16 CFR Part 425"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "ftc-complaint",
+      "type": "federal_agency",
+      "name": "Federal Trade Commission — Consumer Complaint",
+      "filing_url": "https://reportfraud.ftc.gov/",
+      "description": "File a complaint with the FTC. The FTC does not resolve individual complaints but uses them to build enforcement actions. Filing creates a record."
+    },
+    {
+      "venue_id": "cfpb-complaint",
+      "type": "federal_agency",
+      "name": "Consumer Financial Protection Bureau",
+      "filing_url": "https://www.consumerfinance.gov/complaint/",
+      "description": "For financial products: file a complaint with the CFPB. The CFPB forwards complaints to companies and requires a response."
+    },
+    {
+      "venue_id": "credit-card-dispute",
+      "type": "regulatory",
+      "name": "Credit Card Chargeback (Fair Credit Billing Act)",
+      "description": "Dispute unauthorized recurring charges directly with your credit card issuer. Must be done within 60 days of the statement."
+    }
+  ],
+  "permissible_deductions": [],
+  "special_provisions": [
+    {
+      "provision_id": "fed-click-to-cancel-vacated",
+      "title": "FTC Click-to-Cancel Rule — VACATED (July 2025)",
+      "description": "The FTC's 2024 Click-to-Cancel amendments to the Negative Option Rule were vacated by the 8th Circuit Court of Appeals in July 2025. The original 1973 Negative Option Rule remains in effect. ROSCA and state consumer protection laws (especially CA ARL and NY GBL) are now the primary tools for subscription cancellation rights.",
+      "statute_ref": "16 CFR Part 425; Custom Communications, Inc. v. FTC, No. 24-3137 (8th Cir. July 8, 2025)",
+      "conditions": "Original 1973 rule applies; 2024 amendments no longer enforceable"
+    }
+  ],
+  "notes": "Federal baseline applies to all US states. IMPORTANT: The FTC's 2024 'Click-to-Cancel' amendments were VACATED by the 8th Circuit in July 2025. The original 1973 Negative Option Rule remains but has limited scope (pre-notification plans). ROSCA is now the primary federal tool for online subscription cancellation. FCBA chargeback rights remain a powerful practical remedy — especially when the company continues charging after cancellation. The FTC doesn't resolve individual complaints but filing creates a record. State laws (especially CA ARL and NY GBL) provide additional, often stronger, protections and are the recommended primary citations for generation.",
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "document_verification_pass_2026-05-24",
+    "primary_sources_checked": [
+      "https://www.ftc.gov/legal-library/browse/rules/negative-option-rule",
+      "https://www.congress.gov/bill/111th-congress/senate-bill/3386/text",
+      "https://www.law.cornell.edu/uscode/text/15/1666",
+      "https://www.consumerfinance.gov/complaint/"
+    ],
+    "next_review_due": "2026-08-20",
+    "verification_notes": "VERIFIED 2026-05-24: FTC Click-to-Cancel (2024 amendments) VACATED by 8th Circuit July 8, 2025 in Custom Communications, Inc. v. FTC, No. 24-3137, 2025 WL 1873489. Procedural deficiency: failure to conduct preliminary regulatory analysis per 5 U.S.C. §603. Original 1973 rule confirmed in effect per 91 FR 6509 (Feb. 12, 2026). ROSCA text confirmed at Pub. L. 111-345 (Dec. 29, 2010), no amendments. FCBA §1666 confirmed current per Pub. L. 111-203 (July 21, 2010)."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "id": "regulatory-federal-subscription",
+  "venue_id": "ftc-complaint",
+  "venue_type": "federal_agency",
+  "wedge": "subscription",
+  "jurisdiction": "federal",
+  "venue_name": "FTC Consumer Complaint (ReportFraud.ftc.gov)",
+  "venue_url": "https://reportfraud.ftc.gov/",
+  "filing_instructions": {
+    "method": "online_portal",
+    "steps": [
+      { "step_number": 1, "instruction": "Go to https://reportfraud.ftc.gov/" },
+      { "step_number": 2, "instruction": "Select the category that best matches your issue (e.g., 'Something else' > 'Auto-renewal or subscription trap')." },
+      { "step_number": 3, "instruction": "Provide details about the company, the subscription, cancellation attempts, and continued charges." },
+      { "step_number": 4, "instruction": "Submit your report. The FTC uses complaints to identify patterns and build enforcement cases.", "note": "The FTC does not resolve individual complaints but uses them to prioritize enforcement actions. Filing creates an important record." }
+    ]
+  },
+  "additional_venues": [
+    {
+      "name": "Consumer Financial Protection Bureau (CFPB)",
+      "url": "https://www.consumerfinance.gov/complaint/",
+      "when_to_use": "If the subscription issue involves a financial product (credit card, bank account) or if the company is a financial services provider.",
+      "response_expected": true,
+      "response_note": "CFPB forwards complaints to companies and requires a response within 15 days. More likely to result in individual resolution than FTC."
+    },
+    {
+      "name": "Better Business Bureau (BBB)",
+      "url": "https://www.bbb.org/file-a-complaint",
+      "when_to_use": "Supplementary escalation. BBB forwards complaints to companies and many businesses respond to maintain their BBB rating.",
+      "response_expected": true,
+      "response_note": "Not a government agency but many companies respond to BBB complaints."
+    }
+  ],
+  "fees": { "filing_fee": [{ "amount_usd": 0, "condition": "No fee for any of these" }] },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://reportfraud.ftc.gov/", "https://www.consumerfinance.gov/complaint/"], "next_review_due": "2026-08-20" }
+}

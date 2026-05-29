@@ -1,0 +1,26 @@
+{
+  "test_id": "deposit-regression-06",
+  "description": "MUST DECLINE — Deposit case entangled with eviction",
+  "input_quality": "clean_pdf",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "deposit-eviction-entangled",
+  "jurisdiction": "CA",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "CA",
+    "eviction_involved": true
+  },
+  "expected_outputs": {
+    "demand_letter": false,
+    "decline_triggered": true,
+    "decline_rule": "deposit-eviction-entangled",
+    "resources_shown": "legal_representation"
+  },
+  "validation_checks": [
+    "Flow terminates at eviction check",
+    "Decline copy from decline-copy.json shown",
+    "Legal representation resources displayed",
+    "No generation attempted",
+    "No payment collected"
+  ]
+}

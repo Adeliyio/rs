@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "packet-template.schema.json",
+  "title": "Submission-Ready Packet Template",
+  "description": "Schema for escalation filing packet templates. Each template defines the forms, attachments, instructions, and fees for a specific (venue, wedge) pair.",
+  "type": "object",
+  "required": [
+    "id",
+    "venue_id",
+    "venue_type",
+    "wedge",
+    "jurisdiction",
+    "venue_name",
+    "forms",
+    "attachments_order",
+    "filing_instructions",
+    "fees",
+    "verification"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique packet template ID: {venue_type}-{jurisdiction}-{county/venue}-{wedge}"
+    },
+    "venue_id": {
+      "type": "string",
+      "description": "References an escalation_venue in the KB entry"
+    },
+    "venue_type": {
+      "type": "string",
+      "enum": ["small_claims", "state_ag", "consumer_protection", "regulatory", "federal_agency"]
+    },
+    "wedge": {
+      "type": "string",
+      "enum": ["deposit", "subscription"]
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "State abbreviation"
+    },
+    "county": {
+      "type": "string",
+      "description": "County name (for small claims packets)"
+    },
+    "venue_name": {
+      "type": "string",
+      "description": "Full venue name for display"
+    },
+    "venue_address": {
+      "type": "object",
+      "properties": {
+        "street": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "zip": { "type": "string" }
+      }
+    },
+    "venue_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Official venue website"
+    },
+    "monetary_limit": {
+      "type": "number",
+      "description": "Maximum claim amount for this venue"
+    },
+    "forms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["form_id", "name", "description", "fillable"],
+        "properties": {
+          "form_id": {
+            "type": "string",
+            "description": "Official form number (e.g. 'SC-100')"
+          },
+          "name": {
+            "type": "string",
+            "description": "Official form name"
+          },
+          "description": {
+            "type": "string",
+            "description": "What this form is for"
+          },
+          "official_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to download the official form"
+          },
+          "fillable": {
+            "type": "boolean",
+            "description": "Whether the official form is a fillable PDF"
+          },
+          "field_mapping": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["pdf_field", "source"],
+              "properties": {
+                "pdf_field": {
+                  "type": "string",
+                  "description": "Field name in the PDF form"
+                },
+                "source": {
+                  "type": "string",
+                  "description": "Dot-notation path to the case data field (e.g. 'user.full_name', 'case.move_out_date')"
+                },
+                "transform": {
+                  "type": "string",
+                  "description": "Optional transformation (e.g. 'date_format:MM/DD/YYYY', 'currency')"
+                }
+              }
+            },
+            "description": "Maps case data fields to form PDF fields for pre-filling"
+          },
+          "required": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether this form is required in the packet"
+          },
+          "copies_needed": {
+            "type": "integer",
+            "default": 1,
+            "description": "Number of copies required by the venue"
+          }
+        }
+      },
+      "description": "All forms required for this filing"
+    },
+    "attachments_order": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["position", "attachment_type", "description"],
+        "properties": {
+          "position": {
+            "type": "integer",
+            "description": "Order in the packet (1-indexed)"
+          },
+          "attachment_type": {
+            "type": "string",
+            "enum": [
+              "cover_sheet",
+              "claim_form",
+              "demand_letter_copy",
+              "proof_of_service",
+              "lease_copy",
+              "itemization",
+              "photos",
+              "correspondence",
+              "receipts",
+              "cancellation_proof",
+              "billing_statements",
+              "regulatory_complaint_form",
+              "additional_evidence"
+            ]
+          },
+          "description": { "type": "string" },
+          "required": { "type": "boolean", "default": true },
+          "source": {
+            "type": "string",
+            "description": "Where this attachment comes from: 'generated', 'user_upload', 'form_template'"
+          }
+        }
+      },
+      "description": "Required attachment order per venue rules"
+    },
+    "filing_instructions": {
+      "type": "object",
+      "required": ["method", "steps"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["in_person", "e_filing", "mail", "online_portal", "mixed"],
+          "description": "Primary filing method"
+        },
+        "e_filing_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL for e-filing portal if available"
+        },
+        "mailing_address": {
+          "type": "object",
+          "properties": {
+            "recipient": { "type": "string" },
+            "street": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "type": "string" },
+            "zip": { "type": "string" }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["step_number", "instruction"],
+            "properties": {
+              "step_number": { "type": "integer" },
+              "instruction": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          },
+          "description": "Step-by-step filing instructions"
+        },
+        "service_of_process": {
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "description": "How the defendant must be served"
+            },
+            "deadline_days": {
+              "type": "integer",
+              "description": "Days to complete service after filing"
+            },
+            "proof_form": {
+              "type": "string",
+              "description": "Form number for proof of service"
+            }
+          }
+        },
+        "hearing_info": {
+          "type": "string",
+          "description": "What to expect about hearing scheduling"
+        }
+      }
+    },
+    "fees": {
+      "type": "object",
+      "required": ["filing_fee"],
+      "properties": {
+        "filing_fee": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["amount_usd", "condition"],
+            "properties": {
+              "amount_usd": { "type": "number" },
+              "condition": {
+                "type": "string",
+                "description": "When this fee applies (e.g. 'claim up to $1,500', 'all claims')"
+              }
+            }
+          }
+        },
+        "service_fee": {
+          "type": "number",
+          "description": "Estimated cost for service of process"
+        },
+        "fee_waiver_available": {
+          "type": "boolean"
+        },
+        "fee_waiver_form": {
+          "type": "string",
+          "description": "Form number for fee waiver if available"
+        },
+        "payment_methods": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "mediation_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether pre-trial mediation is required (e.g. Florida)"
+    },
+    "mediation_info": {
+      "type": "string",
+      "description": "Details about mediation requirements if applicable"
+    },
+    "statute_of_limitations": {
+      "type": "object",
+      "properties": {
+        "years": { "type": "number" },
+        "statute_ref": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["last_verified", "verified_by", "primary_sources_checked"],
+      "properties": {
+        "last_verified": {
+          "type": "string",
+          "format": "date"
+        },
+        "verified_by": {
+          "type": "string"
+        },
+        "primary_sources_checked": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        },
+        "next_review_due": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    }
+  }
+}

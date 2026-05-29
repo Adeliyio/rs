@@ -1,0 +1,30 @@
+{
+  "id": "ag-NY-deposit",
+  "venue_id": "ny-ag",
+  "venue_type": "state_ag",
+  "wedge": "deposit",
+  "jurisdiction": "NY",
+  "venue_name": "New York Attorney General — Consumer Frauds Bureau",
+  "venue_url": "https://ag.ny.gov/consumer-frauds-bureau/file-complaint",
+  "forms": [
+    {
+      "form_id": "NY-AG-ONLINE",
+      "name": "Online Consumer Complaint Form",
+      "description": "File a complaint with the NY AG Consumer Frauds Bureau.",
+      "official_url": "https://ag.ny.gov/consumer-frauds-bureau/file-complaint",
+      "fillable": false,
+      "required": true
+    }
+  ],
+  "filing_instructions": {
+    "method": "online_portal",
+    "steps": [
+      { "step_number": 1, "instruction": "Go to https://ag.ny.gov/consumer-frauds-bureau/file-complaint" },
+      { "step_number": 2, "instruction": "Complete the online form." },
+      { "step_number": 3, "instruction": "Upload supporting documents." },
+      { "step_number": 4, "instruction": "For NYC residents, also consider filing with NYC DCWP: https://www.nyc.gov/site/dca/consumers/file-complaint.page" }
+    ]
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 0, "condition": "No fee" }] },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://ag.ny.gov/consumer-frauds-bureau/file-complaint"], "next_review_due": "2026-08-20" }
+}

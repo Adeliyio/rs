@@ -1,0 +1,122 @@
+{
+  "version": "1.0.0",
+  "wedge": "subscription",
+  "description": "Shared subscription cancellation wedge configuration. Defines the three-step email sequence structure, per-vertical templating, and common elements.",
+  "generation_config": {
+    "model": "claude-sonnet",
+    "max_tokens": 2048,
+    "temperature": 0.3,
+    "system_prompt_key": "subscription_sequence_generation",
+    "grounding_mode": "kb_first_tavily_fallback",
+    "citation_validation": true,
+    "citation_strip_ungrounded": true
+  },
+  "output_artifacts": {
+    "email_sequence": {
+      "type": "three_step_sequence",
+      "steps": [
+        {
+          "step": 1,
+          "name": "Initial Cancellation Demand",
+          "timing": "Day 0",
+          "purpose": "Clear cancellation demand citing applicable consumer protection rule",
+          "tone": "firm_professional",
+          "required_elements": [
+            "specific_account_identifier",
+            "clear_cancellation_request",
+            "consumer_protection_citation",
+            "request_written_confirmation",
+            "response_deadline"
+          ]
+        },
+        {
+          "step": 2,
+          "name": "Follow-Up",
+          "timing": "Day 7",
+          "purpose": "Follow up on non-response, escalate tone slightly, reference original email",
+          "tone": "firm_escalating",
+          "required_elements": [
+            "reference_to_email_1",
+            "reiterate_cancellation_request",
+            "note_continued_charges",
+            "mention_regulatory_complaint_option"
+          ]
+        },
+        {
+          "step": 3,
+          "name": "Final Demand with Regulatory Reference",
+          "timing": "Day 14",
+          "purpose": "Final demand explicitly referencing regulatory complaint and chargeback options",
+          "tone": "final_notice",
+          "required_elements": [
+            "reference_to_emails_1_and_2",
+            "final_cancellation_demand",
+            "specific_regulatory_body_reference",
+            "state_intent_to_file_complaint",
+            "request_immediate_confirmation"
+          ]
+        }
+      ]
+    }
+  },
+  "email_principles": {
+    "framing": "direct_consumer_request",
+    "notes": "Unlike deposit letters, cancellation emails are written in first person ('I am requesting...') because they are direct communications from the consumer, not third-party-framed writing. The legal grounding is still descriptive ('Under the FTC's click-to-cancel rule...').",
+    "prohibited_phrases": [
+      "my lawyer",
+      "legal action",
+      "sue",
+      "I will take you to court",
+      "you are violating my rights"
+    ],
+    "permitted_escalation_language": [
+      "I intend to file a complaint with [specific agency]",
+      "I will dispute these charges with my financial institution",
+      "I am documenting this for a potential regulatory complaint"
+    ]
+  },
+  "delivery_modes": {
+    "copy_paste": {
+      "description": "Default: user copies the email text and sends from their own email",
+      "default": true
+    },
+    "send_on_behalf": {
+      "description": "Optional: user connects their email account and the tool sends on their behalf",
+      "requires_oauth": true,
+      "supported_providers": ["gmail", "outlook"],
+      "opt_in_required": true
+    }
+  },
+  "common_cancellation_barriers": [
+    {
+      "id": "no_cancel_button",
+      "name": "No online cancellation option",
+      "applicable_law": "FTC Click-to-Cancel Rule (effective 2025)",
+      "description": "Company requires phone call or in-person visit to cancel what was signed up for online"
+    },
+    {
+      "id": "retention_offers",
+      "name": "Forced retention offers / dark patterns",
+      "applicable_law": "FTC Click-to-Cancel Rule; state UDAP statutes",
+      "description": "Company forces user through retention offers or multiple confirmation screens"
+    },
+    {
+      "id": "unauthorized_renewal",
+      "name": "Auto-renewed without clear consent",
+      "applicable_law": "State auto-renewal laws (CA ARL, NY GBL §527-a); FTC Negative Option Rule",
+      "description": "Subscription auto-renewed without clear pre-renewal disclosure or affirmative consent"
+    },
+    {
+      "id": "early_termination_fee",
+      "name": "Early termination fee",
+      "applicable_law": "Varies by state and contract type",
+      "description": "Company charges a fee for cancelling before contract end date"
+    },
+    {
+      "id": "continued_charges_after_cancel",
+      "name": "Charges continue after cancellation",
+      "applicable_law": "State consumer protection; FCBA chargeback rights",
+      "description": "Company continues charging after cancellation was confirmed"
+    }
+  ]
+}

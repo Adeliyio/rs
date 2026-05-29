@@ -1,0 +1,43 @@
+{
+  "id": "rebuttal-table-TX",
+  "jurisdiction": "TX",
+  "description": "Texas-specific deduction categories grounded in Tex. Prop. Code §92.104.",
+  "deduction_categories": [
+    {
+      "category_id": "cleaning",
+      "name": "Cleaning",
+      "statute_ref": "Tex. Prop. Code §92.104(a)",
+      "permissible_when": "Cleaning is required due to tenant-caused conditions beyond normal wear.",
+      "not_permissible_when": "Normal accumulation of dust/dirt; cleaning that constitutes normal wear and tear; unit was not clean at move-in.",
+      "typical_rebuttal": "Under Tex. Prop. Code §92.104(a), a landlord may not retain any portion of the security deposit to cover normal wear and tear. Tenants in similar situations in Texas typically note that basic cleaning after a tenancy constitutes normal wear and tear.",
+      "evidence_helpful": ["Move-in condition report", "Photos", "Comparable cleaning quotes"]
+    },
+    {
+      "category_id": "painting",
+      "name": "Painting / Wall Repair",
+      "statute_ref": "Tex. Prop. Code §92.104(a)",
+      "permissible_when": "Tenant caused damage beyond normal wear — large holes, unauthorized colors, significant damage.",
+      "not_permissible_when": "Normal wear: nail holes, faded paint, minor scuffs after reasonable tenancy.",
+      "typical_rebuttal": "Under Tex. Prop. Code §92.104(a), normal wear and tear is not deductible. Tenants in Texas in similar circumstances typically note that minor nail holes, faded paint, and normal scuffs after a {{tenancy_years}}-year tenancy are normal wear and tear.",
+      "evidence_helpful": ["Photos", "Tenancy duration"]
+    },
+    {
+      "category_id": "carpet",
+      "name": "Carpet / Flooring",
+      "statute_ref": "Tex. Prop. Code §92.104(a)",
+      "permissible_when": "Tenant caused damage beyond normal wear — burns, large stains, pet damage.",
+      "not_permissible_when": "Normal wear patterns, matting, minor stains. Must account for useful life depreciation.",
+      "typical_rebuttal": "Normal carpet wear from regular use is not deductible under Tex. Prop. Code §92.104(a). Tenants in similar situations note that carpet has a useful life and replacement costs should be prorated based on the carpet's age.",
+      "evidence_helpful": ["Carpet age at move-in", "Move-in/move-out photos"]
+    },
+    {
+      "category_id": "no_itemization",
+      "name": "Failure to Provide Itemized Statement",
+      "statute_ref": "Tex. Prop. Code §92.104(b)",
+      "permissible_when": "Never — itemization is always required when deductions are made.",
+      "not_permissible_when": "Landlord retains any portion without providing written itemized list.",
+      "typical_rebuttal": "Under Tex. Prop. Code §92.104(b), a landlord who retains any portion of the security deposit must provide the tenant with a written description and itemized list of all deductions. The failure to provide this itemization may constitute bad faith retention under §92.109.",
+      "evidence_helpful": ["Absence of itemization is the evidence"]
+    }
+  ]
+}

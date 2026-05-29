@@ -1,0 +1,29 @@
+{
+  "test_id": "deposit-regression-11",
+  "description": "Unsupported state — should get free generic letter + resources, NOT paid generation",
+  "input_quality": "n/a",
+  "expected_outcome": "unsupported_jurisdiction",
+  "jurisdiction": "OH",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "OTHER",
+    "jurisdiction_state_other": "OH"
+  },
+  "expected_outputs": {
+    "demand_letter": false,
+    "paid_generation": false,
+    "generic_letter_offered": true,
+    "state_resources_shown": true,
+    "waitlist_capture": true,
+    "resources_for_state": "OH"
+  },
+  "validation_checks": [
+    "Routed to unsupported-jurisdiction flow",
+    "Generic demand letter template offered (free)",
+    "Ohio-specific official resources shown (statute, small claims, legal aid)",
+    "Waitlist email capture offered",
+    "NO paid deposit generation path available",
+    "NO grounded statute citations for Ohio",
+    "Subscription wedge NOT cross-sold as substitute"
+  ]
+}

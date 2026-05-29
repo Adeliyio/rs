@@ -1,0 +1,66 @@
+{
+  "id": "sc-NY-nyc-deposit",
+  "venue_id": "ny-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "NY",
+  "county": "New York City (all 5 boroughs)",
+  "venue_name": "NYC Civil Court — Small Claims Part",
+  "venue_url": "https://nycourts.gov/courts/nyc/smallclaims/index.shtml",
+  "monetary_limit": 10000,
+  "forms": [
+    {
+      "form_id": "SC-CLAIM",
+      "name": "Small Claims Court Statement of Claim",
+      "description": "Statement of claim form filed at the small claims clerk's office. In NYC, you file in person at the clerk's office in the borough where the defendant resides or does business, or where the dispute occurred.",
+      "official_url": "https://nycourts.gov/courts/nyc/smallclaims/forms.shtml",
+      "fillable": false,
+      "required": true,
+      "copies_needed": 1,
+      "field_mapping": [
+        { "pdf_field": "claimant_name", "source": "user.full_name" },
+        { "pdf_field": "claimant_address", "source": "user.current_address" },
+        { "pdf_field": "defendant_name", "source": "case.landlord_name" },
+        { "pdf_field": "defendant_address", "source": "case.landlord_address" },
+        { "pdf_field": "amount_claimed", "source": "case.demand_amount", "transform": "currency" },
+        { "pdf_field": "reason_for_claim", "source": "generated.claim_summary" }
+      ]
+    }
+  ],
+  "filing_instructions": {
+    "method": "in_person",
+    "steps": [
+      { "step_number": 1, "instruction": "Go to the Small Claims Clerk's office in the borough where the rental property is located (or where the landlord has a business address)." },
+      { "step_number": 2, "instruction": "Fill out the Statement of Claim form at the clerk's office. Bring the landlord's full name and address.", "note": "NYC Small Claims is filed in person. Bring ID and payment." },
+      { "step_number": 3, "instruction": "Pay the filing fee ($15 or $20 depending on method of service)." },
+      { "step_number": 4, "instruction": "The court will serve the defendant by certified mail. No need to arrange service yourself.", "note": "This is a key advantage of NYC Small Claims — the court handles service." },
+      { "step_number": 5, "instruction": "Attend the hearing on the scheduled evening date. NYC small claims hearings are held in the evenings (typically 6:30 PM).", "note": "Bring all original documents, photos, lease, demand letter, and any evidence organized." },
+      { "step_number": 6, "instruction": "Present your case to the arbitrator or judge. If you agree to arbitration (common), the decision is final. If you choose a judge trial, the losing party can appeal.", "note": "Most NYC small claims cases are heard by arbitrators. If you choose arbitration, the decision cannot be appealed." }
+    ],
+    "service_of_process": {
+      "method": "Court handles service by certified mail (NYC Small Claims)",
+      "deadline_days": 0,
+      "proof_form": "Court handles proof of service"
+    },
+    "hearing_info": "Hearings are typically scheduled 30-60 days after filing. NYC small claims hearings are held in the evenings. Decision usually within 5 business days by mail."
+  },
+  "fees": {
+    "filing_fee": [
+      { "amount_usd": 15, "condition": "Service by certified mail" },
+      { "amount_usd": 20, "condition": "Service by personal delivery" }
+    ],
+    "service_fee": 0,
+    "fee_waiver_available": true,
+    "fee_waiver_form": "Fee waiver application available at clerk's office",
+    "payment_methods": ["Cash", "Check", "Money order"]
+  },
+  "borough_locations": {
+    "Manhattan": { "address": "111 Centre Street, New York, NY 10013", "clerk_phone": "646-386-5485" },
+    "Brooklyn": { "address": "141 Livingston Street, Brooklyn, NY 11201", "clerk_phone": "347-404-9721" },
+    "Queens": { "address": "89-17 Sutphin Blvd, Jamaica, NY 11435", "clerk_phone": "718-262-7124" },
+    "Bronx": { "address": "851 Grand Concourse, Bronx, NY 10451", "clerk_phone": "718-618-2580" },
+    "Staten Island": { "address": "927 Castleton Avenue, Staten Island, NY 10310", "clerk_phone": "347-497-7684" }
+  },
+  "statute_of_limitations": { "years": 6, "statute_ref": "N.Y. CPLR §213 (breach of contract)", "description": "6 years for breach of contract in New York." },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://nycourts.gov/courts/nyc/smallclaims/index.shtml", "https://nycourts.gov/courts/nyc/smallclaims/forms.shtml"], "next_review_due": "2026-08-20" }
+}

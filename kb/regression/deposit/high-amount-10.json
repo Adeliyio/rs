@@ -1,0 +1,28 @@
+{
+  "test_id": "deposit-regression-10",
+  "description": "MUST DECLINE — Deposit amount over $25,000 threshold",
+  "input_quality": "clean_pdf",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "deposit-high-amount",
+  "jurisdiction": "CA",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "CA",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "residential",
+    "deposit_amount": 30000
+  },
+  "expected_outputs": {
+    "demand_letter": false,
+    "decline_triggered": true,
+    "decline_rule": "deposit-high-amount",
+    "resources_shown": "legal_representation"
+  },
+  "validation_checks": [
+    "Amount validation catches >$25,000",
+    "Decline triggered before generation",
+    "Decline copy shown",
+    "No payment collected"
+  ]
+}

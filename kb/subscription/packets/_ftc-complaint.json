@@ -1,0 +1,42 @@
+{
+  "id": "ftc-complaint-subscription",
+  "venue_type": "federal_agency",
+  "jurisdiction": "federal",
+  "venue_name": "Federal Trade Commission — Consumer Complaint",
+  "venue_url": "https://reportfraud.ftc.gov/",
+  "forms": [
+    {
+      "form_id": "ftc-online-complaint",
+      "name": "FTC Online Complaint Form",
+      "official_url": "https://reportfraud.ftc.gov/",
+      "fillable": false,
+      "required": true,
+      "copies_needed": 1,
+      "notes": "Filed entirely online via ReportFraud.ftc.gov. No paper forms needed."
+    }
+  ],
+  "attachments_order": [
+    "Copy of cancellation email(s) sent to company",
+    "Company's response (if any)",
+    "Billing statements showing continued charges after cancellation",
+    "Screenshots of cancellation barriers encountered",
+    "Original subscription terms/confirmation"
+  ],
+  "filing_instructions": {
+    "method": "online",
+    "steps": [
+      "Go to ReportFraud.ftc.gov",
+      "Select 'Something Else' or the category that best matches your complaint",
+      "Describe the company, the subscription, and the cancellation barriers",
+      "Include dates: when you subscribed, when you attempted to cancel, when charges continued",
+      "Attach supporting documents (emails, billing statements, screenshots)",
+      "Submit the complaint — you will receive a confirmation number"
+    ]
+  },
+  "fees": [],
+  "notes": "The FTC does not resolve individual complaints but uses them to build enforcement actions and identify patterns. Filing creates an official record. The FTC may take action against companies with a pattern of complaints. After the 8th Circuit vacated the Click-to-Cancel rule (July 2025), ROSCA and FTC Act §5 remain the enforcement basis.",
+  "verification": {
+    "last_verified": "2026-05-24",
+    "verified_by": "document_verification_pass_2026-05-24"
+  }
+}

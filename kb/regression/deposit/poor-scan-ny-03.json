@@ -1,0 +1,51 @@
+{
+  "test_id": "deposit-regression-03",
+  "description": "Poor scan / low-light document — New York case with itemization",
+  "input_quality": "poor_scan",
+  "expected_outcome": "generate_with_fallback",
+  "jurisdiction": "NY",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "NY",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "residential",
+    "move_out_date": "2026-01-31",
+    "deposit_amount": 1800,
+    "landlord_name": "Brooklyn Heights Realty Corp",
+    "landlord_address": "200 Court Street, Brooklyn, NY 11201",
+    "property_address": "45 Montague Street, Apt 3F, Brooklyn, NY 11201",
+    "lease_start_date": "2024-02-01",
+    "lease_end_date": "2026-01-31",
+    "forwarding_address_provided": true,
+    "forwarding_address": "88 Atlantic Ave, Apt 5A, Brooklyn, NY 11217",
+    "forwarding_address_date": "2026-02-01",
+    "forwarding_address_method": "Email",
+    "itemization_status": "partial_return_with_itemization",
+    "amount_returned": 500,
+    "deductions": [
+      { "description": "Bathroom tile repair", "amount": 600, "dispute_basis": "Pre-existing condition — was there when I moved in", "has_evidence": true },
+      { "description": "Deep cleaning", "amount": 400, "dispute_basis": "Normal wear and tear, not damage", "has_evidence": false },
+      { "description": "Wall damage", "amount": 300, "dispute_basis": "Normal wear and tear, not damage", "has_evidence": true }
+    ],
+    "evidence_files": ["lease_scan_poor.pdf", "itemization_scan_poor.jpg"],
+    "prior_communication": false,
+    "walkthrough_completed": false
+  },
+  "expected_outputs": {
+    "demand_letter": true,
+    "itemized_rebuttal_table": true,
+    "statute_citations": ["N.Y. Gen. Oblig. Law §7-108"],
+    "deadline_referenced": "14 days from move-out",
+    "penalty_referenced": true,
+    "total_disputed": 1300
+  },
+  "validation_checks": [
+    "Document parsing flags low confidence on poor-scan inputs",
+    "User shown confirmation UI for extracted fields",
+    "Graceful fallback to manual diagnostic for unparseable fields",
+    "Letter cites N.Y. GOL §7-108",
+    "14-day return deadline referenced",
+    "HSTPA 2019 provisions referenced where applicable"
+  ]
+}

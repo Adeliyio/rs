@@ -1,0 +1,44 @@
+{
+  "test_id": "subscription-regression-06",
+  "description": "Mobile app subscription — cancelled but still charging",
+  "input_quality": "clean",
+  "expected_outcome": "generate",
+  "jurisdiction": "CA",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "CA",
+    "active_litigation": false,
+    "government_service": false,
+    "service_vertical": "mobile_app",
+    "financed_device": false,
+    "bundled_contract": false,
+    "company_name": "MeditateNow App",
+    "monthly_charge": 9.99,
+    "billing_frequency": "Monthly",
+    "subscription_start_date": "2025-08-01",
+    "last_charge_date": "2026-05-01",
+    "prior_cancellation_attempt": true,
+    "cancellation_date": "2026-03-01",
+    "cancellation_method": "Used website/app",
+    "cancellation_result": "They said it was cancelled but I was still charged",
+    "cancellation_confirmation_number": "CANCEL-20260301-4582",
+    "has_written_contract": false,
+    "auto_renewal_disclosed": "Yes, clearly disclosed",
+    "evidence_files": ["cancellation_screenshot.png"]
+  },
+  "expected_outputs": {
+    "email_sequence": true,
+    "sequence_steps": 3,
+    "statute_citations": ["Cal. Bus. & Prof. Code §17602"],
+    "vertical_specific": true,
+    "app_store_refund_mentioned": true
+  },
+  "validation_checks": [
+    "Mobile app vertical template used",
+    "App Store/Play Store refund process referenced",
+    "Cancellation confirmation number referenced in emails",
+    "Continued charges after cancellation highlighted",
+    "CA ARL cited",
+    "FCBA chargeback rights mentioned"
+  ]
+}

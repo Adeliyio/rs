@@ -1,0 +1,26 @@
+{
+  "test_id": "deposit-regression-09",
+  "description": "MUST DECLINE — Commercial lease (not residential)",
+  "input_quality": "clean_pdf",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "deposit-commercial-lease",
+  "jurisdiction": "FL",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "FL",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "commercial"
+  },
+  "expected_outputs": {
+    "demand_letter": false,
+    "decline_triggered": true,
+    "decline_rule": "deposit-commercial-lease",
+    "resources_shown": "legal_representation"
+  },
+  "validation_checks": [
+    "Flow terminates at commercial check",
+    "Decline copy shown",
+    "No generation attempted"
+  ]
+}

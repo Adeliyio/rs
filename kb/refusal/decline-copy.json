@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "description": "Plain-language decline messages for each refusal trigger type. Per PRD §7.10: on any detection the product declines, explains why in plain language, and points to resources.",
+  "decline_messages": {
+    "deposit-eviction-entangled": {
+      "headline": "We Can't Help With This Deposit Dispute",
+      "explanation": "Your deposit dispute appears to be connected to an eviction proceeding. When a deposit claim intersects with an eviction case, the legal procedures and strategy involved go beyond what a writing tool can responsibly address.",
+      "empathy_line": "We understand this is frustrating, especially when you're dealing with multiple issues at once.",
+      "what_we_recommend": "People in situations where a deposit dispute is entangled with eviction proceedings typically benefit from speaking with a licensed attorney or legal aid organization that can evaluate the full picture."
+    },
+    "deposit-habitability-counterclaim": {
+      "headline": "This Dispute Involves Complex Habitability Questions",
+      "explanation": "When a landlord's deductions relate to habitability conditions that may have existed before your tenancy, the factual and legal questions involved go beyond what we can responsibly address with a writing tool.",
+      "empathy_line": "We understand that dealing with both habitability issues and deposit disputes is especially stressful.",
+      "what_we_recommend": "People facing habitability-related deposit disputes typically benefit from consulting with a tenant's rights organization or legal aid attorney in your area."
+    },
+    "deposit-active-litigation": {
+      "headline": "There's Already a Court Case Pending",
+      "explanation": "Since there is already active litigation between you and your landlord, generating new documents could affect the court proceedings in ways that require legal judgment about litigation strategy.",
+      "empathy_line": "It sounds like you've already taken significant steps to resolve this.",
+      "what_we_recommend": "If you don't already have legal representation in the pending case, people in similar situations typically consult with a licensed attorney who can advise on strategy within the existing proceedings."
+    },
+    "deposit-high-amount": {
+      "headline": "This Dispute Involves a Large Amount",
+      "explanation": "For disputes involving amounts above $25,000, the complexity and stakes typically warrant professional legal assistance rather than a writing tool.",
+      "empathy_line": "A dispute of this size deserves the most thorough approach possible.",
+      "what_we_recommend": "People with disputes of this size typically consult with a licensed attorney. Many attorneys offer free initial consultations for cases in this range, and the potential recovery often justifies the investment."
+    },
+    "deposit-commercial-lease": {
+      "headline": "We Handle Residential Deposits Only",
+      "explanation": "This tool is built specifically for residential security deposit disputes. Commercial lease disputes involve different laws, different procedures, and different court venues.",
+      "empathy_line": "We wish we could help with commercial disputes too, but getting it right requires a different approach.",
+      "what_we_recommend": "For commercial lease disputes, people typically consult with a business or real estate attorney familiar with commercial landlord-tenant law in your state."
+    },
+    "subscription-financed-device": {
+      "headline": "Your Subscription Is Tied to a Financed Device",
+      "explanation": "When a subscription is bundled with a device financing or installment plan, cancelling one doesn't necessarily cancel the other. The interaction between the subscription agreement and the financing agreement requires careful analysis.",
+      "empathy_line": "We understand these bundled agreements can be confusing — that's exactly why we want to be careful here.",
+      "what_we_recommend": "People in this situation typically contact the company to get separate written confirmation of the subscription terms vs. the device financing terms, then evaluate each independently. Your state's consumer protection office can also help if you believe you were misled about the terms."
+    },
+    "subscription-active-litigation": {
+      "headline": "There's Already a Legal Dispute Pending",
+      "explanation": "Since there is already a legal dispute pending with this company, generating additional correspondence could affect the proceedings.",
+      "empathy_line": "It sounds like this has already escalated significantly.",
+      "what_we_recommend": "If you don't already have legal representation, people in similar situations typically consult with a consumer protection attorney."
+    },
+    "subscription-government-contract": {
+      "headline": "Government Services Have Different Rules",
+      "explanation": "Government-mandated services and municipal utility contracts have cancellation rules that vary significantly by locality and are outside our scope.",
+      "empathy_line": "Government service disputes can be especially confusing because the rules are different from private companies.",
+      "what_we_recommend": "Your municipality's consumer affairs office or your state's public utility commission are typically the right starting points for government service disputes."
+    },
+    "adversarial-counsel-engaged": {
+      "headline": "The Other Party Has Involved Legal Representation",
+      "explanation": "Based on what you've described, the other party has involved an attorney or threatened legal action. At this point, the situation has moved beyond a writing problem into one that involves legal strategy and judgment.",
+      "empathy_line": "This actually often means the other party is taking your claim seriously. It's a sign your letter had an impact.",
+      "what_we_recommend": "People in this situation typically consult with their own licensed attorney. Many attorneys offer free initial consultations, and the materials you've already generated through our tool are yours to share with any attorney you consult."
+    },
+    "subscription-bundled-contract": {
+      "headline": "Your Subscription Is Part of a Bundled Contract",
+      "explanation": "Bundled service contracts — where multiple services are sold together under a single agreement — often have different cancellation terms for each component. Cancelling one part of a bundle may trigger early-termination clauses or change the pricing of the remaining services in ways that require careful, case-specific analysis beyond what a writing tool can fully address.",
+      "empathy_line": "We know bundled agreements can feel like a trap, and it's frustrating when companies make it hard to separate the pieces.",
+      "what_we_recommend": "People in this situation typically start by requesting a copy of the full contract terms from the company, paying attention to any provisions about partial cancellation. Your state's consumer protection office or attorney general can also help if you believe the bundle terms were not clearly disclosed at sign-up."
+    },
+    "any-represented-party": {
+      "headline": "The Other Party Has Legal Representation",
+      "explanation": "When the other side — whether a landlord, a company, or anyone acting on their behalf — has an attorney or legal representative involved, the dynamic of the dispute changes fundamentally. Responding to or negotiating with legal counsel requires strategic judgment that goes beyond what a writing tool can responsibly provide.",
+      "empathy_line": "We understand this can feel intimidating, but it often means the other party is taking your claim seriously enough to get professional help — and you deserve the same advantage.",
+      "what_we_recommend": "People in this situation typically seek their own licensed legal representation. Many attorneys offer free initial consultations, and the documents you've already prepared through our tool are yours to share with any attorney you consult. Your state bar association's lawyer referral service is a good starting point."
+    }
+  },
+  "common_footer": {
+    "disclaimer": "This tool provides writing assistance and general information, not legal advice. We decline to generate in situations where the complexity goes beyond what a writing tool can responsibly address — this is a feature of our commitment to your interests, not a limitation we're happy about.",
+    "general_resources": [
+      {
+        "name": "LawHelp.org",
+        "url": "https://www.lawhelp.org",
+        "description": "Find free legal aid in your area"
+      },
+      {
+        "name": "State Bar Lawyer Referral",
+        "description": "Your state bar association can connect you with attorneys who handle cases like yours"
+      },
+      {
+        "name": "Law School Legal Clinics",
+        "description": "Many law schools operate free clinics handling consumer disputes"
+      }
+    ]
+  }
+}

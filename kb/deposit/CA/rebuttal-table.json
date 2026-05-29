@@ -1,0 +1,70 @@
+{
+  "id": "rebuttal-table-CA",
+  "jurisdiction": "CA",
+  "description": "California-specific deduction categories with statutory reasoning for the itemized rebuttal table. Each row maps a landlord's deduction to a dispute basis grounded in Cal. Civ. Code §1950.5.",
+  "deduction_categories": [
+    {
+      "category_id": "cleaning_general",
+      "name": "General Cleaning / Deep Cleaning",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(3)",
+      "permissible_when": "The unit requires cleaning beyond the condition at move-in. Cleaning to return to the SAME level of cleanliness as at inception of tenancy.",
+      "not_permissible_when": "Unit was not professionally cleaned at move-in; cleaning is to make unit better than move-in condition; charges are for normal accumulation of dust/dirt.",
+      "typical_rebuttal": "Under Cal. Civ. Code §1950.5(b)(3), cleaning charges are only permissible to return the unit to the condition at the inception of the tenancy. Tenants in similar situations typically note that the unit was not professionally cleaned when they moved in, and/or that the cleaning charges exceed what would be required to return the unit to its move-in condition.",
+      "evidence_helpful": ["Move-in photos", "Move-in condition checklist", "Move-out photos", "Comparable cleaning quotes"]
+    },
+    {
+      "category_id": "painting",
+      "name": "Painting / Wall Repair",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)",
+      "permissible_when": "Walls have damage beyond normal wear — large holes, unauthorized paint colors, graffiti, significant gouges.",
+      "not_permissible_when": "Normal wear: nail holes, pin holes, faded paint, minor scuffs, picture-hanging marks after a reasonable tenancy. California guidelines suggest 2-3+ year tenancy = full depreciation of paint.",
+      "typical_rebuttal": "Under Cal. Civ. Code §1950.5(b)(2), deductions for painting are not permissible for normal wear and tear. Tenants who have lived in a unit for {{tenancy_years}} years typically note that faded paint, minor scuffs, and small nail holes from normal use constitute normal wear and tear, not damage. In California, the useful life of interior paint is generally considered to be 2-3 years, after which repainting is a normal maintenance expense borne by the landlord.",
+      "evidence_helpful": ["Move-in photos of walls", "Move-out photos", "Tenancy duration (longer = stronger normal-wear argument)"]
+    },
+    {
+      "category_id": "carpet",
+      "name": "Carpet / Flooring Replacement or Cleaning",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)",
+      "permissible_when": "Carpet has damage beyond normal wear — burns, large stains from negligence, pet damage, tears.",
+      "not_permissible_when": "Normal carpet wear: matting, traffic patterns, minor stains from regular use. Carpet has a useful life (~8-10 years); landlord must prorate by remaining useful life.",
+      "typical_rebuttal": "Under Cal. Civ. Code §1950.5(b)(2), carpet charges must account for the carpet's age and remaining useful life. Tenants in similar situations typically note that carpet has a useful life of approximately 8-10 years and that the landlord may only charge for the remaining depreciable value, not the full replacement cost. For carpet that was {{carpet_age}} years old at move-in, the depreciable value is significantly reduced. Additionally, normal wear patterns, matting, and minor stains from regular use are not deductible damage.",
+      "evidence_helpful": ["Age/condition of carpet at move-in", "Move-in/move-out photos", "Carpet replacement receipts showing age"]
+    },
+    {
+      "category_id": "appliance",
+      "name": "Appliance Repair / Replacement",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)",
+      "permissible_when": "Tenant caused damage to appliance beyond normal wear.",
+      "not_permissible_when": "Appliance failure from normal use or age; pre-existing malfunction; landlord's maintenance responsibility.",
+      "typical_rebuttal": "Tenants in California in similar circumstances typically note that appliances have a useful life and that normal wear, age-related failure, and pre-existing conditions are the landlord's maintenance responsibility, not deductible from the security deposit.",
+      "evidence_helpful": ["Age of appliance", "Work orders showing pre-existing issues", "Photos"]
+    },
+    {
+      "category_id": "fixtures",
+      "name": "Fixtures / Hardware",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(2)",
+      "permissible_when": "Tenant damaged or removed fixtures.",
+      "not_permissible_when": "Normal wear on fixtures (loose handles, worn finishes); pre-existing condition.",
+      "typical_rebuttal": "Normal wear on fixtures such as loose handles, worn finishes, and age-related deterioration is not deductible under Cal. Civ. Code §1950.5(b)(2).",
+      "evidence_helpful": ["Move-in condition report", "Photos"]
+    },
+    {
+      "category_id": "missing_receipts",
+      "name": "Any Deduction Without Supporting Documentation",
+      "statute_ref": "Cal. Civ. Code §1950.5(g)(2)",
+      "permissible_when": "Never — receipts or documentation are always required.",
+      "not_permissible_when": "Always: any deduction not supported by receipts, invoices, or a good-faith estimate is improper.",
+      "typical_rebuttal": "Under Cal. Civ. Code §1950.5(g)(2), the itemized statement must include copies of documents showing charges incurred and repairs made. Tenants in similar situations typically note that deductions not supported by receipts, invoices, or itemized estimates are not properly substantiated.",
+      "evidence_helpful": ["The absence of receipts IS the evidence"]
+    },
+    {
+      "category_id": "unpaid_rent",
+      "name": "Unpaid Rent Claimed",
+      "statute_ref": "Cal. Civ. Code §1950.5(b)(1)",
+      "permissible_when": "Tenant actually owes rent for the period claimed.",
+      "not_permissible_when": "Rent was paid; amount is disputed; landlord is double-counting last month's rent that was part of the deposit.",
+      "typical_rebuttal": "Tenants in similar situations typically note that rent was paid through {{lease_end_date}} and provide documentation such as bank statements or cancelled checks showing payment.",
+      "evidence_helpful": ["Bank statements", "Cancelled checks", "Payment receipts", "Correspondence confirming payment"]
+    }
+  ]
+}

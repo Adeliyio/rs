@@ -1,0 +1,155 @@
+{
+  "version": "1.0.0",
+  "last_reviewed": "2026-05-20",
+  "reviewed_by": "NEEDS_LEGAL_REVIEW",
+  "description": "Versioned set of the ONLY claims permitted in any marketing artifact or generated content. Per PRD §8.6 and Principle 9: nothing outside this library is eligible for use. This is the input gate for the content engine.",
+  "approved_claims": [
+    {
+      "claim_id": "tool-description-1",
+      "category": "product_description",
+      "claim": "A writing tool that helps you create demand letters and cancellation emails",
+      "permitted_variations": [
+        "Writing assistance for dispute resolution",
+        "Helps you draft demand letters",
+        "Creates cancellation emails based on your situation"
+      ],
+      "prohibited_variations": [
+        "Robot lawyer",
+        "Legal assistant",
+        "AI attorney",
+        "Legal advice tool"
+      ]
+    },
+    {
+      "claim_id": "tool-description-2",
+      "category": "product_description",
+      "claim": "Researches how similar disputes are typically handled in your jurisdiction",
+      "permitted_variations": [
+        "Surfaces relevant statutes and deadlines for your state",
+        "Shows you how people in similar situations typically proceed"
+      ],
+      "prohibited_variations": [
+        "Tells you what to do",
+        "Evaluates your case",
+        "Determines your rights",
+        "Analyzes the strength of your claim"
+      ]
+    },
+    {
+      "claim_id": "process-1",
+      "category": "process_description",
+      "claim": "Walks you through the dispute process one step at a time",
+      "permitted_variations": [
+        "Guides you from first step to resolution",
+        "Step-by-step dispute assistance",
+        "Takes you from frustration to action"
+      ],
+      "prohibited_variations": [
+        "Guarantees resolution",
+        "Wins your case",
+        "Gets your money back"
+      ]
+    },
+    {
+      "claim_id": "process-2",
+      "category": "process_description",
+      "claim": "Generates submission-ready filing packets for your specific court or agency",
+      "permitted_variations": [
+        "Pre-fills court forms for your county",
+        "Prepares your filing paperwork"
+      ],
+      "prohibited_variations": [
+        "Files for you",
+        "Represents you in court",
+        "Handles your case"
+      ]
+    },
+    {
+      "claim_id": "outcome-framing-1",
+      "category": "outcome_framing",
+      "claim": "People who send demand letters are more likely to receive a response than those who don't act",
+      "permitted_variations": [
+        "Taking action is the first step toward resolution",
+        "Most disputes start with a written demand"
+      ],
+      "prohibited_variations": [
+        "You will get your money back",
+        "Success rate of X%",
+        "Most users recover their deposit",
+        "Guaranteed recovery"
+      ]
+    },
+    {
+      "claim_id": "outcome-framing-2",
+      "category": "outcome_framing",
+      "claim": "Users have reported recovering security deposits and cancelling unwanted subscriptions",
+      "conditions": "May ONLY be used when backed by a specific, verified, consented testimonial from the testimonial pipeline. The specific outcome must match the claim.",
+      "permitted_variations": [
+        "[Name/Anonymous] reported recovering $X from their deposit dispute",
+        "[Name/Anonymous] successfully cancelled their [service] membership"
+      ],
+      "prohibited_variations": [
+        "Our users always recover their deposits",
+        "100% success rate",
+        "Everyone gets their money back",
+        "You'll recover more than you paid"
+      ]
+    },
+    {
+      "claim_id": "pricing-1",
+      "category": "pricing",
+      "claim": "Deposit case: $49 one-time. Subscription cancellation: free.",
+      "permitted_variations": [
+        "Try subscription cancellation for free",
+        "Deposit cases start at $49"
+      ],
+      "prohibited_variations": [
+        "Free legal advice",
+        "Cheaper than a lawyer (implies we substitute for one)"
+      ]
+    },
+    {
+      "claim_id": "scope-1",
+      "category": "scope_disclaimer",
+      "claim": "This is a writing tool, not legal advice. We do not evaluate cases, predict outcomes, or substitute for a licensed attorney.",
+      "required_placement": ["checkout", "delivery", "marketing_landing", "email_footer"],
+      "non_negotiable": true
+    },
+    {
+      "claim_id": "jurisdiction-1",
+      "category": "coverage",
+      "claim": "Security deposit coverage for California, Texas, New York, and Florida",
+      "permitted_variations": [
+        "Deposit letters grounded in [state] law",
+        "State-specific deposit statutes for CA, TX, NY, FL"
+      ],
+      "prohibited_variations": [
+        "Works in all 50 states (for deposit)",
+        "Nationwide deposit coverage"
+      ]
+    },
+    {
+      "claim_id": "jurisdiction-2",
+      "category": "coverage",
+      "claim": "Subscription cancellation assistance available nationwide",
+      "permitted_variations": [
+        "Cancel unwanted subscriptions anywhere in the US",
+        "Subscription help for any US state"
+      ],
+      "prohibited_variations": [
+        "Works internationally",
+        "Global cancellation service"
+      ]
+    }
+  ],
+  "absolute_prohibitions": [
+    "Any claim containing 'guarantee', 'guaranteed', or 'promise' in relation to outcomes",
+    "Any success percentage, probability, or likelihood claim",
+    "Any claim that the tool provides legal advice or substitutes for an attorney",
+    "Any claim using 'robot lawyer', 'AI lawyer', 'AI attorney', or similar",
+    "Any claim about case strength, leverage, or the merits of a user's position",
+    "Any claim that the user 'has a case' or 'is entitled to' a specific outcome",
+    "Any claim about what a counterparty will do",
+    "Any outcome claim not backed by a specific verified consented testimonial"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "sc-TX-travis-deposit",
+  "venue_id": "tx-justice-court",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "TX",
+  "county": "Travis",
+  "venue_name": "Travis County Justice Courts (Austin)",
+  "venue_url": "https://www.traviscountytx.gov/justices-of-peace",
+  "monetary_limit": 20000,
+  "forms": [
+    { "form_id": "SCC", "name": "Small Claims Petition", "description": "Primary filing form.", "official_url": "https://www.txcourts.gov/rules-forms/", "fillable": true, "required": true, "copies_needed": 2 }
+  ],
+  "filing_instructions": {
+    "method": "mixed",
+    "e_filing_url": "https://www.efiletexas.gov/",
+    "steps": [
+      { "step_number": 1, "instruction": "File in the correct precinct Justice Court." },
+      { "step_number": 2, "instruction": "Complete petition and file via eFileTexas.gov or in person." },
+      { "step_number": 3, "instruction": "Pay fees and arrange service." },
+      { "step_number": 4, "instruction": "Attend hearing." }
+    ],
+    "service_of_process": { "method": "Constable or process server", "deadline_days": 14 }
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 54, "condition": "Small claims" }], "service_fee": 75, "fee_waiver_available": true },
+  "statute_of_limitations": { "years": 4, "statute_ref": "Tex. Civ. Prac. & Rem. Code §16.004" },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.traviscountytx.gov/justices-of-peace"], "next_review_due": "2026-08-20" }
+}

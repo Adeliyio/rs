@@ -1,0 +1,63 @@
+{
+  "id": "vertical-saas",
+  "vertical": "saas",
+  "display_name": "Software / Online Service",
+  "description": "SaaS and online service subscription cancellations. Primarily governed by federal law (FTC, ROSCA) and state auto-renewal laws.",
+  "common_companies": ["Adobe", "Microsoft 365", "Salesforce", "Slack", "Zoom", "Dropbox", "Norton/LifeLock", "McAfee", "Grammarly", "LinkedIn Premium"],
+  "typical_barriers": [
+    "Annual lock-in with no pro-rata refund",
+    "Auto-renewed without clear advance notice",
+    "Cancellation buried in settings",
+    "Requires contacting support to cancel",
+    "Claims data will be lost upon cancellation",
+    "Charges for unused months after cancellation"
+  ],
+  "sequence_template": {
+    "email_1": {
+      "subject": "Cancellation of Subscription — {{company_name}} — Account: {{account_identifier}}",
+      "tone": "firm_professional",
+      "key_points": [
+        "Clear cancellation request with account email/ID",
+        "If auto-renewed without proper notice, cite applicable law",
+        "If annual plan auto-renewed, request prorated refund",
+        "Request written confirmation of cancellation",
+        "Request confirmation that no further charges will be made",
+        "Request data export if applicable"
+      ],
+      "legal_citations": {
+        "federal": "FTC Click-to-Cancel Rule; ROSCA (15 U.S.C. §8403)",
+        "ca": "Cal. Bus. & Prof. Code §17602-17603",
+        "ny": "N.Y. Gen. Bus. Law §527-a"
+      },
+      "saas_specific_points": [
+        "If auto-renewal was not clearly disclosed, services may be deemed an 'unconditional gift' under CA ARL §17603",
+        "Request data portability / export before cancellation takes effect",
+        "If enterprise/business plan, check if different terms apply"
+      ]
+    },
+    "email_2": {
+      "subject": "Follow-Up: Subscription Cancellation — SECOND REQUEST",
+      "timing": "Day 7",
+      "tone": "firm_escalating",
+      "key_points": [
+        "Reference first email",
+        "Note continued charges",
+        "Mention regulatory complaint option",
+        "Mention credit card dispute for post-cancellation charges"
+      ]
+    },
+    "email_3": {
+      "subject": "Final Notice: Subscription Cancellation — {{company_name}}",
+      "timing": "Day 14",
+      "tone": "final_notice",
+      "key_points": [
+        "Reference both previous emails",
+        "State intent to file FTC complaint",
+        "State intent to file state AG complaint",
+        "State intent to dispute charges",
+        "For CA: cite unconditional gift provision if auto-renewal non-compliant"
+      ]
+    }
+  },
+  "notes": "SaaS cancellations are often straightforward but some companies make it deliberately difficult. The strongest argument is usually that auto-renewal was not properly disclosed per state law (CA ARL is especially strong with the 'unconditional gift' provision). Annual plans that auto-renewed are common — check if renewal notice was sent in advance."
+}

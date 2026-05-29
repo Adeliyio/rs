@@ -1,0 +1,108 @@
+{
+  "id": "subscription-CA",
+  "wedge": "subscription",
+  "jurisdiction": "CA",
+  "jurisdiction_full_name": "California",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "ca-arl-17600",
+      "citation": "Cal. Bus. & Prof. Code §17600-17606",
+      "title": "California Automatic Renewal Law (ARL)",
+      "summary": "Requires businesses to clearly disclose automatic renewal terms, obtain affirmative consent, provide an acknowledgment with cancellation terms, and offer a cost-effective, timely, and easy-to-use mechanism for cancellation. As amended by AB 390/SB 313 (2021) and AB 2863 (Stats. 2024, Ch. 515, effective Jan 1, 2025). Post-FTC vacatur, this is the strongest state-level subscription cancellation law. New provisions (effective July 1, 2025) require same-medium cancellation, annual reminders for annual plans, and 7-30 day notice before fee changes.",
+      "key_provisions": [
+        {
+          "subsection": "§17602(a)(1)",
+          "description": "Clear and conspicuous disclosure of the automatic renewal offer terms before the consumer makes the purchase."
+        },
+        {
+          "subsection": "§17602(a)(2)",
+          "description": "Affirmative consent to the automatic renewal before being charged."
+        },
+        {
+          "subsection": "§17602(a)(3)",
+          "description": "An acknowledgment that includes the automatic renewal terms, cancellation policy, and information on how to cancel — in a manner capable of being retained (email)."
+        },
+        {
+          "subsection": "§17602(b) (amended by SB 313, 2021)",
+          "description": "Provide a cost-effective, timely, and easy-to-use mechanism for cancellation. If accepted online, must be cancellable online. Cannot require the consumer to call or go in person to cancel if signup was online."
+        },
+        {
+          "subsection": "§17602(c) (amended by AB 390, 2021)",
+          "description": "For free-trial-to-paid conversions, must notify the consumer before charging and obtain affirmative consent to the paid terms."
+        },
+        {
+          "subsection": "§17603",
+          "description": "Failure to comply: the goods, services, or automatic renewal are deemed an unconditional gift to the consumer, and the consumer is not obligated to pay."
+        },
+        {
+          "subsection": "§17604",
+          "description": "Violation is also a violation of the Unfair Competition Law (Bus. & Prof. Code §17200 et seq.), enabling private right of action."
+        }
+      ],
+      "official_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=17602.&lawCode=BPC",
+      "effective_date": "2010-12-01",
+      "last_amended": "2025-01-01"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "ca-sub-cancellation-7",
+      "statute_id": "ca-arl-17600",
+      "deadline_days": 7,
+      "anchor_event": "cancellation_requested",
+      "action_at_expiry": "Send follow-up email if cancellation not confirmed",
+      "description": "If the company hasn't confirmed cancellation within 7 days, send the follow-up email.",
+      "prompt_message": "Time to send Follow-Up Email 2. Your cancellation request hasn't been confirmed.",
+      "is_statutory": false
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "ca-arl-unconditional-gift",
+      "statute_id": "ca-arl-17600",
+      "type": "forfeiture",
+      "description": "If the business fails to comply with the ARL, the goods or services are deemed an unconditional gift — the consumer is not obligated to pay.",
+      "amount_or_formula": "Consumer not obligated to pay; charges must be refunded",
+      "conditions": "Business failed to properly disclose auto-renewal terms or provide easy cancellation",
+      "citation": "Cal. Bus. & Prof. Code §17603"
+    },
+    {
+      "penalty_id": "ca-ucl-private-action",
+      "statute_id": "ca-arl-17600",
+      "type": "civil_penalty",
+      "description": "ARL violation is also a UCL violation (Bus. & Prof. Code §17200), enabling private right of action for restitution and injunctive relief.",
+      "amount_or_formula": "Restitution + injunctive relief",
+      "conditions": "Private right of action available",
+      "citation": "Cal. Bus. & Prof. Code §17604, §17200"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "ca-ag-subscription",
+      "type": "state_ag",
+      "name": "California Attorney General — Consumer Complaint",
+      "filing_url": "https://oag.ca.gov/contact/consumer-complaint-against-business-or-company",
+      "description": "File a consumer complaint about auto-renewal violations."
+    },
+    {
+      "venue_id": "ca-dca-subscription",
+      "type": "consumer_protection",
+      "name": "California Department of Consumer Affairs",
+      "filing_url": "https://www.dca.ca.gov/consumers/complaints/consumer.shtml",
+      "description": "File a complaint with CA DCA."
+    }
+  ],
+  "permissible_deductions": [],
+  "notes": "California ARL is one of the strongest state auto-renewal laws. The 'unconditional gift' provision (§17603) is powerful — if the business didn't comply, the consumer doesn't owe anything. The 2021 amendments (AB 390 / SB 313) significantly strengthened the law by requiring online cancellation for online signups and notification before free-trial-to-paid conversion. UCL private right of action enables individual lawsuits.",
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": [
+      "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=17602.&lawCode=BPC",
+      "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220AB390",
+      "https://leginfo.legislature.ca.gov/faces/billNavClient.xhtml?bill_id=202120220SB313"
+    ],
+    "next_review_due": "2026-08-20"
+  }
+}

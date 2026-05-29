@@ -1,0 +1,52 @@
+{
+  "id": "rebuttal-table-NY",
+  "jurisdiction": "NY",
+  "description": "New York-specific deduction categories grounded in N.Y. Gen. Oblig. Law §7-108 as amended by HSTPA 2019.",
+  "deduction_categories": [
+    {
+      "category_id": "cleaning",
+      "name": "Cleaning",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(b)",
+      "permissible_when": "Cleaning required due to damage beyond normal wear and tear.",
+      "not_permissible_when": "Normal cleaning after a tenancy; unit was not professionally cleaned at move-in.",
+      "typical_rebuttal": "Under N.Y. Gen. Oblig. Law §7-108(1-a)(b), deductions are limited to actual and reasonable costs for damage beyond normal wear and tear. Tenants in New York in similar situations typically note that routine cleaning after a tenancy constitutes normal wear and tear.",
+      "evidence_helpful": ["Move-in/move-out photos", "Move-in condition report"]
+    },
+    {
+      "category_id": "painting",
+      "name": "Painting / Wall Repair",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(b)",
+      "permissible_when": "Tenant caused damage beyond normal wear — unauthorized colors, large holes, significant damage.",
+      "not_permissible_when": "Normal wear: nail holes, faded paint, minor scuffs. Paint has a useful life.",
+      "typical_rebuttal": "Deductions for repainting due to normal wear and tear are not permitted under N.Y. Gen. Oblig. Law §7-108(1-a)(b). After a {{tenancy_years}}-year tenancy, faded paint, minor scuffs, and small nail holes constitute normal wear.",
+      "evidence_helpful": ["Photos", "Tenancy duration"]
+    },
+    {
+      "category_id": "carpet",
+      "name": "Carpet / Flooring",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(b)",
+      "permissible_when": "Damage beyond normal wear — burns, large stains, pet damage.",
+      "not_permissible_when": "Normal wear patterns, matting, minor stains. Useful life depreciation applies.",
+      "typical_rebuttal": "Normal carpet wear from regular use is not deductible. Tenants in similar situations note that carpet has a useful life and replacement costs should be prorated.",
+      "evidence_helpful": ["Carpet age", "Photos"]
+    },
+    {
+      "category_id": "pet_fee",
+      "name": "Pet Deposit / Pet Fee",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(a)",
+      "permissible_when": "Never — prohibited under HSTPA.",
+      "not_permissible_when": "Always: HSTPA explicitly prohibits pet deposits and pet fees beyond the one-month deposit cap.",
+      "typical_rebuttal": "Under N.Y. Gen. Oblig. Law §7-108(1-a)(a), as amended by the HSTPA of 2019, landlords may not charge any deposit, fee, or advance beyond one month's rent. Pet deposits and pet fees are explicitly prohibited. Tenants in New York in this situation typically demand the full return of any pet deposit or fee collected.",
+      "evidence_helpful": ["Lease showing pet fee/deposit charged"]
+    },
+    {
+      "category_id": "no_itemization",
+      "name": "Failure to Provide Itemized Statement with Receipts",
+      "statute_ref": "N.Y. Gen. Oblig. Law §7-108(1-a)(c)",
+      "permissible_when": "Never — itemization with receipts always required.",
+      "not_permissible_when": "Any deduction without supporting itemized statement and copies of receipts.",
+      "typical_rebuttal": "Under N.Y. Gen. Oblig. Law §7-108(1-a)(c), any deduction must be accompanied by an itemized statement showing the basis for the amount retained, along with copies of receipts for actual costs incurred.",
+      "evidence_helpful": ["Absence of proper itemization"]
+    }
+  ]
+}

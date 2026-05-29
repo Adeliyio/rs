@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deadline-rules.schema.json",
+  "title": "Deadline Rules Configuration",
+  "description": "Schema for the deadline engine's scheduling rules. Each rule maps a statutory or best-practice deadline to a BullMQ prompt job.",
+  "type": "object",
+  "required": ["version", "rules"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Schema version for migration tracking"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "rule_id",
+          "kb_entry_id",
+          "statute_id",
+          "deadline_days",
+          "anchor_event",
+          "action_at_expiry",
+          "prompt_config"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "description": "Globally unique rule ID"
+          },
+          "kb_entry_id": {
+            "type": "string",
+            "description": "References the KB entry this rule belongs to"
+          },
+          "statute_id": {
+            "type": "string",
+            "description": "The statute this deadline derives from"
+          },
+          "deadline_days": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Calendar days from anchor_event"
+          },
+          "anchor_event": {
+            "type": "string",
+            "enum": [
+              "move_out",
+              "lease_termination",
+              "deposit_paid",
+              "landlord_notice_received",
+              "tenant_objection_sent",
+              "letter_sent",
+              "cancellation_requested",
+              "last_charge_date",
+              "counterparty_response_deadline",
+              "complaint_filed"
+            ]
+          },
+          "action_at_expiry": {
+            "type": "string",
+            "description": "What the statute requires or permits at expiry"
+          },
+          "is_statutory": {
+            "type": "boolean",
+            "default": true,
+            "description": "true = hard statutory deadline; false = best-practice prompt"
+          },
+          "prompt_config": {
+            "type": "object",
+            "required": ["message", "severity", "cta"],
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "The prompt message shown to the user. Must be descriptive, not directive."
+              },
+              "severity": {
+                "type": "string",
+                "enum": ["info", "important", "urgent"],
+                "description": "Determines visual treatment. 'urgent' only for statutory deadlines about to expire."
+              },
+              "cta": {
+                "type": "string",
+                "description": "Call-to-action button text"
+              },
+              "pre_deadline_days": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "Days before deadline to send reminder prompts. E.g. [7, 3, 1] sends at 7, 3, and 1 day before."
+              },
+              "post_deadline_message": {
+                "type": "string",
+                "description": "Message shown after deadline has passed (e.g. 'The 21-day period has expired')"
+              }
+            }
+          },
+          "dismissible": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether the user can dismiss this prompt"
+          },
+          "conditions": {
+            "type": "object",
+            "properties": {
+              "requires_case_status": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Only fire if case is in one of these statuses"
+              },
+              "requires_no_outcome": {
+                "type": "boolean",
+                "description": "Only fire if no resolved outcome has been captured"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

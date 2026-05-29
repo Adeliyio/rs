@@ -1,0 +1,194 @@
+{
+  "id": "deposit-TX",
+  "wedge": "deposit",
+  "jurisdiction": "TX",
+  "jurisdiction_full_name": "Texas",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "tx-prop-92.101",
+      "citation": "Tex. Prop. Code §92.101",
+      "title": "Security Deposit — Application and Definition",
+      "summary": "Defines security deposit and establishes that the chapter applies to all residential leases in Texas.",
+      "key_provisions": [
+        {
+          "subsection": "§92.101",
+          "description": "Defines 'security deposit' as any advance of money, other than a rental application deposit or an advance payment of rent, intended primarily to secure performance under a lease."
+        }
+      ],
+      "official_url": "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.92.htm#92.101",
+      "effective_date": "1989-01-01",
+      "last_amended": "2021-09-01"
+    },
+    {
+      "statute_id": "tx-prop-92.103",
+      "citation": "Tex. Prop. Code §92.103",
+      "title": "Obligation to Refund",
+      "summary": "Requires the landlord to refund the security deposit (less lawful deductions) within 30 days after the tenant surrenders the premises AND provides a written statement of the tenant's forwarding address.",
+      "key_provisions": [
+        {
+          "subsection": "§92.103(a)",
+          "description": "Landlord must return the deposit within 30 days after the tenant surrenders the premises. The duty to refund does not arise until the tenant provides the landlord with a written statement of the tenant's forwarding address for purposes of refund."
+        }
+      ],
+      "official_url": "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.92.htm#92.103",
+      "effective_date": "1989-01-01",
+      "last_amended": "2021-09-01"
+    },
+    {
+      "statute_id": "tx-prop-92.104",
+      "citation": "Tex. Prop. Code §92.104",
+      "title": "Retention of Security Deposit; Accounting",
+      "summary": "Allows landlord to deduct for damages and charges beyond normal wear and tear, breach of lease, and unpaid rent. Must provide written description and itemized list of deductions.",
+      "key_provisions": [
+        {
+          "subsection": "§92.104(a)",
+          "description": "Landlord may not retain any portion of the deposit to cover normal wear and tear."
+        },
+        {
+          "subsection": "§92.104(b)",
+          "description": "If landlord retains any portion, must give tenant the balance along with a written description and itemized list of all deductions."
+        },
+        {
+          "subsection": "§92.104(c)",
+          "description": "Landlord is not obligated to return deposit until tenant gives a forwarding address."
+        }
+      ],
+      "official_url": "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.92.htm#92.104",
+      "effective_date": "1989-01-01",
+      "last_amended": "2021-09-01"
+    },
+    {
+      "statute_id": "tx-prop-92.109",
+      "citation": "Tex. Prop. Code §92.109",
+      "title": "Liability of Landlord — Bad Faith Retention",
+      "summary": "A landlord who in bad faith retains the security deposit is liable for an amount equal to the sum of $100, three times the portion wrongfully withheld, and reasonable attorney's fees.",
+      "key_provisions": [
+        {
+          "subsection": "§92.109(a)",
+          "description": "Landlord who in bad faith retains a security deposit in violation of this subchapter is liable for $100 + 3x the portion of the deposit wrongfully withheld + reasonable attorney's fees in a suit to recover the deposit."
+        }
+      ],
+      "official_url": "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.92.htm#92.109",
+      "effective_date": "1989-01-01",
+      "last_amended": "2021-09-01"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "tx-deposit-return-30",
+      "statute_id": "tx-prop-92.103",
+      "deadline_days": 30,
+      "anchor_event": "move_out",
+      "action_at_expiry": "Landlord must return deposit or provide written itemized deductions (requires tenant to have provided forwarding address)",
+      "description": "Texas law requires the landlord to return your security deposit (or provide an itemized statement of deductions) within 30 days after you surrender the premises AND provide a written forwarding address.",
+      "prompt_message": "The 30-day deadline for your landlord to return your deposit or provide an itemized statement has passed. People in this situation in Texas typically send a demand letter citing Tex. Prop. Code §92.103.",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "tx-deposit-demand-response",
+      "statute_id": "tx-prop-92.109",
+      "deadline_days": 30,
+      "anchor_event": "letter_sent",
+      "action_at_expiry": "If no response to demand letter, consider filing in Justice Court",
+      "description": "If your landlord has not responded to your demand letter within 30 days, people in similar situations typically consider filing in Justice Court.",
+      "prompt_message": "It's been 30 days since you sent your demand letter. If you haven't received a response, people in similar situations in Texas typically consider filing in Justice Court. We can help you prepare the filing packet.",
+      "is_statutory": false
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "tx-bad-faith-3x",
+      "statute_id": "tx-prop-92.109",
+      "type": "multiplier",
+      "description": "Bad faith retention: $100 + three times the portion of the deposit wrongfully withheld + reasonable attorney's fees.",
+      "amount_or_formula": "$100 + (3 x wrongfully withheld amount) + reasonable attorney's fees",
+      "conditions": "Requires showing landlord acted in bad faith. Bad faith is established by the failure to return the deposit or provide an itemization within the 30-day period.",
+      "citation": "Tex. Prop. Code §92.109(a)"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "tx-justice-court",
+      "type": "small_claims",
+      "name": "Texas Justice Court (Small Claims)",
+      "monetary_limit": 20000,
+      "filing_url": "https://www.txcourts.gov/about-texas-courts/justice-courts/",
+      "description": "Texas Justice Courts hear small claims up to $20,000. Filing fees vary by county, typically $54-$100+. E-filing available via eFileTexas.gov."
+    },
+    {
+      "venue_id": "tx-ag",
+      "type": "state_ag",
+      "name": "Texas Attorney General — Consumer Protection",
+      "filing_url": "https://www.texasattorneygeneral.gov/consumer-protection/file-consumer-complaint",
+      "description": "File a consumer complaint with the Texas Attorney General's Consumer Protection Division."
+    }
+  ],
+  "permissible_deductions": [
+    {
+      "category_id": "damage_beyond_wear",
+      "name": "Damages and Charges Beyond Normal Wear and Tear",
+      "permissible": true,
+      "description": "Landlord may deduct for damages and charges for which the tenant is legally liable under the lease or as a result of breaching the lease, excluding normal wear and tear.",
+      "typical_dispute_basis": "Normal wear and tear is explicitly excluded; landlord must provide itemized list",
+      "statute_ref": "Tex. Prop. Code §92.104(a)-(b)"
+    },
+    {
+      "category_id": "unpaid_rent",
+      "name": "Unpaid Rent",
+      "permissible": true,
+      "description": "Landlord may deduct unpaid rent.",
+      "typical_dispute_basis": "Dispute the amount; show evidence of payment",
+      "statute_ref": "Tex. Prop. Code §92.104"
+    },
+    {
+      "category_id": "breach_of_lease",
+      "name": "Charges for Breach of Lease",
+      "permissible": true,
+      "description": "Landlord may deduct for charges resulting from breach of lease (e.g., early termination fees if in the lease).",
+      "typical_dispute_basis": "Dispute the breach; argue the charge is not a legitimate deduction",
+      "statute_ref": "Tex. Prop. Code §92.104"
+    },
+    {
+      "category_id": "normal_wear",
+      "name": "Normal Wear and Tear",
+      "permissible": false,
+      "description": "Landlord may NOT retain any portion of the security deposit to cover normal wear and tear.",
+      "typical_dispute_basis": "Statute explicitly prohibits deductions for normal wear and tear",
+      "statute_ref": "Tex. Prop. Code §92.104(a)"
+    }
+  ],
+  "special_provisions": [
+    {
+      "provision_id": "tx-forwarding-address-required",
+      "title": "Forwarding Address Required to Trigger Deadline",
+      "description": "Critical Texas-specific provision: the landlord's 30-day obligation to return the deposit does NOT begin until the tenant provides a written statement of their forwarding address. If no forwarding address was provided, the landlord has a defense for not returning the deposit.",
+      "statute_ref": "Tex. Prop. Code §92.103(a) and §92.107(a)",
+      "conditions": "Always applicable — letter should reference the forwarding address and when it was provided"
+    },
+    {
+      "provision_id": "tx-no-deposit-cap",
+      "title": "No Statutory Deposit Cap",
+      "description": "Texas does not limit the amount a landlord can charge as a security deposit. The amount is determined by the lease.",
+      "statute_ref": "Tex. Prop. Code §92.101 et seq. (no cap provision)",
+      "conditions": "Informational"
+    }
+  ],
+  "typical_claim_range": {
+    "min_usd": 300,
+    "max_usd": 5000,
+    "median_usd": 1200
+  },
+  "notes": "Texas is moderately tenant-friendly on deposits. The 3x bad-faith penalty is strong but requires showing bad faith. The forwarding-address requirement is a critical nuance — many tenants don't know the 30-day clock doesn't start until they provide it in writing. Texas has no statutory cap on deposit amounts. Justice Court limit of $20,000 is unusually high for small claims, which is favorable.",
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": [
+      "https://statutes.capitol.texas.gov/Docs/PR/htm/PR.92.htm",
+      "https://www.texasattorneygeneral.gov/consumer-protection/home-real-estate-and-travel/renters-rights",
+      "https://www.txcourts.gov/about-texas-courts/justice-courts/"
+    ],
+    "next_review_due": "2026-08-20",
+    "verification_notes": "Initial research pass. Requires second-pass verification by named KB owner."
+  }
+}

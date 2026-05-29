@@ -1,0 +1,33 @@
+{
+  "id": "sc-TX-dallas-deposit",
+  "venue_id": "tx-justice-court",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "TX",
+  "county": "Dallas",
+  "venue_name": "Dallas County Justice Courts",
+  "venue_url": "https://www.dallascounty.org/department/jpcourts/",
+  "monetary_limit": 20000,
+  "forms": [
+    { "form_id": "SCC", "name": "Small Claims Petition", "description": "Primary filing form for Dallas County Justice Courts.", "official_url": "https://www.txcourts.gov/rules-forms/", "fillable": true, "required": true, "copies_needed": 2 }
+  ],
+  "filing_instructions": {
+    "method": "mixed",
+    "e_filing_url": "https://www.efiletexas.gov/",
+    "steps": [
+      { "step_number": 1, "instruction": "File in the Justice Court precinct where the rental property is located." },
+      { "step_number": 2, "instruction": "Complete the small claims petition." },
+      { "step_number": 3, "instruction": "File via eFileTexas.gov or in person at the Justice Court." },
+      { "step_number": 4, "instruction": "Pay filing fee and service fee." },
+      { "step_number": 5, "instruction": "Attend hearing with organized documents." }
+    ],
+    "service_of_process": { "method": "Constable or process server", "deadline_days": 14 }
+  },
+  "fees": {
+    "filing_fee": [{ "amount_usd": 54, "condition": "Small claims (base fee)" }],
+    "service_fee": 75,
+    "fee_waiver_available": true
+  },
+  "statute_of_limitations": { "years": 4, "statute_ref": "Tex. Civ. Prac. & Rem. Code §16.004" },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.dallascounty.org/department/jpcourts/"], "next_review_due": "2026-08-20" }
+}

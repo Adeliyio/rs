@@ -1,0 +1,46 @@
+{
+  "test_id": "subscription-regression-01",
+  "description": "Clean case — Gym membership cancellation in California",
+  "input_quality": "clean",
+  "expected_outcome": "generate",
+  "jurisdiction": "CA",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "CA",
+    "active_litigation": false,
+    "government_service": false,
+    "service_vertical": "gym",
+    "financed_device": false,
+    "bundled_contract": false,
+    "company_name": "FitLife Gym",
+    "monthly_charge": 49.99,
+    "billing_frequency": "Monthly",
+    "subscription_start_date": "2025-01-15",
+    "last_charge_date": "2026-05-15",
+    "prior_cancellation_attempt": true,
+    "cancellation_date": "2026-04-20",
+    "cancellation_method": "Called customer service",
+    "cancellation_result": "They refused to cancel",
+    "has_written_contract": true,
+    "contract_length": "1 year",
+    "auto_renewal_disclosed": "Buried in fine print",
+    "evidence_files": ["billing_statement.pdf"]
+  },
+  "expected_outputs": {
+    "email_sequence": true,
+    "sequence_steps": 3,
+    "statute_citations": ["Cal. Bus. & Prof. Code §17602", "Cal. Civ. Code §1789.3"],
+    "vertical_specific": true,
+    "regulatory_complaint_referenced": true
+  },
+  "validation_checks": [
+    "Three-step email sequence generated",
+    "CA ARL (Bus. & Prof. Code §17600-17606) cited",
+    "Gym-specific language and tactics used",
+    "Email 1: cancellation demand with legal citation",
+    "Email 2: follow-up referencing Email 1",
+    "Email 3: final demand with regulatory complaint reference",
+    "No payment required (free wedge)",
+    "Consumer protection framing, not threatening"
+  ]
+}

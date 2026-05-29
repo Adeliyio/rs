@@ -1,0 +1,218 @@
+{
+  "id": "deposit-FL",
+  "wedge": "deposit",
+  "jurisdiction": "FL",
+  "jurisdiction_full_name": "Florida",
+  "coverage_status": "fully_verified",
+  "statutes": [
+    {
+      "statute_id": "fl-stat-83.49",
+      "citation": "Fla. Stat. §83.49",
+      "title": "Deposit Money or Advance Rent; Duty of Landlord and Tenant",
+      "summary": "Governs security deposits for residential rental property in Florida. Establishes notice requirements for landlords intending to claim against the deposit, tenant's right to object, holding requirements (three options), and consequences for non-compliance.",
+      "key_provisions": [
+        {
+          "subsection": "§83.49(1)",
+          "description": "Landlord must hold the deposit in one of three ways: (a) a separate non-interest-bearing account in a Florida banking institution, (b) a separate interest-bearing account (75% of interest to tenant or 5% per year simple interest), or (c) post a surety bond with the clerk of the circuit court."
+        },
+        {
+          "subsection": "§83.49(2)",
+          "description": "Landlord must notify tenant within 30 days of receiving the deposit of the bank name/address and whether the account is interest-bearing or non-interest-bearing, OR that a surety bond has been posted."
+        },
+        {
+          "subsection": "§83.49(3)(a)",
+          "description": "If landlord does NOT intend to impose a claim on the deposit, the landlord must return the deposit within 15 days after the tenant vacates, together with interest if applicable."
+        },
+        {
+          "subsection": "§83.49(3)(b)",
+          "description": "If the landlord DOES intend to impose a claim, the landlord must give the tenant written notice by certified mail within 30 days after the tenant vacates. The notice must include: the landlord's intent to claim, the amount claimed, and the reason for the claim. It must also include the statutory language advising the tenant of their right to object within 15 days."
+        },
+        {
+          "subsection": "§83.49(3)(c)",
+          "description": "If the landlord fails to give the required notice within the 30-day period, the landlord forfeits the right to impose a claim against the deposit."
+        },
+        {
+          "subsection": "§83.49(3)(b) - Tenant objection",
+          "description": "Tenant has 15 days after receipt of the landlord's notice to object in writing. If tenant objects, the landlord must either return the deposit, file an interpleader action, or wait until the lease terminates and seek a determination by a court."
+        }
+      ],
+      "official_url": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0000-0099/0083/Sections/0083.49.html",
+      "effective_date": "1973-01-01",
+      "last_amended": "2023-07-01"
+    }
+  ],
+  "deadline_rules": [
+    {
+      "rule_id": "fl-deposit-return-15-no-claim",
+      "statute_id": "fl-stat-83.49",
+      "deadline_days": 15,
+      "anchor_event": "move_out",
+      "action_at_expiry": "If landlord does not intend to claim against the deposit, it must be returned within 15 days",
+      "description": "If the landlord is NOT making a claim against your deposit, Florida law requires the full return within 15 days after you vacate.",
+      "prompt_message": "It's been 15 days since you moved out. If your landlord is not claiming any deductions, the deposit should have been returned by now under Fla. Stat. §83.49(3)(a).",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "fl-deposit-notice-30",
+      "statute_id": "fl-stat-83.49",
+      "deadline_days": 30,
+      "anchor_event": "move_out",
+      "action_at_expiry": "If landlord intends to claim, must send certified mail notice within 30 days. Failure to send forfeits the right to claim.",
+      "description": "If the landlord intends to make a claim against your deposit, they must send you written notice by certified mail within 30 days after you vacate. If they miss this deadline, they forfeit the right to claim against your deposit.",
+      "prompt_message": "It's been 30 days since you moved out. If your landlord intended to claim against your deposit, they were required to send you written notice by certified mail by now. If you haven't received this notice, the landlord may have forfeited the right to claim under Fla. Stat. §83.49(3)(c).",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "fl-tenant-objection-15",
+      "statute_id": "fl-stat-83.49",
+      "deadline_days": 15,
+      "anchor_event": "landlord_notice_received",
+      "action_at_expiry": "Tenant must object in writing within 15 days of receiving landlord's claim notice, or landlord may deduct the claimed amount",
+      "description": "After receiving the landlord's notice of intent to claim, you have 15 days to send a written objection. If you do not object within 15 days, the landlord may deduct the claimed amount.",
+      "prompt_message": "You received your landlord's claim notice. You have 15 days from receipt to send a written objection. If you don't object in writing within this period, the landlord may deduct the claimed amount. People in this situation typically send their objection by certified mail.",
+      "is_statutory": true
+    },
+    {
+      "rule_id": "fl-deposit-demand-response",
+      "statute_id": "fl-stat-83.49",
+      "deadline_days": 30,
+      "anchor_event": "letter_sent",
+      "action_at_expiry": "If no response, consider filing in Small Claims Court",
+      "description": "If your landlord has not responded to your demand letter within 30 days, people in similar situations typically consider filing in Small Claims Court.",
+      "prompt_message": "It's been 30 days since you sent your demand letter. People in similar situations in Florida who haven't received a response typically consider filing in Small Claims Court.",
+      "is_statutory": false
+    }
+  ],
+  "penalties": [
+    {
+      "penalty_id": "fl-forfeiture-of-claim",
+      "statute_id": "fl-stat-83.49",
+      "type": "forfeiture",
+      "description": "If landlord fails to provide the required written notice by certified mail within 30 days, the landlord forfeits the right to impose a claim against the deposit.",
+      "amount_or_formula": "Landlord forfeits right to make any claim — full deposit must be returned",
+      "conditions": "Landlord failed to send certified mail notice within 30 days of tenant vacating",
+      "citation": "Fla. Stat. §83.49(3)(c)"
+    },
+    {
+      "penalty_id": "fl-bad-faith-court",
+      "statute_id": "fl-stat-83.49",
+      "type": "actual_damages",
+      "description": "Court may award the tenant the deposit amount, court costs, and potentially attorney's fees. Florida does not have an explicit multiplier penalty like CA or TX, but the forfeiture provision and court discretion provide leverage.",
+      "amount_or_formula": "Deposit amount + court costs + potential attorney's fees at court's discretion",
+      "conditions": "Filed in Small Claims Court",
+      "citation": "Fla. Stat. §83.49"
+    }
+  ],
+  "escalation_venues": [
+    {
+      "venue_id": "fl-small-claims",
+      "type": "small_claims",
+      "name": "Florida Small Claims Court (County Court)",
+      "monetary_limit": 10000,
+      "filing_url": "https://www.flcourts.gov/Resources-Services/Court-Improvement/Self-Help-Information/Small-Claims",
+      "description": "Florida County Courts hear small claims up to $10,000 (increased from $8,000 effective July 1, 2024 per CS/SB 1066). Pre-trial mediation is typically required. Filing fees vary by claim amount. E-filing available via myflcourtaccess.com."
+    },
+    {
+      "venue_id": "fl-ag",
+      "type": "state_ag",
+      "name": "Florida Attorney General — Consumer Protection",
+      "filing_url": "https://www.myfloridalegal.com/consumer-protection/file-a-complaint",
+      "description": "File a consumer complaint with the Florida Attorney General's office."
+    },
+    {
+      "venue_id": "fl-dacs",
+      "type": "consumer_protection",
+      "name": "Florida Department of Agriculture and Consumer Services",
+      "filing_url": "https://www.fdacs.gov/Consumer-Resources/File-a-Complaint",
+      "description": "File a consumer complaint with FL DACS."
+    }
+  ],
+  "permissible_deductions": [
+    {
+      "category_id": "damage_beyond_wear",
+      "name": "Damage Beyond Normal Wear and Tear",
+      "permissible": true,
+      "description": "Landlord may claim for damage to the premises beyond normal wear and tear.",
+      "typical_dispute_basis": "Normal wear is not deductible; challenge characterization of damage; require documentation",
+      "statute_ref": "Fla. Stat. §83.49(3)(b)"
+    },
+    {
+      "category_id": "unpaid_rent",
+      "name": "Unpaid Rent",
+      "permissible": true,
+      "description": "Landlord may claim for unpaid rent.",
+      "typical_dispute_basis": "Dispute amounts; show evidence of payment",
+      "statute_ref": "Fla. Stat. §83.49"
+    },
+    {
+      "category_id": "early_termination",
+      "name": "Early Lease Termination",
+      "permissible": true,
+      "description": "Landlord may claim for early termination if lease provides for it.",
+      "typical_dispute_basis": "Check if lease permits; verify termination was not pursuant to a legal exception",
+      "statute_ref": "Fla. Stat. §83.49"
+    },
+    {
+      "category_id": "normal_wear",
+      "name": "Normal Wear and Tear",
+      "permissible": false,
+      "description": "Normal wear and tear is not a valid basis for a claim against the deposit.",
+      "typical_dispute_basis": "Standard defense — categorize each deduction as normal wear",
+      "statute_ref": "Fla. Stat. §83.49"
+    }
+  ],
+  "special_provisions": [
+    {
+      "provision_id": "fl-certified-mail-required",
+      "title": "Certified Mail Requirement for Claims",
+      "description": "If landlord intends to claim against the deposit, notice MUST be sent by certified mail within 30 days. This is a strict procedural requirement — failure is fatal to the claim.",
+      "statute_ref": "Fla. Stat. §83.49(3)(b)",
+      "conditions": "Always applicable when landlord makes a claim"
+    },
+    {
+      "provision_id": "fl-three-holding-options",
+      "title": "Three Options for Holding Deposit",
+      "description": "Landlord must hold deposit in (a) separate non-interest-bearing account, (b) separate interest-bearing account (tenant gets 75% of interest or 5% simple interest annually), or (c) surety bond.",
+      "statute_ref": "Fla. Stat. §83.49(1)",
+      "conditions": "Landlord must notify tenant of method within 30 days of receiving deposit"
+    },
+    {
+      "provision_id": "fl-15-day-objection-window",
+      "title": "15-Day Objection Window",
+      "description": "After receiving landlord's notice of intent to claim, tenant has 15 days to object in writing. If tenant does not object, landlord may deduct the claimed amount. This is a critical deadline for the tenant.",
+      "statute_ref": "Fla. Stat. §83.49(3)(b)",
+      "conditions": "Only applicable after landlord sends proper notice"
+    },
+    {
+      "provision_id": "fl-mandatory-notice-language",
+      "title": "Required Statutory Language in Landlord's Notice",
+      "description": "The landlord's 30-day notice must include specific statutory language: 'This is a notice of my intention to impose a claim for damages in the amount of $___ upon your security deposit... You are hereby notified that you must object in writing to this deduction from your security deposit within 15 days...' Failure to include this language may invalidate the notice.",
+      "statute_ref": "Fla. Stat. §83.49(3)(b)",
+      "conditions": "Required in every landlord claim notice"
+    },
+    {
+      "provision_id": "fl-mediation-required",
+      "title": "Pre-Trial Mediation in Small Claims",
+      "description": "Florida typically requires pre-trial mediation in small claims cases. This is a free or low-cost step before trial.",
+      "statute_ref": "Fla. R. Civ. P. 1.750",
+      "conditions": "Before trial in small claims court"
+    }
+  ],
+  "typical_claim_range": {
+    "min_usd": 300,
+    "max_usd": 4000,
+    "median_usd": 1500
+  },
+  "notes": "Florida has a unique two-tier process: 15 days for no-claim return, 30 days for claim notice by certified mail. The certified mail requirement is strict — many landlords fail this procedural requirement, which is a strong leverage point. The 15-day objection window is a critical deadline for tenants. Florida's small claims limit was raised to $10,000 effective July 1, 2024 (CS/SB 1066). Most recent statutory amendment: s. 2, ch. 2025-16. Pre-trial mediation is typically required. No statutory multiplier penalty, but the forfeiture provision is powerful.",
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "document_verification_pass_2026-05-24",
+    "primary_sources_checked": [
+      "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0000-0099/0083/Sections/0083.49.html",
+      "https://www.flcourts.gov/Resources-Services/Court-Improvement/Self-Help-Information/Small-Claims",
+      "https://www.myfloridalegal.com/consumer-protection"
+    ],
+    "next_review_due": "2026-08-20",
+    "verification_notes": "VERIFIED 2026-05-24: Fla. Stat. §83.49 confirmed current (2025 Florida Statutes, most recent amendment s. 2, ch. 2025-16). Small claims limit confirmed $10,000 effective July 1, 2024 (CS/SB 1066). 30-day certified mail notice, 15-day return, 15-day objection window all confirmed against statute text."
+  }
+}

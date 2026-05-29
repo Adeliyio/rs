@@ -1,0 +1,38 @@
+{
+  "id": "sc-TX-harris-deposit",
+  "venue_id": "tx-justice-court",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "TX",
+  "county": "Harris",
+  "venue_name": "Harris County Justice Courts",
+  "venue_url": "https://www.justex.net/",
+  "monetary_limit": 20000,
+  "forms": [
+    { "form_id": "SCC", "name": "Small Claims Case Information Sheet / Petition", "description": "Primary small claims filing form for Texas Justice Courts. Each precinct may have its own version.", "official_url": "https://www.txcourts.gov/rules-forms/rules-standards/", "fillable": true, "required": true, "copies_needed": 2 },
+    { "form_id": "CIV-COVER", "name": "Civil Case Information Sheet", "description": "Required cover sheet for civil filings in Texas.", "official_url": "https://www.txcourts.gov/rules-forms/", "fillable": true, "required": true, "copies_needed": 1 }
+  ],
+  "filing_instructions": {
+    "method": "mixed",
+    "e_filing_url": "https://www.efiletexas.gov/",
+    "steps": [
+      { "step_number": 1, "instruction": "Determine the correct precinct. File in the Justice Court precinct where the rental property is located or where the defendant resides." },
+      { "step_number": 2, "instruction": "Complete the small claims petition form (available from the Justice Court clerk or via eFileTexas.gov)." },
+      { "step_number": 3, "instruction": "File in person at the Justice Court or e-file at eFileTexas.gov.", "note": "E-filing is mandatory in Harris County for represented parties. Self-represented litigants may e-file or file in person." },
+      { "step_number": 4, "instruction": "Pay the filing fee." },
+      { "step_number": 5, "instruction": "Serve the defendant. In Texas Justice Courts, the court will typically arrange service through a constable or process server upon payment of the service fee.", "note": "Service by constable is the most common method." },
+      { "step_number": 6, "instruction": "Attend the hearing on the scheduled date with all documents and evidence organized." }
+    ],
+    "service_of_process": { "method": "Constable, process server, or certified mail with return receipt", "deadline_days": 14, "proof_form": "Return of Citation" },
+    "hearing_info": "Hearing typically scheduled 21-45 days after service is completed. Both parties present their case to the Justice of the Peace."
+  },
+  "fees": {
+    "filing_fee": [{ "amount_usd": 54, "condition": "Small claims up to $20,000 (base filing fee; may vary slightly by precinct)" }],
+    "service_fee": 75,
+    "fee_waiver_available": true,
+    "fee_waiver_form": "Statement of Inability to Afford Payment of Court Costs (Texas Rule of Civil Procedure 145)",
+    "payment_methods": ["Cash", "Check", "Money order", "Credit/debit card"]
+  },
+  "statute_of_limitations": { "years": 4, "statute_ref": "Tex. Civ. Prac. & Rem. Code §16.004 (breach of written contract)", "description": "4 years for breach of written contract; 2 years for oral contract." },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.justex.net/", "https://www.efiletexas.gov/", "https://www.txcourts.gov/about-texas-courts/justice-courts/"], "next_review_due": "2026-08-20" }
+}

@@ -1,0 +1,111 @@
+{
+  "id": "vertical-gym",
+  "vertical": "gym",
+  "display_name": "Gym / Fitness Membership",
+  "description": "Gym and fitness membership cancellations. Many states have health club-specific statutes providing stronger cancellation rights than general consumer protection law.",
+  "common_companies": ["Planet Fitness", "LA Fitness", "Gold's Gym", "Equinox", "24 Hour Fitness", "Anytime Fitness", "YMCA", "Orangetheory", "CrossFit", "F45"],
+  "typical_barriers": [
+    "Requires certified letter to cancel",
+    "Requires in-person visit to cancel",
+    "Claims a minimum commitment period",
+    "Charges a cancellation fee",
+    "Continues charging after cancellation",
+    "Auto-renewed for another year without notice",
+    "Requires 30-60 day advance notice"
+  ],
+  "sequence_template": {
+    "email_1": {
+      "subject": "Cancellation of Membership — {{company_name}} — Account: {{account_identifier}}",
+      "tone": "firm_professional",
+      "key_points": [
+        "Clear statement of cancellation request",
+        "Account identifiers and member information",
+        "Reference to applicable consumer protection law",
+        "Request for written confirmation within 7 days",
+        "Request to stop all future charges immediately",
+        "Note that all previous cancellation attempts are documented"
+      ],
+      "legal_citations": {
+        "federal": "FTC Click-to-Cancel Rule (16 CFR Part 425)",
+        "ca": "Cal. Bus. & Prof. Code §17602 (ARL) — if signed up online, must be cancellable online",
+        "ny": "N.Y. Gen. Bus. Law §527-a",
+        "state_health_club": "Reference state-specific health club act if applicable"
+      },
+      "gym_specific_points": [
+        "If membership was sold at the gym but terms were accepted digitally, argue online cancellation should be available",
+        "Reference specific contract provision being invoked for cancellation",
+        "If past minimum commitment, state that the cancellation is post-commitment and no fee applies"
+      ]
+    },
+    "email_2": {
+      "subject": "Follow-Up: Cancellation of Membership — {{company_name}} — SECOND REQUEST",
+      "timing": "Day 7",
+      "tone": "firm_escalating",
+      "key_points": [
+        "Reference Email 1 with date",
+        "Note absence of confirmation",
+        "Note any continued charges since first request",
+        "Reiterate consumer protection citations",
+        "Mention intent to file regulatory complaint if not resolved",
+        "Mention credit card dispute option for unauthorized charges"
+      ]
+    },
+    "email_3": {
+      "subject": "Final Notice: Cancellation of Membership — {{company_name}} — THIRD AND FINAL REQUEST",
+      "timing": "Day 14",
+      "tone": "final_notice",
+      "key_points": [
+        "Reference both previous emails with dates",
+        "State this is a final request",
+        "Explicitly name the regulatory body complaint will be filed with",
+        "State intent to dispute all charges after cancellation request date with credit card issuer",
+        "For CA: reference the 'unconditional gift' provision (§17603) if applicable",
+        "Request immediate written cancellation confirmation"
+      ]
+    }
+  },
+  "state_specific_health_club_laws": {
+    "CA": {
+      "statute": "Cal. Civ. Code §1812.80-1812.98 (Health Studio Services Contract Law)",
+      "key_provisions": [
+        "Contract must be in writing",
+        "Right to cancel within 5 business days of signing",
+        "If facility closes or relocates more than 5 miles, right to cancel and get prorated refund",
+        "Maximum contract term: provisions vary",
+        "Must provide notice of automatic renewal"
+      ],
+      "official_url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?sectionNum=1812.80.&lawCode=CIV"
+    },
+    "NY": {
+      "statute": "N.Y. Gen. Bus. Law §620-627 (Health Club Services Law)",
+      "key_provisions": [
+        "Right to cancel within 3 business days of signing",
+        "If member becomes disabled, right to cancel with medical documentation",
+        "If facility closes, right to refund",
+        "Contract must clearly state cancellation rights"
+      ],
+      "official_url": "https://www.nysenate.gov/legislation/laws/GBS/A35-A"
+    },
+    "TX": {
+      "statute": "Tex. Occ. Code §702 (Health Spa Act)",
+      "key_provisions": [
+        "Right to cancel within 3 business days",
+        "If member moves more than 25 miles, may cancel with $25 fee or facility transfer",
+        "Disability cancellation with medical documentation",
+        "Must provide written contract"
+      ],
+      "official_url": "https://statutes.capitol.texas.gov/Docs/OC/htm/OC.702.htm"
+    },
+    "FL": {
+      "statute": "Fla. Stat. §501.012-501.019 (Health Studio Services)",
+      "key_provisions": [
+        "Right to cancel within 3 business days of signing",
+        "If facility closes, right to refund within 30 days",
+        "Death of member: estate can cancel",
+        "Must maintain surety bond"
+      ],
+      "official_url": "http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0500-0599/0501/0501.html"
+    }
+  },
+  "notes": "Gyms are the highest-volume subscription cancellation vertical. Many consumers don't know about state health club laws that provide stronger protections than general consumer law. The certified-letter requirement (Planet Fitness, etc.) is a common barrier that may violate the FTC click-to-cancel rule if the membership was initiated online."
+}

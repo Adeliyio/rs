@@ -1,0 +1,30 @@
+{
+  "test_id": "deposit-regression-07",
+  "description": "MUST DECLINE — Adversarial counsel engaged after letter sent",
+  "input_quality": "n/a",
+  "expected_outcome": "decline_at_escalation",
+  "expected_refusal_rule": "adversarial-counsel-engaged",
+  "jurisdiction": "TX",
+  "wedge": "deposit",
+  "scenario": "User completed initial case, sent letter, now reports counterparty response",
+  "inputs": {
+    "case_status": "sent",
+    "counterparty_responded": true,
+    "attorney_mentioned": true
+  },
+  "expected_outputs": {
+    "escalation_packet": false,
+    "responsive_letter": false,
+    "decline_triggered": true,
+    "decline_rule": "adversarial-counsel-engaged",
+    "resources_shown": "legal_representation"
+  },
+  "validation_checks": [
+    "Adversarial-counsel trigger fires at step 2 of the branching check",
+    "User routed out of generation flow",
+    "Decline copy explains why and provides reassurance",
+    "Materials already generated remain available to user",
+    "No further generation attempted",
+    "Audit log entry created"
+  ]
+}

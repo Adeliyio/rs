@@ -1,0 +1,28 @@
+{
+  "test_id": "subscription-regression-02",
+  "description": "MUST DECLINE — Telecom subscription with financed device",
+  "input_quality": "clean",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "subscription-financed-device",
+  "jurisdiction": "TX",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "TX",
+    "active_litigation": false,
+    "government_service": false,
+    "service_vertical": "telecom",
+    "financed_device": true
+  },
+  "expected_outputs": {
+    "email_sequence": false,
+    "decline_triggered": true,
+    "decline_rule": "subscription-financed-device",
+    "resources_shown": "general_info"
+  },
+  "validation_checks": [
+    "Flow terminates at financed-device check",
+    "Decline copy explains bundling complexity",
+    "No generation attempted",
+    "General info resources shown"
+  ]
+}

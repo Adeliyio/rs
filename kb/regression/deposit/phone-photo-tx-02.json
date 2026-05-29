@@ -1,0 +1,48 @@
+{
+  "test_id": "deposit-regression-02",
+  "description": "Phone photo of lease — Texas standard case with no itemization received",
+  "input_quality": "phone_photo",
+  "expected_outcome": "generate",
+  "jurisdiction": "TX",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "TX",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "residential",
+    "move_out_date": "2026-02-28",
+    "deposit_amount": 1500,
+    "landlord_name": "John Smith",
+    "landlord_address": "100 Elm Street, Houston, TX 77001",
+    "property_address": "555 Maple Drive, Unit 12, Houston, TX 77002",
+    "lease_start_date": "2025-03-01",
+    "lease_end_date": "2026-02-28",
+    "forwarding_address_provided": true,
+    "forwarding_address": "222 Pine Road, Houston, TX 77003",
+    "forwarding_address_date": "2026-02-28",
+    "forwarding_address_method": "Written letter",
+    "itemization_status": "nothing",
+    "deductions": [],
+    "evidence_files": ["lease_photo_1.jpg", "lease_photo_2.jpg"],
+    "prior_communication": true,
+    "communication_summary": "Texted landlord on March 10 asking about deposit. No response.",
+    "walkthrough_completed": true
+  },
+  "expected_outputs": {
+    "demand_letter": true,
+    "itemized_rebuttal_table": false,
+    "statute_citations": ["Tex. Prop. Code §92.103", "Tex. Prop. Code §92.109"],
+    "deadline_referenced": "30 days from move-out",
+    "penalty_referenced": true,
+    "total_disputed": 1500
+  },
+  "validation_checks": [
+    "Letter cites Tex. Prop. Code §92.103 (deadline) and §92.109 (penalties)",
+    "Letter references 30-day return deadline",
+    "Notes landlord's failure to provide itemization",
+    "Notes forwarding address was provided",
+    "Bad faith penalty referenced ($100 + 3x wrongfully withheld)",
+    "No rebuttal table (no itemization to rebut)",
+    "Phone photo parsing attempted with confidence flags"
+  ]
+}

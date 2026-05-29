@@ -1,0 +1,79 @@
+{
+  "id": "vertical-telecom",
+  "vertical": "telecom",
+  "display_name": "Phone, Internet, or Cable/TV Service",
+  "description": "Telecom service cancellations including phone, internet, cable TV, and bundled services. Regulated by FCC at federal level with additional state PUC oversight.",
+  "common_companies": ["Comcast/Xfinity", "AT&T", "Verizon", "T-Mobile", "Spectrum", "Cox", "CenturyLink/Lumen", "Frontier", "Dish Network", "DirecTV"],
+  "typical_barriers": [
+    "Early termination fee (ETF)",
+    "Claims customer is in contract period",
+    "Requires extended hold times or department transfers",
+    "Aggressive retention offers during cancellation",
+    "Equipment return requirements and charges",
+    "Bundled services complicate individual cancellation",
+    "Continues charging after cancellation"
+  ],
+  "sequence_template": {
+    "email_1": {
+      "subject": "Cancellation of Service — Account: {{account_identifier}}",
+      "tone": "firm_professional",
+      "key_points": [
+        "Clear cancellation request with account details",
+        "If past contract period, state so explicitly",
+        "If ETF claimed, reference applicable consumer protection law",
+        "Request written confirmation and final bill",
+        "Request equipment return instructions",
+        "Specify effective cancellation date"
+      ],
+      "legal_citations": {
+        "federal": "FTC Click-to-Cancel Rule; FCC regulations",
+        "fcc_complaint": "FCC Consumer Complaint Center",
+        "state_puc": "State Public Utility Commission (if applicable)"
+      },
+      "telecom_specific_points": [
+        "Equipment return: request clear instructions and deadline",
+        "Final bill: request that final bill reflect cancellation date, not end of billing cycle",
+        "If bundled: specify which services to cancel",
+        "Port number out if keeping phone number"
+      ]
+    },
+    "email_2": {
+      "subject": "Follow-Up: Service Cancellation — SECOND REQUEST — Account: {{account_identifier}}",
+      "timing": "Day 7",
+      "tone": "firm_escalating",
+      "key_points": [
+        "Reference first email with date",
+        "Note continued charges or lack of confirmation",
+        "Mention FCC complaint option",
+        "Mention state PUC complaint option",
+        "Reference credit card dispute for unauthorized charges"
+      ]
+    },
+    "email_3": {
+      "subject": "Final Notice: Service Cancellation — Account: {{account_identifier}}",
+      "timing": "Day 14",
+      "tone": "final_notice",
+      "key_points": [
+        "Reference both previous communications",
+        "State intent to file FCC complaint",
+        "State intent to file state PUC complaint",
+        "State intent to dispute charges with bank/credit card",
+        "Request immediate cancellation confirmation"
+      ]
+    }
+  },
+  "regulatory_bodies": {
+    "federal": {
+      "name": "FCC Consumer Complaint Center",
+      "url": "https://consumercomplaints.fcc.gov/",
+      "description": "File a complaint about phone, internet, or TV service. FCC forwards to the company and requires a response within 30 days."
+    },
+    "state_puc_examples": {
+      "CA": { "name": "California Public Utilities Commission (CPUC)", "url": "https://www.cpuc.ca.gov/consumer-support/file-a-complaint" },
+      "TX": { "name": "Public Utility Commission of Texas (PUCT)", "url": "https://www.puc.texas.gov/consumer/complaint/Complaint.aspx" },
+      "NY": { "name": "New York Public Service Commission", "url": "https://www.dps.ny.gov/complaints" },
+      "FL": { "name": "Florida Public Service Commission", "url": "https://www.psc.state.fl.us/ConsumerAssistance" }
+    }
+  },
+  "notes": "Telecom is regulated at both federal (FCC) and state (PUC) levels. FCC complaints are effective — companies must respond within 30 days. Early termination fees are a major barrier but may be challengeable if service was degraded or terms changed. Equipment return is a common post-cancellation issue."
+}

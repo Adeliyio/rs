@@ -1,0 +1,280 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kb-entry.schema.json",
+  "title": "Knowledge Base Entry",
+  "description": "Schema for a jurisdiction-specific KB entry covering statutes, deadlines, penalties, and escalation venues for a single (wedge, jurisdiction) pair.",
+  "type": "object",
+  "required": [
+    "id",
+    "wedge",
+    "jurisdiction",
+    "statutes",
+    "deadline_rules",
+    "penalties",
+    "escalation_venues",
+    "permissible_deductions",
+    "verification"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier: {wedge}-{jurisdiction}. E.g. deposit-CA, subscription-federal"
+    },
+    "wedge": {
+      "type": "string",
+      "enum": ["deposit", "subscription"],
+      "description": "The dispute wedge this entry covers"
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "US state abbreviation (e.g. CA, TX) or 'federal'"
+    },
+    "jurisdiction_full_name": {
+      "type": "string",
+      "description": "Full jurisdiction name for display (e.g. 'California', 'Federal (United States)')"
+    },
+    "coverage_status": {
+      "type": "string",
+      "enum": ["fully_verified", "partially_verified", "federal_baseline_only", "unsupported"],
+      "description": "Verification depth level"
+    },
+    "statutes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/statute"
+      },
+      "minItems": 1,
+      "description": "All statutes relevant to this (wedge, jurisdiction) pair"
+    },
+    "deadline_rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/deadline_rule"
+      },
+      "description": "Computed deadline rules for the deadline engine"
+    },
+    "penalties": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/penalty"
+      },
+      "description": "Statutory penalties available for non-compliance"
+    },
+    "escalation_venues": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/escalation_venue"
+      },
+      "description": "Available escalation paths (small claims, AG complaint, regulatory)"
+    },
+    "permissible_deductions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/deduction_category"
+      },
+      "description": "What the counterparty is legally permitted to deduct (deposit wedge) or charge (subscription wedge)"
+    },
+    "special_provisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provision_id", "title", "description", "statute_ref"],
+        "properties": {
+          "provision_id": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "statute_ref": { "type": "string" },
+          "conditions": { "type": "string" }
+        }
+      },
+      "description": "Jurisdiction-specific special rules (e.g. interest-bearing accounts, walk-through rights)"
+    },
+    "typical_claim_range": {
+      "type": "object",
+      "properties": {
+        "min_usd": { "type": "number" },
+        "max_usd": { "type": "number" },
+        "median_usd": { "type": "number" }
+      },
+      "description": "Typical claim value range for this wedge/jurisdiction"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Authoring notes, edge cases, known ambiguities"
+    },
+    "verification": {
+      "$ref": "#/$defs/verification"
+    }
+  },
+  "$defs": {
+    "statute": {
+      "type": "object",
+      "required": ["statute_id", "citation", "title", "summary", "official_url"],
+      "properties": {
+        "statute_id": {
+          "type": "string",
+          "description": "Short machine-readable ID (e.g. 'ca-civ-1950.5')"
+        },
+        "citation": {
+          "type": "string",
+          "description": "Full legal citation (e.g. 'Cal. Civ. Code §1950.5')"
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable title"
+        },
+        "summary": {
+          "type": "string",
+          "description": "Plain-language summary of what this statute provides"
+        },
+        "key_provisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["subsection", "description"],
+            "properties": {
+              "subsection": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "official_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the official statute text on the state legislature site"
+        },
+        "effective_date": {
+          "type": "string",
+          "format": "date",
+          "description": "When this version of the statute became effective"
+        },
+        "last_amended": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of most recent amendment"
+        }
+      }
+    },
+    "deadline_rule": {
+      "type": "object",
+      "required": ["rule_id", "statute_id", "deadline_days", "anchor_event", "action_at_expiry", "description"],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "description": "Unique rule ID for the deadline engine"
+        },
+        "statute_id": {
+          "type": "string",
+          "description": "References a statute_id in the statutes array"
+        },
+        "deadline_days": {
+          "type": "integer",
+          "description": "Number of days from anchor_event"
+        },
+        "anchor_event": {
+          "type": "string",
+          "enum": [
+            "move_out",
+            "lease_termination",
+            "deposit_paid",
+            "landlord_notice_received",
+            "tenant_objection_sent",
+            "letter_sent",
+            "cancellation_requested",
+            "last_charge_date",
+            "counterparty_response_deadline",
+            "complaint_filed"
+          ],
+          "description": "The event that starts the clock"
+        },
+        "action_at_expiry": {
+          "type": "string",
+          "description": "What happens or should happen when the deadline passes"
+        },
+        "description": {
+          "type": "string",
+          "description": "Plain-language description for the user"
+        },
+        "prompt_message": {
+          "type": "string",
+          "description": "The message shown to the user when this deadline fires"
+        },
+        "is_statutory": {
+          "type": "boolean",
+          "description": "Whether this deadline comes from statute (vs. best-practice)"
+        }
+      }
+    },
+    "penalty": {
+      "type": "object",
+      "required": ["penalty_id", "statute_id", "type", "description"],
+      "properties": {
+        "penalty_id": { "type": "string" },
+        "statute_id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["statutory_damages", "multiplier", "forfeiture", "attorney_fees", "actual_damages", "civil_penalty"]
+        },
+        "description": { "type": "string" },
+        "amount_or_formula": { "type": "string" },
+        "conditions": { "type": "string" },
+        "citation": { "type": "string" }
+      }
+    },
+    "escalation_venue": {
+      "type": "object",
+      "required": ["venue_id", "type", "name"],
+      "properties": {
+        "venue_id": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["small_claims", "state_ag", "consumer_protection", "regulatory", "federal_agency"]
+        },
+        "name": { "type": "string" },
+        "monetary_limit": { "type": "number" },
+        "filing_url": { "type": "string", "format": "uri" },
+        "description": { "type": "string" }
+      }
+    },
+    "deduction_category": {
+      "type": "object",
+      "required": ["category_id", "name", "permissible", "description"],
+      "properties": {
+        "category_id": { "type": "string" },
+        "name": { "type": "string" },
+        "permissible": { "type": "boolean" },
+        "description": { "type": "string" },
+        "typical_dispute_basis": { "type": "string" },
+        "statute_ref": { "type": "string" }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "required": ["last_verified", "verified_by", "primary_sources_checked"],
+      "properties": {
+        "last_verified": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of last verification against primary sources"
+        },
+        "verified_by": {
+          "type": "string",
+          "description": "Name/role of the person who verified"
+        },
+        "primary_sources_checked": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "description": "URLs of official sources checked during verification"
+        },
+        "next_review_due": {
+          "type": "string",
+          "format": "date",
+          "description": "Quarterly review date"
+        },
+        "verification_notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

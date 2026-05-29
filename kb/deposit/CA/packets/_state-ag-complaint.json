@@ -1,0 +1,42 @@
+{
+  "id": "ag-CA-deposit",
+  "venue_id": "ca-ag",
+  "venue_type": "state_ag",
+  "wedge": "deposit",
+  "jurisdiction": "CA",
+  "venue_name": "California Attorney General — Consumer Complaint",
+  "venue_url": "https://oag.ca.gov/contact/consumer-complaint-against-business-or-company",
+  "forms": [
+    {
+      "form_id": "CA-AG-ONLINE",
+      "name": "Online Consumer Complaint Form",
+      "description": "Submit a consumer complaint against a business through the CA AG's online portal.",
+      "official_url": "https://oag.ca.gov/contact/consumer-complaint-against-business-or-company",
+      "fillable": false,
+      "required": true
+    }
+  ],
+  "attachments_order": [
+    { "position": 1, "attachment_type": "demand_letter_copy", "description": "Copy of the demand letter sent to landlord", "required": true, "source": "generated" },
+    { "position": 2, "attachment_type": "lease_copy", "description": "Copy of lease (relevant pages)", "required": false, "source": "user_upload" },
+    { "position": 3, "attachment_type": "itemization", "description": "Landlord's itemized deduction statement", "required": false, "source": "user_upload" },
+    { "position": 4, "attachment_type": "correspondence", "description": "Any correspondence with landlord", "required": false, "source": "user_upload" }
+  ],
+  "filing_instructions": {
+    "method": "online_portal",
+    "steps": [
+      { "step_number": 1, "instruction": "Go to the CA Attorney General's consumer complaint page.", "note": "https://oag.ca.gov/contact/consumer-complaint-against-business-or-company" },
+      { "step_number": 2, "instruction": "Fill in the online form with your information, the landlord/management company information, and a description of the deposit dispute." },
+      { "step_number": 3, "instruction": "Upload supporting documents: your demand letter, lease, itemization, and any correspondence." },
+      { "step_number": 4, "instruction": "Submit the complaint. You'll receive a confirmation number." },
+      { "step_number": 5, "instruction": "The AG's office reviews complaints and may take action if a pattern of violations is identified. Individual resolution is not guaranteed but the complaint creates a record.", "note": "The AG does not typically resolve individual disputes but uses complaints to identify systemic violations." }
+    ]
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 0, "condition": "No fee to file" }] },
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": ["https://oag.ca.gov/contact/consumer-complaint-against-business-or-company"],
+    "next_review_due": "2026-08-20"
+  }
+}

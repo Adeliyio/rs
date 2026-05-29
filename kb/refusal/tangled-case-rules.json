@@ -1,0 +1,143 @@
+{
+  "version": "1.0.0",
+  "description": "Out-of-scope refusal detection rules. Before generation, the diagnostic checks for situations that resemble launch wedges but carry materially higher complexity or risk. Per PRD §7.10.",
+  "rules": [
+    {
+      "rule_id": "deposit-eviction-entangled",
+      "wedge": "deposit",
+      "trigger_question": "Has your landlord filed for eviction, or have you received an eviction notice?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "Deposit disputes entangled with eviction proceedings involve court procedures and legal defenses that go beyond writing assistance. The eviction may affect your deposit rights and timeline in ways that require legal judgment.",
+      "resource_type": "legal_representation",
+      "notes": "Eviction + deposit is a common entanglement. The deposit claim may become a counterclaim in the eviction proceeding."
+    },
+    {
+      "rule_id": "deposit-habitability-counterclaim",
+      "wedge": "deposit",
+      "trigger_question": "Has your landlord claimed that you caused damage related to habitability issues (mold, pest infestation, structural problems) that existed before your tenancy?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "Disputes involving habitability conditions that pre-date your tenancy involve complex factual and legal questions about landlord maintenance obligations that go beyond writing assistance.",
+      "resource_type": "legal_representation"
+    },
+    {
+      "rule_id": "deposit-active-litigation",
+      "wedge": "deposit",
+      "trigger_question": "Is there currently a lawsuit or court case pending between you and your landlord about this property?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "There is already active litigation regarding this matter. Generating documents for use in pending court proceedings requires legal judgment about litigation strategy that goes beyond writing assistance.",
+      "resource_type": "legal_representation"
+    },
+    {
+      "rule_id": "deposit-high-amount",
+      "wedge": "deposit",
+      "trigger_question": null,
+      "trigger_condition": "case.deposit_amount > 25000",
+      "severity": "hard_block",
+      "decline_reason": "For disputes involving amounts above $25,000, the complexity and stakes typically warrant consultation with a licensed attorney who can evaluate the specific circumstances of your situation.",
+      "resource_type": "legal_representation"
+    },
+    {
+      "rule_id": "deposit-commercial-lease",
+      "wedge": "deposit",
+      "trigger_question": "Was this a residential or commercial lease?",
+      "affirmative_values": ["commercial"],
+      "severity": "hard_block",
+      "decline_reason": "This tool is designed for residential security deposit disputes. Commercial lease disputes involve different laws and procedures that are outside our scope.",
+      "resource_type": "legal_representation"
+    },
+    {
+      "rule_id": "subscription-financed-device",
+      "wedge": "subscription",
+      "trigger_question": "Is your subscription or membership tied to a financed device, equipment loan, or installment payment plan?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "Subscriptions bundled with financed devices or installment plans involve separate contractual obligations. Cancelling the subscription may not cancel the device financing, and the interaction between the two requires case-specific analysis beyond writing assistance.",
+      "resource_type": "general_info"
+    },
+    {
+      "rule_id": "subscription-bundled-contract",
+      "wedge": "subscription",
+      "trigger_question": "Is this subscription part of a bundled contract with other services (e.g., phone + internet + TV bundle)?",
+      "affirmative_values": ["yes"],
+      "severity": "soft_warning",
+      "decline_reason": "Bundled service contracts may have different cancellation terms for each service component. We can help with a cancellation request, but the bundle terms may affect what can be cancelled separately.",
+      "resource_type": "general_info",
+      "notes": "Soft warning — we can still generate but with extra disclaimers about bundle complexity"
+    },
+    {
+      "rule_id": "subscription-active-litigation",
+      "wedge": "subscription",
+      "trigger_question": "Is there currently a lawsuit or legal dispute pending with this company?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "There is already active litigation regarding this matter. Generating documents for use in pending legal disputes requires legal judgment beyond writing assistance.",
+      "resource_type": "legal_representation"
+    },
+    {
+      "rule_id": "subscription-government-contract",
+      "wedge": "subscription",
+      "trigger_question": "Is this a government-related service or contract (e.g., utility mandated by municipality)?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "Government-mandated services and municipal utility contracts have different cancellation rules that vary significantly by locality and are outside our scope.",
+      "resource_type": "general_info"
+    },
+    {
+      "rule_id": "any-represented-party",
+      "wedge": "any",
+      "trigger_question": "Has the other party (landlord, company, or anyone acting on their behalf) mentioned having an attorney or legal representative involved in this matter?",
+      "affirmative_values": ["yes"],
+      "severity": "hard_block",
+      "decline_reason": "When the other party has legal representation, the situation has moved beyond a writing problem into one that involves legal strategy and judgment. People in this situation typically seek their own licensed legal representation.",
+      "resource_type": "legal_representation",
+      "notes": "This is the adversarial-counsel trigger from PRD §6.7 part 3. Highest UPL-risk moment."
+    }
+  ],
+  "resource_templates": {
+    "legal_representation": {
+      "heading": "Finding Legal Help",
+      "body": "People in similar situations typically find licensed legal representation through these resources:",
+      "resources": [
+        {
+          "name": "State Bar Lawyer Referral Service",
+          "description": "Most state bar associations operate a lawyer referral service that can connect you with attorneys who handle cases like yours, often with a reduced initial consultation fee.",
+          "url_template": "Search '[your state] bar association lawyer referral'"
+        },
+        {
+          "name": "Legal Aid",
+          "description": "If cost is a concern, legal aid organizations provide free legal services to people who qualify based on income.",
+          "url": "https://www.lawhelp.org"
+        },
+        {
+          "name": "Local Law School Clinics",
+          "description": "Many law schools operate free legal clinics that handle consumer disputes.",
+          "url_template": "Search 'law school legal clinic [your city]'"
+        }
+      ]
+    },
+    "general_info": {
+      "heading": "General Information Resources",
+      "body": "While this situation is outside what our tool can help with, these general resources may be useful:",
+      "resources": [
+        {
+          "name": "Consumer Financial Protection Bureau",
+          "description": "Federal agency that handles consumer financial complaints.",
+          "url": "https://www.consumerfinance.gov/complaint/"
+        },
+        {
+          "name": "FTC Consumer Information",
+          "description": "Federal Trade Commission consumer protection resources.",
+          "url": "https://consumer.ftc.gov/"
+        },
+        {
+          "name": "State Attorney General",
+          "description": "Your state's Attorney General office handles consumer protection complaints.",
+          "url_template": "Search '[your state] attorney general consumer complaint'"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "test_id": "subscription-regression-08",
+  "description": "Bundled contract — should show warning but still generate",
+  "input_quality": "clean",
+  "expected_outcome": "generate_with_warning",
+  "jurisdiction": "TX",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "TX",
+    "active_litigation": false,
+    "government_service": false,
+    "service_vertical": "telecom",
+    "financed_device": false,
+    "bundled_contract": true,
+    "company_name": "CableMax Triple Play",
+    "monthly_charge": 189.99,
+    "billing_frequency": "Monthly",
+    "subscription_start_date": "2024-11-01",
+    "last_charge_date": "2026-05-01",
+    "prior_cancellation_attempt": true,
+    "cancellation_date": "2026-04-01",
+    "cancellation_method": "Called customer service",
+    "cancellation_result": "They said there's a cancellation fee",
+    "has_written_contract": true,
+    "contract_length": "2 years",
+    "auto_renewal_disclosed": "Buried in fine print",
+    "evidence_files": []
+  },
+  "expected_outputs": {
+    "email_sequence": true,
+    "sequence_steps": 3,
+    "bundled_warning_shown": true,
+    "extra_disclaimers": true,
+    "statute_citations": ["FTC Click-to-Cancel Rule"]
+  },
+  "validation_checks": [
+    "Bundled contract warning displayed",
+    "User acknowledges warning before proceeding",
+    "Generation still happens (soft warning, not hard block)",
+    "Extra disclaimer about bundle terms in generated emails",
+    "Telecom-specific template used"
+  ]
+}

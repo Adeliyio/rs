@@ -1,0 +1,24 @@
+{
+  "test_id": "subscription-regression-03",
+  "description": "MUST DECLINE — Active litigation with subscription company",
+  "input_quality": "clean",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "subscription-active-litigation",
+  "jurisdiction": "NY",
+  "wedge": "subscription",
+  "inputs": {
+    "jurisdiction_state": "NY",
+    "active_litigation": true
+  },
+  "expected_outputs": {
+    "email_sequence": false,
+    "decline_triggered": true,
+    "decline_rule": "subscription-active-litigation",
+    "resources_shown": "legal_representation"
+  },
+  "validation_checks": [
+    "Flow terminates at litigation check",
+    "Decline copy shown",
+    "No generation attempted"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "id": "rebuttal-table-FL",
+  "jurisdiction": "FL",
+  "description": "Florida-specific deduction categories grounded in Fla. Stat. §83.49.",
+  "deduction_categories": [
+    {
+      "category_id": "cleaning",
+      "name": "Cleaning",
+      "statute_ref": "Fla. Stat. §83.49",
+      "permissible_when": "Cleaning is required due to tenant-caused conditions beyond normal wear.",
+      "not_permissible_when": "Normal cleaning after a tenancy; routine maintenance cleaning.",
+      "typical_rebuttal": "Normal cleaning after a tenancy constitutes normal wear and tear, which is not a valid basis for a deposit claim under Florida law. Tenants in similar situations in Florida typically note that basic cleaning is expected turnover maintenance.",
+      "evidence_helpful": ["Move-in/move-out photos", "Condition reports"]
+    },
+    {
+      "category_id": "painting",
+      "name": "Painting / Wall Repair",
+      "statute_ref": "Fla. Stat. §83.49",
+      "permissible_when": "Tenant caused damage beyond normal wear — large holes, unauthorized colors, significant damage.",
+      "not_permissible_when": "Normal wear: nail holes, faded paint, minor scuffs after reasonable tenancy.",
+      "typical_rebuttal": "Minor wall marks, nail holes from normal use, and paint fading over the course of a tenancy constitute normal wear and tear. Tenants in Florida in similar situations typically note the length of the tenancy when contesting painting charges.",
+      "evidence_helpful": ["Photos", "Tenancy duration"]
+    },
+    {
+      "category_id": "carpet",
+      "name": "Carpet / Flooring",
+      "statute_ref": "Fla. Stat. §83.49",
+      "permissible_when": "Damage beyond normal wear — burns, large stains, pet damage, tears.",
+      "not_permissible_when": "Normal wear patterns, matting, minor stains. Useful life depreciation applies.",
+      "typical_rebuttal": "Normal carpet wear from regular use is not deductible. Carpet has a useful life and replacement costs should be prorated based on age.",
+      "evidence_helpful": ["Carpet age", "Move-in/move-out photos"]
+    },
+    {
+      "category_id": "procedural_failure",
+      "name": "Landlord Failed to Send Proper Certified Mail Notice",
+      "statute_ref": "Fla. Stat. §83.49(3)(b)-(c)",
+      "permissible_when": "Never — certified mail notice with statutory language is required.",
+      "not_permissible_when": "Landlord failed to send certified mail within 30 days, or notice lacked required statutory language.",
+      "typical_rebuttal": "Under Fla. Stat. §83.49(3)(b), a landlord who intends to claim against the deposit must send written notice by certified mail within 30 days after the tenant vacates, including specific statutory language advising the tenant of their right to object. Under §83.49(3)(c), failure to give this notice within the 30-day period results in forfeiture of the landlord's right to impose any claim against the deposit.",
+      "evidence_helpful": ["Absence of certified mail receipt", "Notice received without required language", "Notice received after 30-day deadline"]
+    },
+    {
+      "category_id": "holding_violation",
+      "name": "Deposit Not Held in Proper Account",
+      "statute_ref": "Fla. Stat. §83.49(1)-(2)",
+      "permissible_when": "N/A — this is a landlord obligation violation.",
+      "not_permissible_when": "Landlord failed to hold deposit in a separate account (or post surety bond) or failed to notify tenant of the holding method within 30 days.",
+      "typical_rebuttal": "Under Fla. Stat. §83.49(1), the landlord is required to hold the security deposit in a separate account at a Florida banking institution or post a surety bond. Under §83.49(2), the landlord must notify the tenant within 30 days of the holding method. Failure to comply with these requirements may affect the landlord's right to claim.",
+      "evidence_helpful": ["Absence of deposit holding notification"]
+    }
+  ]
+}

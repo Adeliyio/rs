@@ -1,0 +1,53 @@
+{
+  "test_id": "deposit-regression-04",
+  "description": "Partial documents — Florida case, landlord sent notice of intent to claim",
+  "input_quality": "partial_documents",
+  "expected_outcome": "generate",
+  "jurisdiction": "FL",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "FL",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "residential",
+    "move_out_date": "2026-04-01",
+    "deposit_amount": 2000,
+    "landlord_name": "Palm Bay Apartments Inc",
+    "landlord_address": "1200 Collins Ave, Miami Beach, FL 33139",
+    "property_address": "850 Ocean Drive, Unit 201, Miami Beach, FL 33139",
+    "lease_start_date": "2025-04-01",
+    "lease_end_date": "2026-03-31",
+    "forwarding_address_provided": true,
+    "forwarding_address": "300 Biscayne Blvd, Apt 1502, Miami, FL 33131",
+    "forwarding_address_date": "2026-04-01",
+    "forwarding_address_method": "Written letter",
+    "itemization_status": "letter_only",
+    "deductions": [
+      { "description": "Carpet replacement — pet damage", "amount": 1200, "dispute_basis": "Charge is excessive / inflated", "has_evidence": true },
+      { "description": "Blinds replacement", "amount": 300, "dispute_basis": "Normal wear and tear, not damage", "has_evidence": false }
+    ],
+    "evidence_files": ["landlord_notice.jpg"],
+    "prior_communication": false,
+    "walkthrough_completed": false,
+    "florida_specific": {
+      "landlord_notice_received": true,
+      "landlord_notice_date": "2026-04-20",
+      "landlord_notice_method": "certified_mail"
+    }
+  },
+  "expected_outputs": {
+    "demand_letter": true,
+    "itemized_rebuttal_table": true,
+    "statute_citations": ["Fla. Stat. §83.49"],
+    "deadline_referenced": "15-day objection window",
+    "penalty_referenced": true,
+    "total_disputed": 1500
+  },
+  "validation_checks": [
+    "Recognizes Florida's two-tier deadline (15 days no claim, 30 days with claim)",
+    "References tenant's 15-day objection window after landlord's notice",
+    "Cites Fla. Stat. §83.49",
+    "Notes landlord must hold deposit in separate account or post surety bond",
+    "Partial document handling — lease not uploaded, only landlord notice"
+  ]
+}

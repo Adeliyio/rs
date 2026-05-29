@@ -1,0 +1,83 @@
+{
+  "id": "vertical-mobile-app",
+  "vertical": "mobile_app",
+  "display_name": "Mobile App Subscription",
+  "description": "Mobile app subscription cancellations. Key nuance: subscriptions purchased through Apple App Store or Google Play must be managed through the platform, not the app developer.",
+  "common_issues": [
+    "Subscribed through App Store/Play Store but can't find cancellation",
+    "App deleted but subscription continues (deleting app does NOT cancel)",
+    "Free trial converted to paid",
+    "Charged for subscription after cancellation",
+    "Accidental subscription from in-app prompt"
+  ],
+  "sequence_template": {
+    "email_1": {
+      "subject": "Cancellation and Refund Request — {{company_name}} App Subscription",
+      "tone": "firm_professional",
+      "key_points": [
+        "Clear cancellation request",
+        "Specify whether subscription was through App Store, Play Store, or directly with developer",
+        "If subscribed through platform, note that platform cancellation has been completed",
+        "Request refund for unauthorized or unwanted charges",
+        "Cite applicable consumer protection law"
+      ],
+      "legal_citations": {
+        "federal": "FTC Click-to-Cancel Rule",
+        "ca": "Cal. Bus. & Prof. Code §17602-17603"
+      },
+      "mobile_specific_points": [
+        "CRITICAL: Deleting an app does NOT cancel the subscription",
+        "If subscribed via App Store: must cancel in iOS Settings > Apple ID > Subscriptions",
+        "If subscribed via Google Play: must cancel in Play Store > Subscriptions",
+        "If subscribed directly with developer: email/website cancellation"
+      ]
+    },
+    "email_2": {
+      "subject": "Follow-Up: App Subscription Cancellation — SECOND REQUEST",
+      "timing": "Day 7",
+      "tone": "firm_escalating",
+      "key_points": [
+        "Reference first email",
+        "Note continued charges",
+        "Mention platform dispute process as alternative"
+      ]
+    },
+    "email_3": {
+      "subject": "Final Notice: App Subscription — {{company_name}}",
+      "timing": "Day 14",
+      "tone": "final_notice",
+      "key_points": [
+        "Final demand",
+        "State intent to pursue platform refund and regulatory complaint"
+      ]
+    }
+  },
+  "platform_refund_processes": {
+    "apple": {
+      "name": "Apple App Store Refund",
+      "cancel_path": "iOS: Settings > [Your Name] > Subscriptions. macOS: App Store > Account > Subscriptions.",
+      "refund_url": "https://reportaproblem.apple.com/",
+      "refund_process": "Go to reportaproblem.apple.com, sign in with Apple ID, find the charge, select 'Request a Refund'. Apple reviews and typically responds within 48 hours.",
+      "refund_policy": "Apple reviews refund requests on a case-by-case basis. Unauthorized purchases, accidental purchases, and subscriptions that didn't work as described are common approval reasons.",
+      "important_notes": [
+        "Deleting the app does NOT cancel the subscription",
+        "You can request a refund even after cancelling the subscription",
+        "Family Sharing subscriptions must be cancelled by the organizer",
+        "Free trial: cancel before trial ends to avoid being charged"
+      ]
+    },
+    "google": {
+      "name": "Google Play Refund",
+      "cancel_path": "Google Play Store > Menu > Subscriptions > Select subscription > Cancel",
+      "refund_url": "https://play.google.com/store/account/subscriptions",
+      "refund_process": "Go to play.google.com/store/account/subscriptions, find the subscription, request a refund. Google has a 48-hour refund window for most purchases; after that, contact the developer or Google support.",
+      "refund_policy": "Google generally processes refunds within 48 hours of purchase. For subscriptions older than 48 hours, refunds are at the developer's discretion or can be pursued through Google support.",
+      "important_notes": [
+        "Uninstalling the app does NOT cancel the subscription",
+        "You can also request refund through Google Pay at pay.google.com",
+        "Subscriptions through Google may be eligible for Google's purchase protection"
+      ]
+    }
+  },
+  "notes": "Mobile app subscriptions are the most confusing vertical because of the platform intermediary. The most common issue is people who delete the app thinking the subscription is cancelled. Always determine whether the subscription was through Apple, Google, or directly with the developer — this determines the cancellation and refund path."
+}

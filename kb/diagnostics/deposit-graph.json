@@ -1,0 +1,310 @@
+{
+  "version": "1.0.0",
+  "wedge": "deposit",
+  "description": "Directed-graph diagnostic schema for the security deposit wedge. TypeScript-typed JSON, hot-reloadable. Per PRD §7.1: conditional on prior answers and document extractions. Document-aware pruning: a field parsed from a document is shown for confirmation, not asked again.",
+  "entry_node": "jurisdiction",
+  "nodes": {
+    "jurisdiction": {
+      "id": "jurisdiction",
+      "type": "select",
+      "question": "In which state is/was the rental property located?",
+      "field": "jurisdiction_state",
+      "options": [
+        { "value": "CA", "label": "California", "next": "refusal_check_eviction" },
+        { "value": "TX", "label": "Texas", "next": "refusal_check_eviction" },
+        { "value": "NY", "label": "New York", "next": "refusal_check_eviction" },
+        { "value": "FL", "label": "Florida", "next": "refusal_check_eviction" },
+        { "value": "OTHER", "label": "Another state", "next": "unsupported_state" }
+      ],
+      "required": true
+    },
+    "unsupported_state": {
+      "id": "unsupported_state",
+      "type": "select",
+      "question": "Which state?",
+      "field": "jurisdiction_state_other",
+      "options_source": "us_states_minus_supported",
+      "next": "unsupported_jurisdiction_flow",
+      "required": true
+    },
+    "unsupported_jurisdiction_flow": {
+      "id": "unsupported_jurisdiction_flow",
+      "type": "terminal",
+      "terminal_type": "unsupported_jurisdiction",
+      "message": "We don't yet have verified coverage for your state's deposit laws."
+    },
+    "refusal_check_eviction": {
+      "id": "refusal_check_eviction",
+      "type": "boolean",
+      "question": "Has your landlord filed for eviction, or have you received an eviction notice?",
+      "field": "eviction_involved",
+      "branches": {
+        "true": "refusal_eviction",
+        "false": "refusal_check_litigation"
+      }
+    },
+    "refusal_eviction": {
+      "id": "refusal_eviction",
+      "type": "terminal",
+      "terminal_type": "out_of_scope",
+      "refusal_rule": "deposit-eviction-entangled"
+    },
+    "refusal_check_litigation": {
+      "id": "refusal_check_litigation",
+      "type": "boolean",
+      "question": "Is there currently a lawsuit or court case pending between you and your landlord about this property?",
+      "field": "active_litigation",
+      "branches": {
+        "true": "refusal_litigation",
+        "false": "refusal_check_commercial"
+      }
+    },
+    "refusal_litigation": {
+      "id": "refusal_litigation",
+      "type": "terminal",
+      "terminal_type": "out_of_scope",
+      "refusal_rule": "deposit-active-litigation"
+    },
+    "refusal_check_commercial": {
+      "id": "refusal_check_commercial",
+      "type": "select",
+      "question": "Was this a residential or commercial lease?",
+      "field": "lease_type",
+      "options": [
+        { "value": "residential", "label": "Residential", "next": "move_out_date" },
+        { "value": "commercial", "label": "Commercial", "next": "refusal_commercial" }
+      ]
+    },
+    "refusal_commercial": {
+      "id": "refusal_commercial",
+      "type": "terminal",
+      "terminal_type": "out_of_scope",
+      "refusal_rule": "deposit-commercial-lease"
+    },
+    "move_out_date": {
+      "id": "move_out_date",
+      "type": "date",
+      "question": "When did you move out (or when is your move-out date)?",
+      "field": "move_out_date",
+      "required": true,
+      "document_extractable": true,
+      "extract_from": "lease.termination_date",
+      "next": "deposit_amount"
+    },
+    "deposit_amount": {
+      "id": "deposit_amount",
+      "type": "currency",
+      "question": "How much was your security deposit?",
+      "field": "deposit_amount",
+      "required": true,
+      "document_extractable": true,
+      "extract_from": "lease.security_deposit_amount",
+      "validation": {
+        "min": 1,
+        "max": 50000,
+        "high_amount_threshold": 25000,
+        "high_amount_refusal": "deposit-high-amount"
+      },
+      "next": "landlord_info"
+    },
+    "landlord_info": {
+      "id": "landlord_info",
+      "type": "group",
+      "question": "Who is your landlord or property management company?",
+      "fields": [
+        { "field": "landlord_name", "label": "Landlord / Management Company Name", "type": "text", "required": true, "document_extractable": true, "extract_from": "lease.landlord_name" },
+        { "field": "landlord_address", "label": "Landlord's Mailing Address", "type": "address", "required": true, "document_extractable": true, "extract_from": "lease.landlord_address" }
+      ],
+      "next": "property_address"
+    },
+    "property_address": {
+      "id": "property_address",
+      "type": "address",
+      "question": "What is the address of the rental property?",
+      "field": "property_address",
+      "required": true,
+      "document_extractable": true,
+      "extract_from": "lease.property_address",
+      "next": "lease_dates"
+    },
+    "lease_dates": {
+      "id": "lease_dates",
+      "type": "group",
+      "question": "What were your lease dates?",
+      "fields": [
+        { "field": "lease_start_date", "label": "Lease Start Date", "type": "date", "required": true, "document_extractable": true, "extract_from": "lease.start_date" },
+        { "field": "lease_end_date", "label": "Lease End Date", "type": "date", "required": true, "document_extractable": true, "extract_from": "lease.end_date" }
+      ],
+      "next": "forwarding_address"
+    },
+    "forwarding_address": {
+      "id": "forwarding_address",
+      "type": "boolean",
+      "question": "Did you provide your landlord with a forwarding address in writing after you moved out?",
+      "field": "forwarding_address_provided",
+      "help_text": "Some states require you to provide a forwarding address for the landlord to return your deposit.",
+      "branches": {
+        "true": "forwarding_address_details",
+        "false": "received_itemization"
+      }
+    },
+    "forwarding_address_details": {
+      "id": "forwarding_address_details",
+      "type": "group",
+      "fields": [
+        { "field": "forwarding_address", "label": "Forwarding Address", "type": "address", "required": true },
+        { "field": "forwarding_address_date", "label": "Date You Provided It", "type": "date", "required": false },
+        { "field": "forwarding_address_method", "label": "How Did You Provide It?", "type": "select", "options": ["Written letter", "Email", "Text message", "In person", "Other"], "required": false }
+      ],
+      "next": "received_itemization"
+    },
+    "received_itemization": {
+      "id": "received_itemization",
+      "type": "select",
+      "question": "What have you received from your landlord regarding your deposit?",
+      "field": "itemization_status",
+      "options": [
+        { "value": "full_return", "label": "Full deposit returned", "next": "no_dispute_needed" },
+        { "value": "partial_return_with_itemization", "label": "Partial return with an itemized list of deductions", "next": "deduction_details" },
+        { "value": "partial_return_no_itemization", "label": "Partial return but no itemized list", "next": "partial_amount_received" },
+        { "value": "nothing", "label": "Nothing — no money and no communication", "next": "days_since_moveout_check" },
+        { "value": "letter_only", "label": "A letter claiming deductions but no money", "next": "deduction_details" }
+      ]
+    },
+    "no_dispute_needed": {
+      "id": "no_dispute_needed",
+      "type": "terminal",
+      "terminal_type": "no_dispute",
+      "message": "It sounds like your full deposit was returned. If you believe any deductions were taken that shouldn't have been, feel free to start a new case with the details."
+    },
+    "partial_amount_received": {
+      "id": "partial_amount_received",
+      "type": "currency",
+      "question": "How much did you receive back?",
+      "field": "amount_returned",
+      "required": true,
+      "next": "days_since_moveout_check"
+    },
+    "days_since_moveout_check": {
+      "id": "days_since_moveout_check",
+      "type": "computed",
+      "computation": "days_between(move_out_date, today)",
+      "field": "days_since_moveout",
+      "next": "evidence_upload"
+    },
+    "deduction_details": {
+      "id": "deduction_details",
+      "type": "deduction_table",
+      "question": "What deductions did your landlord list? Add each one.",
+      "field": "deductions",
+      "conditional": "itemization_status IN ['partial_return_with_itemization', 'letter_only']",
+      "skip_if_not_applicable": true,
+      "item_fields": [
+        { "field": "description", "label": "Deduction Description", "type": "text", "required": true },
+        { "field": "amount", "label": "Amount", "type": "currency", "required": true },
+        { "field": "dispute_basis", "label": "Why do you disagree?", "type": "select", "options": [
+          "Normal wear and tear, not damage",
+          "Pre-existing condition — was there when I moved in",
+          "I was not responsible for this",
+          "Charge is excessive / inflated",
+          "Not an allowable deduction under state law",
+          "I have photos/evidence contradicting this",
+          "Other"
+        ], "required": true },
+        { "field": "has_evidence", "label": "Do you have photos or documents related to this deduction?", "type": "boolean" }
+      ],
+      "document_extractable": true,
+      "extract_from": "itemization.deductions",
+      "next": "days_since_moveout_deduction_path"
+    },
+    "days_since_moveout_deduction_path": {
+      "id": "days_since_moveout_deduction_path",
+      "type": "computed",
+      "computation": "days_between(move_out_date, today)",
+      "field": "days_since_moveout",
+      "next": "evidence_upload"
+    },
+    "evidence_upload": {
+      "id": "evidence_upload",
+      "type": "file_upload",
+      "question": "Upload any documents that may help (all optional):",
+      "field": "evidence_files",
+      "required": false,
+      "accepted_types": ["lease", "itemization_letter", "move_in_photos", "move_out_photos", "correspondence", "receipts"],
+      "max_files": 5,
+      "max_size_mb": 10,
+      "help_text": "Common uploads: your lease, the landlord's itemization letter, move-in/move-out photos, any correspondence. We'll extract relevant information automatically.",
+      "next": "communication_history"
+    },
+    "communication_history": {
+      "id": "communication_history",
+      "type": "boolean",
+      "question": "Have you already contacted your landlord about the deposit (other than providing a forwarding address)?",
+      "field": "prior_communication",
+      "branches": {
+        "true": "communication_details",
+        "false": "walkthrough_done"
+      }
+    },
+    "communication_details": {
+      "id": "communication_details",
+      "type": "textarea",
+      "question": "Briefly describe what was communicated and how (email, letter, phone, text).",
+      "field": "communication_summary",
+      "required": false,
+      "max_length": 1000,
+      "next": "walkthrough_done"
+    },
+    "walkthrough_done": {
+      "id": "walkthrough_done",
+      "type": "boolean",
+      "question": "Did you and your landlord do a move-out walkthrough or inspection together?",
+      "field": "walkthrough_completed",
+      "conditional_on_state": {
+        "CA": { "help_text": "In California, landlords are required to offer an initial inspection before you move out (Cal. Civ. Code §1950.5(f))." }
+      },
+      "next": "review_and_generate"
+    },
+    "review_and_generate": {
+      "id": "review_and_generate",
+      "type": "summary",
+      "summary_type": "diagnostic_complete",
+      "next": "credibility_preview"
+    },
+    "credibility_preview": {
+      "id": "credibility_preview",
+      "type": "preview",
+      "preview_type": "credibility",
+      "description": "Shows the letter's structure, real opening paragraph, and one grounded statute reference. Remainder masked. Per PRD §6.2 step 7.",
+      "next": "paywall"
+    },
+    "paywall": {
+      "id": "paywall",
+      "type": "payment",
+      "payment_type": "paddle_inline",
+      "next": "generation"
+    },
+    "generation": {
+      "id": "generation",
+      "type": "generation",
+      "generation_type": "deposit_letter",
+      "outputs": ["demand_letter", "itemized_rebuttal_table"],
+      "next": "delivery"
+    },
+    "delivery": {
+      "id": "delivery",
+      "type": "delivery",
+      "delivery_options": ["in_app_view", "pdf_download", "email_copy"],
+      "next": "outcome_tracking"
+    },
+    "outcome_tracking": {
+      "id": "outcome_tracking",
+      "type": "tracking",
+      "checkpoints": [
+        { "trigger": "T+14", "question": "Have you sent your letter?" },
+        { "trigger": "T+30", "question": "Have you received any response?" },
+        { "trigger": "T+60", "question": "What has been the outcome?" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "test_id": "deposit-regression-05",
+  "description": "No documents uploaded — diagnostic-only California case",
+  "input_quality": "no_documents",
+  "expected_outcome": "generate",
+  "jurisdiction": "CA",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "CA",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "residential",
+    "move_out_date": "2026-04-30",
+    "deposit_amount": 3200,
+    "landlord_name": "Maria Rodriguez",
+    "landlord_address": "1500 Market St, San Francisco, CA 94103",
+    "property_address": "742 Haight Street, Apt 2, San Francisco, CA 94117",
+    "lease_start_date": "2023-05-01",
+    "lease_end_date": "2026-04-30",
+    "forwarding_address_provided": false,
+    "itemization_status": "nothing",
+    "deductions": [],
+    "evidence_files": [],
+    "prior_communication": false,
+    "walkthrough_completed": false
+  },
+  "expected_outputs": {
+    "demand_letter": true,
+    "itemized_rebuttal_table": false,
+    "statute_citations": ["Cal. Civ. Code §1950.5"],
+    "deadline_referenced": "21 days from move-out",
+    "penalty_referenced": true,
+    "total_disputed": 3200
+  },
+  "validation_checks": [
+    "Letter generated from diagnostic answers only (no documents)",
+    "No document-extracted fields — all from user input",
+    "Letter still cites correct statute",
+    "Notes that forwarding address was not provided (may affect some provisions)",
+    "Flow continues without upload — no blocking"
+  ]
+}

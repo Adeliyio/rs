@@ -1,0 +1,25 @@
+{
+  "test_id": "deposit-regression-08",
+  "description": "MUST DECLINE — Active litigation between tenant and landlord",
+  "input_quality": "clean_pdf",
+  "expected_outcome": "decline",
+  "expected_refusal_rule": "deposit-active-litigation",
+  "jurisdiction": "NY",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "NY",
+    "eviction_involved": false,
+    "active_litigation": true
+  },
+  "expected_outputs": {
+    "demand_letter": false,
+    "decline_triggered": true,
+    "decline_rule": "deposit-active-litigation",
+    "resources_shown": "legal_representation"
+  },
+  "validation_checks": [
+    "Flow terminates at litigation check",
+    "Decline copy shown",
+    "No generation attempted"
+  ]
+}

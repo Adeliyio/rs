@@ -1,0 +1,54 @@
+{
+  "test_id": "deposit-regression-01",
+  "description": "Clean PDF lease and itemization — California standard case",
+  "input_quality": "clean_pdf",
+  "expected_outcome": "generate",
+  "jurisdiction": "CA",
+  "wedge": "deposit",
+  "inputs": {
+    "jurisdiction_state": "CA",
+    "eviction_involved": false,
+    "active_litigation": false,
+    "lease_type": "residential",
+    "move_out_date": "2026-03-15",
+    "deposit_amount": 2400,
+    "landlord_name": "Sunshine Property Management LLC",
+    "landlord_address": "456 Main St, Suite 200, Los Angeles, CA 90012",
+    "property_address": "123 Oak Avenue, Apt 4B, Los Angeles, CA 90028",
+    "lease_start_date": "2024-03-15",
+    "lease_end_date": "2026-03-14",
+    "forwarding_address_provided": true,
+    "forwarding_address": "789 New Street, Apt 1, Pasadena, CA 91101",
+    "forwarding_address_date": "2026-03-15",
+    "forwarding_address_method": "Email",
+    "itemization_status": "partial_return_with_itemization",
+    "amount_returned": 800,
+    "deductions": [
+      { "description": "Carpet cleaning", "amount": 350, "dispute_basis": "Normal wear and tear, not damage", "has_evidence": true },
+      { "description": "Painting — bedroom walls", "amount": 500, "dispute_basis": "Normal wear and tear, not damage", "has_evidence": true },
+      { "description": "Replace kitchen faucet", "amount": 250, "dispute_basis": "Pre-existing condition — was there when I moved in", "has_evidence": false },
+      { "description": "General cleaning", "amount": 500, "dispute_basis": "Charge is excessive / inflated", "has_evidence": false }
+    ],
+    "evidence_files": ["lease.pdf", "itemization_letter.pdf", "move_in_photos.zip"],
+    "prior_communication": false,
+    "walkthrough_completed": false
+  },
+  "expected_outputs": {
+    "demand_letter": true,
+    "itemized_rebuttal_table": true,
+    "statute_citations": ["Cal. Civ. Code §1950.5"],
+    "deadline_referenced": "21 days from move-out",
+    "penalty_referenced": true,
+    "total_disputed": 1600
+  },
+  "validation_checks": [
+    "Letter cites Cal. Civ. Code §1950.5",
+    "Letter references 21-day return deadline",
+    "Rebuttal table has 4 rows matching deductions",
+    "No ungrounded citations",
+    "Third-person collective framing used",
+    "No evaluative language (no 'you have a strong case')",
+    "Disclaimer present",
+    "Move-out inspection right mentioned (§1950.5(f))"
+  ]
+}

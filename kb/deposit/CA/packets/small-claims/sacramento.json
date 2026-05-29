@@ -1,0 +1,45 @@
+{
+  "id": "sc-CA-sacramento-deposit",
+  "venue_id": "ca-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "CA",
+  "county": "Sacramento",
+  "venue_name": "Sacramento County Superior Court — Small Claims Division",
+  "venue_address": { "street": "720 9th Street", "city": "Sacramento", "state": "CA", "zip": "95814" },
+  "venue_url": "https://www.saccourt.ca.gov/small-claims/small-claims.aspx",
+  "monetary_limit": 12500,
+  "forms": [
+    { "form_id": "SC-100", "name": "Plaintiff's Claim", "official_url": "https://www.courts.ca.gov/documents/sc100.pdf", "fillable": true, "required": true, "copies_needed": 2, "description": "Primary filing form." },
+    { "form_id": "SC-104", "name": "Declaration of Nonmilitary Status", "official_url": "https://www.courts.ca.gov/documents/sc104.pdf", "fillable": true, "required": true, "copies_needed": 1, "description": "Required federal declaration." }
+  ],
+  "attachments_order": [
+    { "position": 1, "attachment_type": "claim_form", "description": "SC-100", "required": true, "source": "form_template" },
+    { "position": 2, "attachment_type": "demand_letter_copy", "description": "Demand letter", "required": true, "source": "generated" },
+    { "position": 3, "attachment_type": "lease_copy", "description": "Lease", "required": true, "source": "user_upload" },
+    { "position": 4, "attachment_type": "itemization", "description": "Deduction statement", "required": false, "source": "user_upload" },
+    { "position": 5, "attachment_type": "photos", "description": "Photos", "required": false, "source": "user_upload" }
+  ],
+  "filing_instructions": {
+    "method": "in_person",
+    "steps": [
+      { "step_number": 1, "instruction": "Complete forms SC-100 and SC-104." },
+      { "step_number": 2, "instruction": "File at Sacramento Superior Court, Gordon D. Schaber Courthouse, 720 9th Street." },
+      { "step_number": 3, "instruction": "Pay the filing fee." },
+      { "step_number": 4, "instruction": "Serve the defendant at least 15 days before hearing." },
+      { "step_number": 5, "instruction": "File proof of service and attend the hearing." }
+    ],
+    "service_of_process": { "method": "Personal service, substituted service, or certified mail", "deadline_days": 15, "proof_form": "SC-104A or POS-030" }
+  },
+  "fees": {
+    "filing_fee": [
+      { "amount_usd": 30, "condition": "Claim $1,500 or less" },
+      { "amount_usd": 50, "condition": "Claim $1,501 to $5,000" },
+      { "amount_usd": 75, "condition": "Claim $5,001 to $12,500" }
+    ],
+    "fee_waiver_available": true, "fee_waiver_form": "FW-001",
+    "payment_methods": ["Cash", "Check", "Money order"]
+  },
+  "statute_of_limitations": { "years": 4, "statute_ref": "Cal. Civ. Proc. Code §337" },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.saccourt.ca.gov/small-claims/small-claims.aspx"], "next_review_due": "2026-08-20" }
+}

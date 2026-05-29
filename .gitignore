@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.*.local
+.env.example
+
+# Supabase
+.supabase/
+
+# Build
+dist/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vercel
+.vercel
+
+# Claude Code
+.claude/
+
+# Documentation / planning (not source code)
+*.md
+!README.md
+!kb/**/*.md
+
+# Scripts (testing/deploy utilities)
+scripts/
+
+# Test files
+e2e/
+vitest.config.ts
+playwright.config.ts
+src/**/__tests__/
+src/__tests__/
+
+# Images / screenshots
+*.png
+*.jpg
+*.jpeg
+
+# Research / reference tiers
+tiers/
+
+# Infrastructure config
+infrastructure/
+
+# Docker (local dev only)
+Dockerfile
+docker-compose.yml
+.dockerignore

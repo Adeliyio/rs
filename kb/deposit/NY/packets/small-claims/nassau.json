@@ -1,0 +1,29 @@
+{
+  "id": "sc-NY-nassau-deposit",
+  "venue_id": "ny-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "NY",
+  "county": "Nassau",
+  "venue_name": "Nassau County District Court — Small Claims",
+  "venue_address": { "street": "99 Main Street", "city": "Hempstead", "state": "NY", "zip": "11550" },
+  "venue_url": "https://www.nycourts.gov/courts/10jd/nassau/districtcourt/small_claims.shtml",
+  "monetary_limit": 5000,
+  "forms": [
+    { "form_id": "SC-CLAIM", "name": "Small Claims Statement of Claim", "description": "Filed at the District Court clerk's office.", "fillable": false, "required": true, "copies_needed": 1 }
+  ],
+  "filing_instructions": {
+    "method": "in_person",
+    "steps": [
+      { "step_number": 1, "instruction": "File at the Nassau County District Court, 99 Main Street, Hempstead." },
+      { "step_number": 2, "instruction": "Complete the claim form at the clerk's office." },
+      { "step_number": 3, "instruction": "Pay filing fee. Court handles service by certified mail." },
+      { "step_number": 4, "instruction": "Attend hearing (typically evenings)." }
+    ],
+    "service_of_process": { "method": "Court handles service by certified mail" }
+  },
+  "fees": { "filing_fee": [{ "amount_usd": 15, "condition": "Claims up to $5,000" }], "fee_waiver_available": true },
+  "statute_of_limitations": { "years": 6, "statute_ref": "N.Y. CPLR §213" },
+  "verification": { "last_verified": "2026-05-20", "verified_by": "NEEDS_SECOND_PASS_REVIEW", "primary_sources_checked": ["https://www.nycourts.gov/courts/10jd/nassau/"], "next_review_due": "2026-08-20" },
+  "notes": "Nassau County District Court small claims limit is $5,000 (not $10,000 like NYC). For claims above $5,000 but below $10,000, file in Nassau County Supreme Court or consider NYC if the landlord has a NYC address."
+}

@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+# Secret scanning
+npx tsx scripts/scan-secrets.ts
+
+# Prohibited phrase scanning
+npx tsx scripts/scan-prohibited-phrases.ts
+
+# Type checking
+npx tsc --noEmit

@@ -1,0 +1,66 @@
+{
+  "id": "sc-CA-san-francisco-deposit",
+  "venue_id": "ca-small-claims",
+  "venue_type": "small_claims",
+  "wedge": "deposit",
+  "jurisdiction": "CA",
+  "county": "San Francisco",
+  "venue_name": "San Francisco County Superior Court — Small Claims Division",
+  "venue_address": {
+    "street": "400 McAllister Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94102"
+  },
+  "venue_url": "https://www.sfsuperiorcourt.org/divisions/small-claims",
+  "monetary_limit": 12500,
+  "forms": [
+    { "form_id": "SC-100", "name": "Plaintiff's Claim and ORDER to Go to Small Claims Court", "description": "Primary small claims filing form.", "official_url": "https://www.courts.ca.gov/documents/sc100.pdf", "fillable": true, "required": true, "copies_needed": 2 },
+    { "form_id": "SC-104", "name": "Declaration of Nonmilitary Status", "description": "Required federal declaration.", "official_url": "https://www.courts.ca.gov/documents/sc104.pdf", "fillable": true, "required": true, "copies_needed": 1 }
+  ],
+  "attachments_order": [
+    { "position": 1, "attachment_type": "claim_form", "description": "SC-100 (completed)", "required": true, "source": "form_template" },
+    { "position": 2, "attachment_type": "demand_letter_copy", "description": "Demand letter copy", "required": true, "source": "generated" },
+    { "position": 3, "attachment_type": "lease_copy", "description": "Lease agreement", "required": true, "source": "user_upload" },
+    { "position": 4, "attachment_type": "itemization", "description": "Landlord's deduction statement", "required": false, "source": "user_upload" },
+    { "position": 5, "attachment_type": "photos", "description": "Photos", "required": false, "source": "user_upload" },
+    { "position": 6, "attachment_type": "correspondence", "description": "Correspondence", "required": false, "source": "user_upload" }
+  ],
+  "filing_instructions": {
+    "method": "mixed",
+    "steps": [
+      { "step_number": 1, "instruction": "Complete form SC-100 with your claim details." },
+      { "step_number": 2, "instruction": "Complete form SC-104." },
+      { "step_number": 3, "instruction": "Make 2 copies of all forms." },
+      { "step_number": 4, "instruction": "File at the Clerk's Office at 400 McAllister Street, Room 103, San Francisco, CA 94102.", "note": "Hours: Monday-Friday, 8:30 AM - 4:00 PM." },
+      { "step_number": 5, "instruction": "Pay the filing fee." },
+      { "step_number": 6, "instruction": "Serve the defendant at least 15 days before the hearing." },
+      { "step_number": 7, "instruction": "File proof of service before the hearing." },
+      { "step_number": 8, "instruction": "Attend the hearing with all documents organized." }
+    ],
+    "service_of_process": {
+      "method": "Personal service, substituted service, or certified mail with acknowledgment",
+      "deadline_days": 15,
+      "proof_form": "SC-104A or POS-030"
+    },
+    "hearing_info": "Hearings typically scheduled 30-70 days after filing."
+  },
+  "fees": {
+    "filing_fee": [
+      { "amount_usd": 30, "condition": "Claim $1,500 or less" },
+      { "amount_usd": 50, "condition": "Claim $1,501 to $5,000" },
+      { "amount_usd": 75, "condition": "Claim $5,001 to $12,500" }
+    ],
+    "service_fee": 40,
+    "fee_waiver_available": true,
+    "fee_waiver_form": "FW-001",
+    "payment_methods": ["Cash", "Check", "Money order", "Credit/debit card"]
+  },
+  "statute_of_limitations": { "years": 4, "statute_ref": "Cal. Civ. Proc. Code §337", "description": "4 years for written contract; 2 years for oral." },
+  "verification": {
+    "last_verified": "2026-05-20",
+    "verified_by": "NEEDS_SECOND_PASS_REVIEW",
+    "primary_sources_checked": ["https://www.sfsuperiorcourt.org/divisions/small-claims", "https://www.courts.ca.gov/selfhelp-smallclaims.htm"],
+    "next_review_due": "2026-08-20"
+  }
+}
