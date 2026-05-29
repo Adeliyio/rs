@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description:
       'Draft a demand letter citing Tex. Prop. Code §92.103. 30-day deadline to return your deposit.',
   },
+  alternates: {
+    canonical: 'https://resolvaio.com/deposit/texas',
+  },
 };
 
 export default function TexasDepositPage() {

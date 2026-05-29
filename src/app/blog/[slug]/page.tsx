@@ -38,6 +38,16 @@ export async function generateMetadata({
       description: article.description,
       type: 'article',
       publishedTime: article.publishedAt,
+      locale: 'en_US',
+      siteName: 'Resolvaio',
+    },
+    twitter: {
+      card: 'summary',
+      title: article.title,
+      description: article.description,
+    },
+    alternates: {
+      canonical: `https://resolvaio.com/blog/${slug}`,
     },
   };
 }
@@ -240,6 +250,12 @@ export default async function BlogArticlePage({
             headline: article.title,
             description: article.description,
             datePublished: article.publishedAt,
+            dateModified: article.publishedAt,
+            inLanguage: 'en-US',
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': `https://resolvaio.com/blog/${slug}`,
+            },
             author: {
               '@type': 'Organization',
               name: 'Resolvaio',
@@ -250,6 +266,41 @@ export default async function BlogArticlePage({
               name: 'Resolvaio',
               url: 'https://resolvaio.com',
             },
+            about: {
+              '@type': 'Thing',
+              name: 'US Consumer Protection Law',
+            },
+          }),
+        }}
+      />
+
+      {/* JSON-LD: BreadcrumbList */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: 'https://resolvaio.com',
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: 'Blog',
+                item: 'https://resolvaio.com/blog',
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: article.title,
+                item: `https://resolvaio.com/blog/${slug}`,
+              },
+            ],
           }),
         }}
       />

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
   Shield,
@@ -15,6 +16,20 @@ import {
 } from 'lucide-react';
 import { TrustSignals } from '@/components/trust-signals';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
+
+export const metadata: Metadata = {
+  title: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation | US Consumer Protection',
+  description:
+    'Get your security deposit back with demand letters grounded in California, Texas, New York, and Florida landlord-tenant law. Cancel unwanted subscriptions citing ROSCA and state consumer protection statutes. Free diagnostic.',
+  openGraph: {
+    title: 'Resolvaio — Demand Letters & Cancellation Emails Grounded in US Law',
+    description:
+      'Security deposit recovery in CA, TX, NY, FL. Subscription cancellation in all 50 US states. Verified statute citations. Free diagnostic.',
+  },
+  alternates: {
+    canonical: 'https://resolvaio.com',
+  },
+};
 
 /**
  * Landing page — premium minimalism redesign.
@@ -837,6 +852,50 @@ export default function HomePage(): React.JSX.Element {
           </div>
         </div>
       </footer>
+
+      {/* JSON-LD: Organization */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'Resolvaio',
+            url: 'https://resolvaio.com',
+            description:
+              'Writing assistance for US consumer disputes. Demand letters and cancellation emails grounded in verified state and federal statutes.',
+            areaServed: {
+              '@type': 'Country',
+              name: 'United States',
+            },
+            knowsAbout: [
+              'Security deposit recovery',
+              'Subscription cancellation',
+              'Consumer protection law',
+              'Landlord-tenant law',
+            ],
+          }),
+        }}
+      />
+
+      {/* JSON-LD: FAQPage */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQS.map((faq) => ({
+              '@type': 'Question',
+              name: faq.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: faq.a,
+              },
+            })),
+          }),
+        }}
+      />
     </main>
   );
 }

@@ -6,12 +6,15 @@ import { ARTICLES } from '@/lib/blog/articles';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
 
 export const metadata: Metadata = {
-  title: 'Blog — Security Deposit Law, Subscription Cancellation, and Consumer Rights',
+  title: 'Blog — US Security Deposit Law, Subscription Cancellation, and Consumer Rights',
   description:
-    'Guides grounded in real statutes: security deposit law by state, subscription cancellation rights, demand letter writing, and small claims court procedures.',
+    'Guides grounded in real US statutes: security deposit law for California, Texas, New York, and Florida. Subscription cancellation rights under ROSCA. Demand letter writing and small claims court procedures.',
   openGraph: {
-    title: 'Resolvaio Blog',
-    description: 'Consumer rights guides backed by verified statute citations.',
+    title: 'Resolvaio Blog — US Consumer Rights Guides',
+    description: 'Consumer rights guides backed by verified US statute citations. Security deposit law by state, subscription cancellation, and small claims court.',
+  },
+  alternates: {
+    canonical: 'https://resolvaio.com/blog',
   },
 };
 

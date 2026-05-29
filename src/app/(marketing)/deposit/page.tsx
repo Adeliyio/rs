@@ -3,13 +3,16 @@ import Link from 'next/link';
 import { Shield, FileText, Scale, ArrowRight } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Security Deposit Recovery',
+  title: 'Security Deposit Recovery — California, Texas, New York, Florida',
   description:
-    'Get your security deposit back with a professionally drafted demand letter grounded in your state\'s landlord-tenant law. Covers CA, TX, NY, FL.',
+    'Get your security deposit back with a professionally drafted demand letter grounded in your state\'s landlord-tenant law. Covers CA, TX, NY, FL. Verified statute citations.',
   openGraph: {
     title: 'Security Deposit Recovery | Resolvaio',
     description:
-      'Draft a demand letter grounded in verified statutes for your state. Writing assistance, not legal advice.',
+      'Draft a demand letter grounded in verified US statutes for your state. Writing assistance, not legal advice.',
+  },
+  alternates: {
+    canonical: 'https://resolvaio.com/deposit',
   },
 };
 

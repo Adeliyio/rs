@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description:
       'Draft a demand letter citing Cal. Civ. Code §1950.5. 21-day deadline to return your deposit.',
   },
+  alternates: {
+    canonical: 'https://resolvaio.com/deposit/california',
+  },
 };
 
 export default function CaliforniaDepositPage() {

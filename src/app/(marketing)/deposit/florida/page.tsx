@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description:
       'Draft a demand letter citing Fla. Stat. §83.49. 15-30 day deadline to return your deposit.',
   },
+  alternates: {
+    canonical: 'https://resolvaio.com/deposit/florida',
+  },
 };
 
 export default function FloridaDepositPage() {

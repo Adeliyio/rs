@@ -10,6 +10,9 @@ export const metadata: Metadata = {
     description:
       'Draft a demand letter citing N.Y. Gen. Oblig. Law §7-108. 14-day deadline to return your deposit.',
   },
+  alternates: {
+    canonical: 'https://resolvaio.com/deposit/new-york',
+  },
 };
 
 export default function NewYorkDepositPage() {

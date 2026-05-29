@@ -3,13 +3,16 @@ import Link from 'next/link';
 import { ArrowRight, Mail, Shield, Zap } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Subscription Cancellation',
+  title: 'Subscription Cancellation — Free for All 50 US States',
   description:
-    'Cancel unwanted subscriptions with a 3-step email sequence grounded in consumer protection law. ROSCA, FCBA, and state-specific statutes. Free.',
+    'Cancel unwanted subscriptions with a 3-step email sequence grounded in US consumer protection law. ROSCA, FCBA, and state-specific statutes. Gyms, telecom, SaaS, streaming. Free.',
   openGraph: {
     title: 'Subscription Cancellation | Resolvaio',
     description:
-      'Draft cancellation emails citing ROSCA and state consumer protection law. Free for all US states.',
+      'Draft cancellation emails citing ROSCA and state consumer protection law. Free for all 50 US states.',
+  },
+  alternates: {
+    canonical: 'https://resolvaio.com/subscription',
   },
 };
 

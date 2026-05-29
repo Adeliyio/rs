@@ -13,11 +13,33 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Resolvaio',
+    default: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation',
     template: '%s | Resolvaio',
   },
   description:
-    'From frustration to recovered money — one clear step at a time.',
+    'Demand letters and cancellation emails grounded in verified US consumer protection statutes. Security deposit recovery in California, Texas, New York, and Florida. Subscription cancellation in all 50 states.',
+  metadataBase: new URL('https://resolvaio.com'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Resolvaio',
+    title: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation',
+    description:
+      'Demand letters and cancellation emails grounded in verified US consumer protection statutes. Covers CA, TX, NY, FL deposit law and ROSCA/FTC for subscriptions.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation',
+    description:
+      'Demand letters grounded in verified statutes. Security deposit recovery in CA, TX, NY, FL. Subscription cancellation in all 50 US states.',
+  },
+  alternates: {
+    canonical: 'https://resolvaio.com',
+  },
+  other: {
+    'geo.region': 'US',
+    'geo.placename': 'United States',
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en-US" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         {children}
         <CookieConsent />
