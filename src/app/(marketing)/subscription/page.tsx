@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight, Mail, Shield, Zap } from 'lucide-react';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 export const metadata: Metadata = {
   title: 'Subscription Cancellation — Free for All 50 US States',
@@ -164,7 +165,7 @@ export default function SubscriptionLandingPage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Service',
             name: 'Subscription Cancellation',

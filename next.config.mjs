@@ -33,6 +33,16 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // VULN-16: Explicit CORS for API routes — deny cross-origin by default
+      {
+        source: '/api/:path*',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: isDev ? '*' : 'https://app.resolvaio.com' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PUT, DELETE, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type, Authorization' },
+          { key: 'Access-Control-Max-Age', value: '86400' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [

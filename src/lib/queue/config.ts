@@ -5,10 +5,8 @@ import type { JobsOptions } from 'bullmq';
  * must be registered here.
  */
 export const QUEUE_NAMES = {
-  DOCUMENT_PARSE: 'document-parse',
   LETTER_GENERATE: 'letter-generate',
   SEQUENCE_GENERATE: 'sequence-generate',
-  PACKET_GENERATE: 'packet-generate',
   DEADLINE_CHECK: 'deadline-check',
   WEBHOOK_PROCESS: 'webhook-process',
   OUTCOME_FOLLOWUP: 'outcome-followup',
@@ -31,15 +29,6 @@ const DEFAULT_BACKOFF = {
 };
 
 export const QUEUE_CONFIGS: Record<QueueName, QueueConfig> = {
-  [QUEUE_NAMES.DOCUMENT_PARSE]: {
-    name: QUEUE_NAMES.DOCUMENT_PARSE,
-    defaultJobOptions: {
-      attempts: 3,
-      backoff: DEFAULT_BACKOFF,
-      removeOnComplete: { count: 1000 },
-      removeOnFail: { count: 5000 },
-    },
-  },
   [QUEUE_NAMES.LETTER_GENERATE]: {
     name: QUEUE_NAMES.LETTER_GENERATE,
     defaultJobOptions: {
@@ -51,15 +40,6 @@ export const QUEUE_CONFIGS: Record<QueueName, QueueConfig> = {
   },
   [QUEUE_NAMES.SEQUENCE_GENERATE]: {
     name: QUEUE_NAMES.SEQUENCE_GENERATE,
-    defaultJobOptions: {
-      attempts: 2,
-      backoff: DEFAULT_BACKOFF,
-      removeOnComplete: { count: 500 },
-      removeOnFail: { count: 2000 },
-    },
-  },
-  [QUEUE_NAMES.PACKET_GENERATE]: {
-    name: QUEUE_NAMES.PACKET_GENERATE,
     defaultJobOptions: {
       attempts: 2,
       backoff: DEFAULT_BACKOFF,

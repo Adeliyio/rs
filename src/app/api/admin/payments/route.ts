@@ -37,7 +37,7 @@ export async function GET() {
 
   if (error) {
     return NextResponse.json(
-      { error: `Failed to fetch payments: ${error.message}` },
+      { error: 'Failed to fetch payment data.' },
       { status: 500 },
     );
   }

@@ -76,7 +76,7 @@ export async function GET() {
 
     if (fetchError) {
       return NextResponse.json(
-        { error: `Failed to fetch cases: ${fetchError.message}` },
+        { error: 'Failed to load cases. Please try again.' },
         { status: 500 },
       );
     }
@@ -204,8 +204,10 @@ export async function POST(request: Request) {
         );
       }
 
+      // eslint-disable-next-line no-console
+      console.error('Failed to create case:', insertError.message);
       return NextResponse.json(
-        { error: `Failed to create case: ${insertError.message}` },
+        { error: 'Failed to create case. Please try again.' },
         { status: 500 },
       );
     }

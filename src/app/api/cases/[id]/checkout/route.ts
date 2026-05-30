@@ -97,8 +97,10 @@ export async function POST(
       .eq('id', caseId);
 
     if (updateError) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to link transaction:', updateError.message);
       return NextResponse.json(
-        { error: `Failed to link transaction: ${updateError.message}` },
+        { error: 'Failed to start checkout. Please try again.' },
         { status: 500 },
       );
     }

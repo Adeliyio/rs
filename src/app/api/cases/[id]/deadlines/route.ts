@@ -12,6 +12,7 @@
 import { NextResponse } from 'next/server';
 
 import { createClient } from '@/lib/supabase/server';
+import { decryptAnswersPii } from '@/lib/crypto';
 import { computeDeadlines, getActionableDeadlines } from '@/lib/deadlines/calculator';
 import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
 import { loadKbEntry } from '@/lib/kb/loader';
@@ -49,7 +50,9 @@ export async function GET(
     const caseRow = caseData as unknown as { id: string; wedge: string; jurisdiction: string; diagnostic_state: Record<string, unknown> | null };
 
     const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
-    const answers = (diagnosticState?.answers ?? {}) as Record<string, string | undefined>;
+    const answers = decryptAnswersPii(
+      (diagnosticState?.answers ?? {}) as Record<string, unknown>,
+    ) as Record<string, string | undefined>;
 
     // Load KB deadline rules
     let deadlineRules;
@@ -125,8 +128,10 @@ export async function POST(
 
     const postCaseRow = caseData as unknown as { id: string; wedge: string; jurisdiction: string; diagnostic_state: Record<string, unknown> | null };
 
-    const diagnosticState = postCaseRow.diagnostic_state as DiagnosticState | null;
-    const answers = (diagnosticState?.answers ?? {}) as Record<string, string | undefined>;
+    const postDiagnosticState = postCaseRow.diagnostic_state as DiagnosticState | null;
+    const answers = decryptAnswersPii(
+      (postDiagnosticState?.answers ?? {}) as Record<string, unknown>,
+    ) as Record<string, string | undefined>;
 
     let deadlineRules;
     try {

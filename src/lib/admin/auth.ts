@@ -46,10 +46,24 @@ const ADMIN_IP_ALLOWLIST = new Set(
 /** Whether IP allowlist enforcement is active. */
 export const IP_ALLOWLIST_ENABLED = ADMIN_IP_ALLOWLIST.size > 0;
 
+// Warn loudly in production if the IP allowlist is not configured (VULN-04)
+if (
+  process.env.NODE_ENV === 'production' &&
+  !IP_ALLOWLIST_ENABLED &&
+  ADMIN_EMAILS.size > 0
+) {
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[SECURITY] ADMIN_IP_ALLOWLIST is empty in production. ' +
+      'Admin endpoints are accessible from any IP with a valid admin email. ' +
+      'Set ADMIN_IP_ALLOWLIST to restrict access.',
+  );
+}
+
 /**
  * Extracts the client IP from the request headers.
- * Checks X-Forwarded-For (Cloudflare/proxy) first, then falls back
- * to CF-Connecting-IP and X-Real-IP.
+ * Prioritises CF-Connecting-IP (set by Cloudflare, cannot be spoofed
+ * by the client) over X-Forwarded-For (VULN-09 mitigation).
  */
 export function getClientIp(): string {
   let h: Headers;
@@ -60,14 +74,17 @@ export function getClientIp(): string {
     return 'unknown';
   }
 
-  // Cloudflare / reverse proxy chain
+  // Cloudflare sets this header — it cannot be spoofed by the client
+  const cfIp = h.get('cf-connecting-ip');
+  if (cfIp) return cfIp;
+
+  // Fallback: X-Forwarded-For (only trustworthy behind a proxy that strips it)
   const forwarded = h.get('x-forwarded-for');
   if (forwarded) {
-    // X-Forwarded-For may contain a chain: "client, proxy1, proxy2"
     return forwarded.split(',')[0]!.trim();
   }
 
-  return h.get('cf-connecting-ip') ?? h.get('x-real-ip') ?? 'unknown';
+  return h.get('x-real-ip') ?? 'unknown';
 }
 
 /* ------------------------------------------------------------------ */

@@ -12,6 +12,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { decryptAnswersPii } from '@/lib/crypto';
 import { loadKbEntry } from '@/lib/kb/loader';
 
 export async function GET(
@@ -72,12 +73,15 @@ export async function GET(
     const penalties = kbEntry.penalties ?? [];
     const sampleStatute = statutes[0];
 
-    // Get deposit amount from diagnostic answers
+    // Get deposit amount from diagnostic answers (decrypt PII fields)
     const diagnosticState = caseRow.diagnostic_state as {
       answers?: Record<string, unknown>;
     } | null;
+    const decryptedAnswers = diagnosticState?.answers
+      ? decryptAnswersPii(diagnosticState.answers)
+      : {};
     const depositAmount =
-      (diagnosticState?.answers?.['original_deposit_amount'] as number) ?? 0;
+      (decryptedAnswers['original_deposit_amount'] as number) ?? 0;
 
     const jurisdictionNames: Record<string, string> = {
       CA: 'California',

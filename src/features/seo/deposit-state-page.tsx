@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { ArrowRight, Scale, Clock, FileText } from 'lucide-react';
 
+import { safeJsonLd } from '@/lib/safe-json-ld';
+
 interface DepositStatePageProps {
   stateCode: string;
   stateName: string;
@@ -158,7 +160,7 @@ export function DepositStatePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Service',
             name: `${stateName} Security Deposit Recovery`,

@@ -15,6 +15,7 @@ import { randomUUID } from 'node:crypto';
 
 import { createClient } from '@/lib/supabase/server';
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { decryptAnswersPii } from '@/lib/crypto';
 import { checkRefusal } from '@/lib/refusal/refusal-checker';
 import {
   generateSequence,
@@ -242,7 +243,7 @@ async function handleSubscriptionGeneration(
 
   if (seqError) {
     return NextResponse.json(
-      { error: `Failed to save sequence: ${seqError.message}` },
+      { error: 'Failed to save generated sequence. Please try again.' },
       { status: 500 },
     );
   }
@@ -340,7 +341,7 @@ async function handleDepositGeneration(
 
   if (letterError) {
     return NextResponse.json(
-      { error: `Failed to save letter: ${letterError.message}` },
+      { error: 'Failed to save generated letter. Please try again.' },
       { status: 500 },
     );
   }
@@ -477,7 +478,7 @@ export async function POST(
       );
     }
 
-    const answers = diagnosticState.answers as Record<string, unknown>;
+    const answers = decryptAnswersPii(diagnosticState.answers as Record<string, unknown>);
 
     /* ---- Final refusal check ---- */
     const refusalResult = checkRefusal(answers, caseRow.wedge as 'deposit' | 'subscription');

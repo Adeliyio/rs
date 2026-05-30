@@ -21,7 +21,10 @@ const serverEnvSchema = z.object({
   RESEND_API_KEY: z.string().optional().default(''),
   REDIS_URL: z.string().optional().default(''),
   SENTRY_DSN: z.string().optional().default(''),
-  ENCRYPTION_KEY: z.string().optional().default(''),
+  ENCRYPTION_KEY: z
+    .string()
+    .length(64, 'ENCRYPTION_KEY must be a 64-character hex string (32 bytes)')
+    .regex(/^[0-9a-f]+$/i, 'ENCRYPTION_KEY must be valid hexadecimal'),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

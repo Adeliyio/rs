@@ -176,8 +176,10 @@ export async function POST(
       .single();
 
     if (updateError) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update case status:', updateError.message);
       return NextResponse.json(
-        { error: `Failed to update case status: ${updateError.message}` },
+        { error: 'Failed to update case status. Please try again.' },
         { status: 500 },
       );
     }

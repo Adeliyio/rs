@@ -122,20 +122,6 @@ export async function markDeadlineFired(
 }
 
 /**
- * Marks a deadline event as dismissed by the user.
- */
-export async function dismissDeadline(
-  supabase: SupabaseClient<Database>,
-  deadlineEventId: string,
-): Promise<void> {
-  await supabase
-    .from('deadline_events')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type from manual Database definition
-    .update({ dismissed_at: new Date().toISOString() })
-    .eq('id', deadlineEventId);
-}
-
-/**
  * Fetches all unfired, undismissed deadline events that are due
  * (deadline_date <= now). Used by the deadline-check cron job.
  */

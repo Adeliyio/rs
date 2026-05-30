@@ -1,8 +1,28 @@
 'use server';
 
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 
 import { createClient } from './server';
+import { checkRateLimit } from '@/lib/rate-limit';
+
+/* ------------------------------------------------------------------ */
+/*  Helpers                                                           */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Extracts the client IP from request headers in a server action context.
+ * Prioritises CF-Connecting-IP (Cloudflare, cannot be spoofed) over
+ * X-Forwarded-For (can be spoofed without a trusted proxy).
+ */
+async function getActionClientIp(): Promise<string> {
+  const h = await headers();
+  const cfIp = h.get('cf-connecting-ip');
+  if (cfIp) return cfIp;
+  const forwarded = h.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0]!.trim();
+  return h.get('x-real-ip') ?? 'unknown';
+}
 
 /**
  * Sign in with email and password.
@@ -16,6 +36,13 @@ export async function signIn(
 
   if (!email || !password) {
     return { error: 'Please enter both your email and password.' };
+  }
+
+  // Rate limit by IP to prevent brute-force attacks (VULN-08)
+  const ip = await getActionClientIp();
+  const rateResult = await checkRateLimit('auth', `login:${ip}`);
+  if (!rateResult.allowed) {
+    return { error: 'Too many login attempts. Please try again in a few minutes.' };
   }
 
   const supabase = await createClient();
@@ -52,12 +79,27 @@ export async function signUp(
     return { error: 'Please fill in all required fields.' };
   }
 
+  // Rate limit by IP to prevent account enumeration (VULN-08)
+  const ip = await getActionClientIp();
+  const rateResult = await checkRateLimit('auth', `signup:${ip}`);
+  if (!rateResult.allowed) {
+    return { error: 'Too many registration attempts. Please try again in a few minutes.' };
+  }
+
   if (password !== confirmPassword) {
     return { error: 'Passwords do not match.' };
   }
 
-  if (password.length < 6) {
-    return { error: 'Password must be at least 6 characters.' };
+  if (password.length < 8) {
+    return { error: 'Password must be at least 8 characters.' };
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return { error: 'Password must contain at least one uppercase letter.' };
+  }
+
+  if (!/[0-9]/.test(password)) {
+    return { error: 'Password must contain at least one number.' };
   }
 
   const supabase = await createClient();
@@ -121,6 +163,13 @@ export async function resetPassword(
 
   if (!email) {
     return { error: 'Please enter your email address.' };
+  }
+
+  // Rate limit by IP to prevent email-bombing and Resend credit waste (VULN-08)
+  const ip = await getActionClientIp();
+  const rateResult = await checkRateLimit('auth', `reset:${ip}`);
+  if (!rateResult.allowed) {
+    return { error: 'Too many reset requests. Please try again in a few minutes.' };
   }
 
   const supabase = await createClient();

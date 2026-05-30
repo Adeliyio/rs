@@ -40,6 +40,16 @@ interface CaseRow {
 /* ------------------------------------------------------------------ */
 
 /**
+ * Valid extraction schema names. Any ?schema query parameter must match
+ * one of these values to prevent arbitrary schema injection (VULN-13).
+ */
+const VALID_SCHEMAS = new Set([
+  'lease_agreement',
+  'billing_statement',
+  'itemization',
+]);
+
+/**
  * Determines the extraction schema name based on the case wedge and
  * the document content type / context.
  */
@@ -81,9 +91,17 @@ export async function POST(
       );
     }
 
-    /* ---- Optional schema override via query string ---- */
+    /* ---- Optional schema override via query string (VULN-13: validated) ---- */
     const url = new URL(request.url);
-    const schemaOverride = url.searchParams.get('schema');
+    const schemaParam = url.searchParams.get('schema');
+    const schemaOverride = schemaParam && VALID_SCHEMAS.has(schemaParam) ? schemaParam : null;
+
+    if (schemaParam && !VALID_SCHEMAS.has(schemaParam)) {
+      return NextResponse.json(
+        { error: `Invalid schema: '${schemaParam}'. Allowed: ${[...VALID_SCHEMAS].join(', ')}` },
+        { status: 400 },
+      );
+    }
 
     /* ---- Fetch document record (RLS via case ownership) ---- */
     const { data: docData, error: docError } = await supabase
@@ -128,7 +146,7 @@ export async function POST(
       // Update status to failed
       await updateParseStatus(supabase, documentId, 'failed');
       return NextResponse.json(
-        { error: `Failed to create signed URL: ${signedUrlError?.message ?? 'unknown'}` },
+        { error: 'Failed to access document. Please try again.' },
         { status: 500 },
       );
     }
@@ -144,7 +162,7 @@ export async function POST(
     if (result.error) {
       await updateParseStatus(supabase, documentId, 'failed');
       return NextResponse.json(
-        { error: `Extraction failed: ${result.error}` },
+        { error: 'Document extraction failed. Please try again with a clearer image.' },
         { status: 500 },
       );
     }
@@ -171,7 +189,7 @@ export async function POST(
 
     if (updateError) {
       return NextResponse.json(
-        { error: `Failed to save parsed result: ${updateError.message}` },
+        { error: 'Failed to save parsed result. Please try again.' },
         { status: 500 },
       );
     }

@@ -10,6 +10,8 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { decryptAnswersPii } from '@/lib/crypto';
+import type { DiagnosticState } from '@/types/diagnostic.types';
 
 export async function GET() {
   try {
@@ -46,6 +48,23 @@ export async function GET() {
       supabase.from('subscriptions').select('*').eq('user_id', userId),
     ]);
 
+    // Decrypt PII in diagnostic_state.answers before exporting (GDPR export
+    // must return readable plaintext, not encrypted blobs)
+    const decryptedCases = (casesResult.data ?? []).map((caseRow) => {
+      const row = caseRow as unknown as Record<string, unknown>;
+      const diagnosticState = row.diagnostic_state as DiagnosticState | null;
+      if (diagnosticState?.answers) {
+        return {
+          ...row,
+          diagnostic_state: {
+            ...diagnosticState,
+            answers: decryptAnswersPii(diagnosticState.answers),
+          },
+        };
+      }
+      return row;
+    });
+
     const exportData = {
       exported_at: new Date().toISOString(),
       user: {
@@ -53,7 +72,7 @@ export async function GET() {
         email: user.email,
         created_at: user.created_at,
       },
-      cases: casesResult.data ?? [],
+      cases: decryptedCases,
       documents: documentsResult.data ?? [],
       letters: lettersResult.data ?? [],
       sequences: sequencesResult.data ?? [],

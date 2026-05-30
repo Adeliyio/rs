@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { TrustSignals } from '@/components/trust-signals';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 export const metadata: Metadata = {
   title: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation | US Consumer Protection',
@@ -857,7 +858,7 @@ export default function HomePage(): React.JSX.Element {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'Resolvaio',
@@ -882,7 +883,7 @@ export default function HomePage(): React.JSX.Element {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
             mainEntity: FAQS.map((faq) => ({

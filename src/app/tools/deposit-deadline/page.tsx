@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
 import { DeadlineCalculator } from './calculator';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 /* ------------------------------------------------------------------ */
 /*  Metadata                                                          */
@@ -140,7 +141,7 @@ export default function DepositDeadlinePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'Resolvaio Security Deposit Deadline Calculator',

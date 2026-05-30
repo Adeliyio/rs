@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { getArticleBySlug, getAllSlugs, ARTICLES } from '@/lib/blog/articles';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 /* ------------------------------------------------------------------ */
 /*  Static params for build-time generation                           */
@@ -244,7 +245,7 @@ export default async function BlogArticlePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Article',
             headline: article.title,
@@ -278,7 +279,7 @@ export default async function BlogArticlePage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [

@@ -171,16 +171,3 @@ export function loadSubscriptionBase(): SubscriptionBase {
   return loadJsonFile<SubscriptionBase>(filePath);
 }
 
-/* ------------------------------------------------------------------ */
-/*  Cache management (useful for tests)                               */
-/* ------------------------------------------------------------------ */
-
-/** Clear the entire loader cache. */
-export function clearCache(): void {
-  cache.clear();
-}
-
-/** Evict a single path from the cache. */
-export function evictCache(filePath: string): boolean {
-  return cache.delete(filePath);
-}

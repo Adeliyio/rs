@@ -156,7 +156,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   if (!user && !isPublicPath(pathname)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
-    loginUrl.searchParams.set('next', pathname);
+    // VULN-12: Only set `next` if it's a safe relative path (no open redirect)
+    if (pathname.startsWith('/') && !pathname.startsWith('//') && !pathname.includes('://')) {
+      loginUrl.searchParams.set('next', pathname);
+    }
     return NextResponse.redirect(loginUrl);
   }
 

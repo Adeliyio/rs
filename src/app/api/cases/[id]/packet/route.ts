@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { decryptAnswersPii } from '@/lib/crypto';
 import {
   loadSmallClaimsPacket,
   loadStateAgPacket,
@@ -96,9 +97,11 @@ export async function POST(
       );
     }
 
-    /* ---- Build case data from diagnostic answers ---- */
+    /* ---- Build case data from diagnostic answers (decrypt PII) ---- */
     const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
-    const answers = (diagnosticState?.answers ?? {}) as Record<string, unknown>;
+    const answers = decryptAnswersPii(
+      (diagnosticState?.answers ?? {}) as Record<string, unknown>,
+    );
 
     const packetCaseData: PacketCaseData = {
       case_id: caseId,
@@ -176,7 +179,7 @@ export async function POST(
 
     if (uploadError) {
       return NextResponse.json(
-        { error: `Failed to upload packet: ${uploadError.message}` },
+        { error: 'Failed to upload filing packet. Please try again.' },
         { status: 500 },
       );
     }
@@ -212,7 +215,7 @@ export async function POST(
 
     if (insertError) {
       return NextResponse.json(
-        { error: `Failed to save packet record: ${insertError.message}` },
+        { error: 'Failed to save filing packet. Please try again.' },
         { status: 500 },
       );
     }

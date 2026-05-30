@@ -111,8 +111,10 @@ export async function POST(
       .single();
 
     if (insertError) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to save outcome:', insertError.message);
       return NextResponse.json(
-        { error: `Failed to save outcome: ${insertError.message}` },
+        { error: 'Failed to save outcome. Please try again.' },
         { status: 500 },
       );
     }

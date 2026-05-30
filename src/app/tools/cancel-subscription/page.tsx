@@ -13,6 +13,7 @@ import {
   X,
 } from 'lucide-react';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
+import { safeJsonLd } from '@/lib/safe-json-ld';
 
 /* ------------------------------------------------------------------ */
 /*  Metadata                                                          */
@@ -759,7 +760,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+          __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'Resolvaio Free Subscription Cancellation Email Generator',

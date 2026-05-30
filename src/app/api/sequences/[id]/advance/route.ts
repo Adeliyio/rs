@@ -175,8 +175,10 @@ export async function POST(
       .eq('id', sequenceId);
 
     if (seqUpdateError) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to update sequence:', seqUpdateError.message);
       return NextResponse.json(
-        { error: `Failed to update sequence: ${seqUpdateError.message}` },
+        { error: 'Failed to update sequence. Please try again.' },
         { status: 500 },
       );
     }

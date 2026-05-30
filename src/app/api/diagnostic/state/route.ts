@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { createClient } from '@/lib/supabase/server';
 import { loadDiagnosticGraph, loadDisclaimers } from '@/lib/kb/loader';
+import { encryptAnswersPii, decryptAnswersPii } from '@/lib/crypto';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import type { Tables, UpdateTables } from '@/types/database.types';
 import type { Wedge } from '@/types/enums';
@@ -81,7 +82,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Return graph + existing state (may be null for new cases)
     const state = caseRow.diagnostic_state as DiagnosticState | null;
 
-    return NextResponse.json({ graph, state });
+    // Decrypt PII fields before sending to the client
+    const decryptedState = state && state.answers
+      ? { ...state, answers: decryptAnswersPii(state.answers) }
+      : state;
+
+    return NextResponse.json({ graph, state: decryptedState });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
     return NextResponse.json({ error: message }, { status: 500 });
@@ -126,9 +132,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     // If the diagnostic collected a jurisdiction answer, sync it to the case row
     const jurisdictionAnswer = body.state.answers?.jurisdiction as string | undefined;
 
+    // Encrypt PII fields before saving to the database (VULN-02)
+    const encryptedState: DiagnosticState = body.state.answers
+      ? { ...body.state, answers: encryptAnswersPii(body.state.answers) }
+      : body.state;
+
     // Update diagnostic_state on the case (RLS validates ownership)
     const updatePayload: UpdateTables<'cases'> = {
-      diagnostic_state: body.state as unknown as Record<string, unknown>,
+      diagnostic_state: encryptedState as unknown as Record<string, unknown>,
       updated_at: new Date().toISOString(),
       ...(jurisdictionAnswer ? { jurisdiction: jurisdictionAnswer } : {}),
     };

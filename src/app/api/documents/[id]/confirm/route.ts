@@ -106,8 +106,10 @@ export async function POST(
       .eq('id', documentId);
 
     if (updateError) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to confirm document:', updateError.message);
       return NextResponse.json(
-        { error: `Failed to confirm document: ${updateError.message}` },
+        { error: 'Failed to confirm document. Please try again.' },
         { status: 500 },
       );
     }

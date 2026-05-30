@@ -84,14 +84,3 @@ export function verifyPaddleWebhookSignature(
   }
 }
 
-/**
- * Maps a Paddle product name to an internal SKU.
- * Returns undefined if no match.
- */
-export function resolveSkuFromProductName(productName: string): PaddleSku | undefined {
-  const lower = productName.toLowerCase();
-  if (lower.includes('deposit') && lower.includes('single')) return PADDLE_SKUS.DEPOSIT_SINGLE;
-  if (lower.includes('monthly')) return PADDLE_SKUS.MONTHLY_UNLIMITED;
-  if (lower.includes('annual')) return PADDLE_SKUS.ANNUAL_UNLIMITED;
-  return undefined;
-}

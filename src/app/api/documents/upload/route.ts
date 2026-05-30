@@ -154,7 +154,7 @@ export async function POST(request: Request) {
 
     if (uploadError) {
       return NextResponse.json(
-        { error: `Storage upload failed: ${uploadError.message}` },
+        { error: 'File upload failed. Please try again.' },
         { status: 500 },
       );
     }
@@ -176,7 +176,7 @@ export async function POST(request: Request) {
 
     if (insertError || !docData) {
       return NextResponse.json(
-        { error: `Failed to create document record: ${insertError?.message ?? 'unknown'}` },
+        { error: 'Failed to save document. Please try again.' },
         { status: 500 },
       );
     }

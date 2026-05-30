@@ -108,7 +108,7 @@ export async function POST(
 
     if (uploadError) {
       return NextResponse.json(
-        { error: `Failed to upload PDF: ${uploadError.message}` },
+        { error: 'Failed to upload PDF. Please try again.' },
         { status: 500 },
       );
     }

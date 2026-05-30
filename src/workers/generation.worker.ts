@@ -13,6 +13,7 @@ import { randomUUID } from 'node:crypto';
 import { getRedis } from '@/lib/redis';
 import { QUEUE_NAMES } from '@/lib/queue/config';
 import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { decryptAnswersPii } from '@/lib/crypto';
 import {
   generateLetter,
   type DepositDiagnosticAnswers,
@@ -72,7 +73,9 @@ async function processDepositGeneration(
   userId: string,
 ): Promise<void> {
   const { supabase, caseRow } = await loadCaseData(caseId, userId);
-  const answers = (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>;
+  const answers = decryptAnswersPii(
+    (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
+  );
 
   const diagnosticAnswers: DepositDiagnosticAnswers = {
     wedge: 'deposit',
@@ -214,7 +217,9 @@ async function processSubscriptionGeneration(
   userId: string,
 ): Promise<void> {
   const { supabase, caseRow } = await loadCaseData(caseId, userId);
-  const answers = (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>;
+  const answers = decryptAnswersPii(
+    (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
+  );
 
   const diagnosticAnswers: DiagnosticAnswers = {
     wedge: 'subscription',
