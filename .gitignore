@@ -46,8 +46,9 @@ yarn-error.log*
 !README.md
 !kb/**/*.md
 
-# Scripts (testing/deploy utilities)
-scripts/
+# Scripts (testing/deploy utilities — keep deploy script)
+scripts/*
+!scripts/deploy-vps.sh
 
 # Test files
 e2e/
