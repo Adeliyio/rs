@@ -67,7 +67,4 @@ tiers/
 # Infrastructure config
 infrastructure/
 
-# Docker (local dev only)
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Docker — tracked (required for VPS deployment)

@@ -1,0 +1,61 @@
+version: "3.9"
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./infrastructure/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      - DOMAIN=${DOMAIN:-resolvaio.com}
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  app:
+    build: .
+    expose:
+      - "3000"
+    env_file:
+      - .env.local
+    environment:
+      - APP_HOSTNAME=app.${DOMAIN:-resolvaio.com}
+      - ROOT_HOSTNAME=${DOMAIN:-resolvaio.com}
+    depends_on:
+      - redis
+    volumes:
+      - ./kb:/app/kb:ro
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["node", "worker.js"]
+    env_file:
+      - .env.local
+    environment:
+      - APP_HOSTNAME=app.${DOMAIN:-resolvaio.com}
+      - ROOT_HOSTNAME=${DOMAIN:-resolvaio.com}
+    depends_on:
+      - redis
+    volumes:
+      - ./kb:/app/kb:ro
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    # No port mapping — only accessible via Docker internal network (SEC-02).
+    expose:
+      - "6379"
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "2gb", "--maxmemory-policy", "noeviction", "--requirepass", "${REDIS_PASSWORD:-changeme-in-production}"]
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  caddy-data:
+  caddy-config:
