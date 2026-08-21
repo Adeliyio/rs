@@ -140,8 +140,8 @@ function buildCaseDetailData(
     wedge: caseRow.wedge as Wedge,
     jurisdiction: caseRow.jurisdiction,
     status: caseRow.status as CaseStatus,
-    created_at: caseRow.created_at,
-    updated_at: caseRow.updated_at,
+    created_at: caseRow.created_at ?? '',
+    updated_at: caseRow.updated_at ?? '',
     deposit_amount: undefined, // Would come from diagnostic_state
     landlord_name: undefined,
     provider_name: undefined,

@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { LogoIcon } from '@/components/logo';
 
 import { useResolvaioAuth } from '@/lib/convex/use-auth';
+import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 
 
@@ -185,8 +186,8 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={6}
-              placeholder="At least 6 characters"
+              minLength={8}
+              placeholder="8+ chars, 1 uppercase, 1 number"
               className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-[14px] ring-offset-background placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-shadow"
             />
           </div>
@@ -204,7 +205,7 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               required
-              minLength={6}
+              minLength={8}
               placeholder="Re-enter your password"
               className={`flex h-11 w-full rounded-lg border bg-background px-4 py-2 text-[14px] ring-offset-background placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-shadow ${
                 passwordMismatch
@@ -223,6 +224,10 @@ export default function RegisterPage() {
             Create Account
           </Button>
         </form>
+
+        <div className="mt-5">
+          <GoogleButton label="Sign up with Google" />
+        </div>
       </div>
 
       {/* Footer links */}

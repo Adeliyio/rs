@@ -36,12 +36,21 @@ const US_STATES = [
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-export function EmptyState(): React.JSX.Element {
+interface EmptyStateProps {
+  /** Deep-link hint from marketing CTAs (?wedge=…): pre-opens the matching state picker. */
+  preselectWedge?: 'deposit' | 'subscription';
+}
+
+export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.Element {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showJurisdictionPicker, setShowJurisdictionPicker] = useState(false);
-  const [showSubscriptionStatePicker, setShowSubscriptionStatePicker] = useState(false);
+  const [showJurisdictionPicker, setShowJurisdictionPicker] = useState(
+    preselectWedge === 'deposit',
+  );
+  const [showSubscriptionStatePicker, setShowSubscriptionStatePicker] = useState(
+    preselectWedge === 'subscription',
+  );
   const [unsupportedState, setUnsupportedState] = useState<string | null>(null);
 
   const createCase = useCallback(

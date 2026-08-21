@@ -40,7 +40,7 @@ export default function SubscriptionLandingPage() {
         </p>
         <div className="mt-8">
           <Link
-            href="/register"
+            href="/new?wedge=subscription"
             className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             Cancel a Subscription — Free
@@ -152,7 +152,7 @@ export default function SubscriptionLandingPage() {
         </p>
         <div className="mt-6">
           <Link
-            href="/register"
+            href="/new?wedge=subscription"
             className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             Get Started

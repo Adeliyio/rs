@@ -13,7 +13,7 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 
-import { q, currentUser, api } from '@/lib/convex/server';
+import { q, m, currentUser, api } from '@/lib/convex/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import type { Id } from '@convex/dataModel';
@@ -451,10 +451,23 @@ export async function POST(
     const refusalResult = checkRefusal(answers, caseRow.wedge as 'deposit' | 'subscription');
 
     if (refusalResult.triggered && refusalResult.severity === 'hard_block') {
+      // A6: close the case server-side ATOMICALLY here, rather than relying on
+      // the client to make a second /refusal call. A hard-blocked case must not
+      // be left open.
+      const trigger = refusalResult.rule?.rule_id ?? 'hard_block';
+      try {
+        await m(api.caseStatus.setRefusalMine, {
+          caseId: caseId as Id<'cases'>,
+          refusalTrigger: trigger,
+        });
+      } catch (closeErr) {
+        // eslint-disable-next-line no-console
+        console.error('[generate] Failed to close refused case:', closeErr);
+      }
       return NextResponse.json(
         {
           error: 'This case cannot proceed with generation.',
-          refusal_trigger: refusalResult.rule?.rule_id,
+          refusal_trigger: trigger,
           decline_reason: refusalResult.rule?.decline_reason,
         },
         { status: 422 },

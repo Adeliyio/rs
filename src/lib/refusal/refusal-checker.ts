@@ -46,10 +46,24 @@ function evaluateCondition(
   const match = condition.match(
     /^case\.(\w+)\s*(>|<|>=|<=|==|!=)\s*(.+)$/,
   );
-  if (!match) return false;
+  if (!match) {
+    // A8: a rule whose condition can't be parsed is a KB authoring bug, not a
+    // normal "no match". We stay fail-open on the USER (don't wrongly block
+    // them) but log loudly so a broken hard-block rule is caught, rather than
+    // silently never firing.
+    // eslint-disable-next-line no-console
+    console.error(
+      `[REFUSAL] Unparseable rule condition — this rule will NEVER fire: "${condition}". Fix the KB rule.`,
+    );
+    return false;
+  }
 
   const [, field, operator, rawValue] = match;
-  if (!field || !operator || !rawValue) return false;
+  if (!field || !operator || !rawValue) {
+    // eslint-disable-next-line no-console
+    console.error(`[REFUSAL] Malformed rule condition: "${condition}". Fix the KB rule.`);
+    return false;
+  }
 
   const answerValue = answers[field];
   if (answerValue === undefined || answerValue === null) return false;

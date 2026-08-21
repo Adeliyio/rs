@@ -163,11 +163,38 @@ export function useDiagnostic(
       const node = graph.nodes[nodeId];
       if (!node) return;
 
-      const nextId = getNextNodeId(node, value);
+      // File-upload nodes return { document_ids, extracted_fields } (A9).
+      // Merge any confirmed extracted fields into the top-level answers so the
+      // generator and preview see them, and store the document ids as the node's
+      // own answer.
+      let workingState = state;
+      let effectiveValue = value;
+      if (
+        node.type === 'file_upload' &&
+        typeof value === 'object' &&
+        value !== null &&
+        'document_ids' in value
+      ) {
+        const payload = value as {
+          document_ids: string[];
+          extracted_fields?: Record<string, unknown>;
+        };
+        const extracted = payload.extracted_fields ?? {};
+        if (Object.keys(extracted).length > 0) {
+          workingState = {
+            ...state,
+            answers: { ...state.answers, ...extracted },
+            updated_at: new Date().toISOString(),
+          };
+        }
+        effectiveValue = payload.document_ids;
+      }
+
+      const nextId = getNextNodeId(node, effectiveValue);
       if (!nextId) {
         // Terminal — mark complete
         const completed = markComplete(
-          advanceState(state, nodeId, value, state.current_node),
+          advanceState(workingState, nodeId, effectiveValue, workingState.current_node),
         );
         setState(completed);
         setIsComplete(true);
@@ -175,7 +202,7 @@ export function useDiagnostic(
         return;
       }
 
-      const nextState = advanceState(state, nodeId, value, nextId);
+      const nextState = advanceState(workingState, nodeId, effectiveValue, nextId);
 
       // Check if the next node is terminal (generation, delivery, tracking, terminal)
       const nextNode = graph.nodes[nextId];

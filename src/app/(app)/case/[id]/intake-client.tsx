@@ -14,6 +14,7 @@ import { useCallback, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import DiagnosticShell from '@/features/diagnostic/components/diagnostic-shell';
+import DeclineScreen from '@/features/diagnostic/components/decline-screen';
 import type { Wedge } from '@/types/enums';
 
 interface IntakeClientProps {
@@ -32,7 +33,25 @@ export default function IntakeClient({
   const [isAdvancing, setIsAdvancing] = useState(false);
   const [advanceError, setAdvanceError] = useState<string | null>(null);
   const [advanceMessage, setAdvanceMessage] = useState<string>('');
+  // A7: if generation is refused (422), show the compassionate decline screen
+  // instead of a generic error.
+  const [refusal, setRefusal] = useState<{ trigger: string; reason?: string } | null>(null);
   const pollingRef = useRef(false);
+
+  /** Parse a /generate response; throw on error, or set a refusal for a 422. */
+  const handleGenerateResponse = useCallback(async (res: Response): Promise<boolean> => {
+    if (res.ok) return true;
+    const data = (await res.json().catch(() => ({}))) as {
+      error?: string;
+      refusal_trigger?: string;
+      decline_reason?: string;
+    };
+    if (res.status === 422 && data.refusal_trigger) {
+      setRefusal({ trigger: data.refusal_trigger, reason: data.decline_reason });
+      return false;
+    }
+    throw new Error(data.error ?? 'Generation failed');
+  }, []);
 
   const pollForPayment = useCallback(async (): Promise<boolean> => {
     for (let i = 0; i < PAYMENT_POLL_MAX_ATTEMPTS; i++) {
@@ -59,13 +78,8 @@ export default function IntakeClient({
         const genResponse = await fetch(`/api/cases/${caseId}/generate`, {
           method: 'POST',
         });
-
-        if (!genResponse.ok) {
-          const data = (await genResponse.json().catch(() => ({}))) as {
-            error?: string;
-          };
-          throw new Error(data.error ?? 'Generation failed');
-        }
+        const ok = await handleGenerateResponse(genResponse);
+        if (!ok) { setIsAdvancing(false); pollingRef.current = false; return; }
       } else {
         // Deposit — payment happened in the diagnostic flow.
         // Poll for the Paddle webhook to confirm payment_status=paid,
@@ -84,13 +98,8 @@ export default function IntakeClient({
         const genResponse = await fetch(`/api/cases/${caseId}/generate`, {
           method: 'POST',
         });
-
-        if (!genResponse.ok) {
-          const data = (await genResponse.json().catch(() => ({}))) as {
-            error?: string;
-          };
-          throw new Error(data.error ?? 'Generation failed');
-        }
+        const ok = await handleGenerateResponse(genResponse);
+        if (!ok) { setIsAdvancing(false); pollingRef.current = false; return; }
       }
 
       // Reload so the server component picks up the new status
@@ -102,7 +111,17 @@ export default function IntakeClient({
       setIsAdvancing(false);
       pollingRef.current = false;
     }
-  }, [caseId, wedge, router, isAdvancing, pollForPayment]);
+  }, [caseId, wedge, router, isAdvancing, pollForPayment, handleGenerateResponse]);
+
+  /* A7: refusal → compassionate decline screen (reachable at end of intake). */
+  if (refusal) {
+    return (
+      <DeclineScreen
+        ruleId={refusal.trigger}
+        onClose={() => router.push('/new')}
+      />
+    );
+  }
 
   return (
     <>

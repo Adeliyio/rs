@@ -41,7 +41,7 @@ export function DepositStatePage({
 
         <div className="mt-8">
           <Link
-            href="/register"
+            href="/new?wedge=deposit"
             className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             Start Your {stateCode} Letter
@@ -143,7 +143,7 @@ export function DepositStatePage({
           </ol>
           <div className="mt-8">
             <Link
-              href="/register"
+              href="/new?wedge=deposit"
               className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
             >
               Get Started — $49

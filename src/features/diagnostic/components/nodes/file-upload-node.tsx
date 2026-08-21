@@ -13,6 +13,7 @@ import { Upload, CheckCircle2, XCircle, Loader2, FileText } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import ExtractionConfirmation from '@/features/diagnostic/components/extraction-confirmation';
 import type { FileUploadNode } from '@/types/diagnostic.types';
 
 /* ------------------------------------------------------------------ */
@@ -75,6 +76,14 @@ export default function FileUploadNodeComponent({
   const [files, setFiles] = useState<FileEntry[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  /* ---- Extraction phase (A9: upload → parse → confirm → merge) ---- */
+  type ExtractField = { value: unknown; confidence: number };
+  const [phase, setPhase] = useState<'upload' | 'parsing' | 'confirm'>('upload');
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [pendingConfirm, setPendingConfirm] = useState<{ documentId: string; fields: Record<string, ExtractField> } | null>(null);
+  // Merged confirmed fields across all documents, forwarded to the diagnostic.
+  const [mergedFields, setMergedFields] = useState<Record<string, unknown>>({});
 
   const maxFiles = node.max_files ?? 5;
   const maxSizeMb = node.max_size_mb ?? 10;
@@ -240,11 +249,110 @@ export default function FileUploadNodeComponent({
   const isUploading = files.some((f) => f.status === 'uploading');
   const isOptional = !node.required;
 
-  const handleContinue = useCallback(() => {
-    onAnswer(uploadedIds.length > 0 ? uploadedIds : []);
-  }, [onAnswer, uploadedIds]);
+  /** Finish: hand the document ids AND any confirmed extracted fields to the
+   *  diagnostic. The shell merges `extracted_fields` into the case answers. */
+  const finish = useCallback(
+    (extracted: Record<string, unknown>) => {
+      onAnswer({
+        document_ids: uploadedIds,
+        extracted_fields: extracted,
+      });
+    },
+    [onAnswer, uploadedIds],
+  );
 
-  /* ---- Render ---- */
+  /** Parse the next un-parsed uploaded document (GPT-4o Vision) → confirm UI. */
+  const parseNext = useCallback(
+    async (remaining: string[], mergedSoFar: Record<string, unknown>) => {
+      if (remaining.length === 0) {
+        finish(mergedSoFar);
+        return;
+      }
+      const [docId, ...rest] = remaining;
+      setPhase('parsing');
+      setParseError(null);
+      try {
+        const res = await fetch(`/api/documents/${docId}/parse`, { method: 'POST' });
+        if (!res.ok) {
+          const body = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(body.error ?? `Extraction failed (${String(res.status)})`);
+        }
+        const data = (await res.json()) as { fields?: Record<string, ExtractField> };
+        const fields = data.fields ?? {};
+        if (Object.keys(fields).length === 0) {
+          // Nothing extracted — skip straight to the next document.
+          void parseNext(rest, mergedSoFar);
+          return;
+        }
+        // Stash the remaining queue on the pending object so confirm can continue.
+        setPendingConfirm({ documentId: docId!, fields });
+        setPhase('confirm');
+        // remember what's left for after this confirm
+        remainingRef.current = rest;
+      } catch (err) {
+        // Extraction is best-effort — on failure, skip parsing and continue.
+        setParseError(err instanceof Error ? err.message : 'Extraction failed');
+        void parseNext(rest, mergedSoFar);
+      }
+    },
+    [finish],
+  );
+
+  const remainingRef = useRef<string[]>([]);
+
+  const handleConfirmed = useCallback(
+    (confirmedFields: Record<string, unknown>) => {
+      const merged = { ...mergedFields, ...confirmedFields };
+      setMergedFields(merged);
+      setPendingConfirm(null);
+      void parseNext(remainingRef.current, merged);
+    },
+    [mergedFields, parseNext],
+  );
+
+  const handleContinue = useCallback(() => {
+    if (uploadedIds.length === 0) {
+      onAnswer({ document_ids: [], extracted_fields: {} });
+      return;
+    }
+    // Kick off parse → confirm across all uploaded documents.
+    void parseNext(uploadedIds, {});
+  }, [onAnswer, uploadedIds, parseNext]);
+
+  /* ---- Render: parsing phase ---- */
+
+  if (phase === 'parsing') {
+    return (
+      <div className="flex items-center gap-3 py-8">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">
+          Reading your document…
+        </p>
+      </div>
+    );
+  }
+
+  /* ---- Render: confirmation phase ---- */
+
+  if (phase === 'confirm' && pendingConfirm) {
+    return (
+      <div className="space-y-4">
+        {parseError && (
+          <p className="text-sm text-muted-foreground">
+            One document couldn&apos;t be read automatically — you can enter those
+            details by hand later.
+          </p>
+        )}
+        <ExtractionConfirmation
+          documentId={pendingConfirm.documentId}
+          fields={pendingConfirm.fields}
+          onConfirmed={handleConfirmed}
+        />
+      </div>
+    );
+  }
+
+  /* ---- Render: upload phase ---- */
 
   return (
     <div className="space-y-4">

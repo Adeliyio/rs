@@ -9,10 +9,25 @@ export const metadata: Metadata = {
 /**
  * PRD §6.2 step 1: "Wedge identification (two tiles, or pre-selected by entry route)."
  *
- * This is the first screen of the progressive flow. The user picks their wedge
- * (deposit or subscription) and proceeds directly into the diagnostic.
- * Not a dashboard. Not an overview. The first step toward recovered money.
+ * The first screen of the progressive flow. Marketing CTAs deep-link here with
+ * `?wedge=deposit|subscription` (and legacy `?plan=unlimited`); we forward that
+ * hint to EmptyState so the correct state picker opens immediately instead of
+ * forcing the user to re-pick the wedge (fixes A1).
  */
-export default function NewCasePage(): React.JSX.Element {
-  return <EmptyState />;
+export default async function NewCasePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ wedge?: string; plan?: string }>;
+}): Promise<React.JSX.Element> {
+  const { wedge, plan } = await searchParams;
+
+  // `?plan=unlimited` came from the subscription pricing CTA → subscription wedge.
+  const preselect =
+    wedge === 'deposit' || wedge === 'subscription'
+      ? wedge
+      : plan === 'unlimited'
+        ? 'subscription'
+        : undefined;
+
+  return <EmptyState preselectWedge={preselect} />;
 }
