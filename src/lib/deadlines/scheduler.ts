@@ -1,23 +1,14 @@
 /**
  * Deadline scheduler — server-only.
  *
- * Creates deadline_events records in the database and optionally
- * enqueues BullMQ jobs to fire prompts at the right time.
- *
- * Flow:
- * 1. computeDeadlines() calculates concrete dates
- * 2. scheduleDeadlines() persists them to deadline_events table
- * 3. A cron job (deadline-check queue) polls for due deadlines
- * 4. When a deadline fires, it sends in-app + email notifications
+ * Persists computed deadlines to Convex (deadlineEvents) via the service layer,
+ * replacing the former Supabase-client-based implementation. Called from server
+ * routes and workers alike, all of which use the service Convex client.
  */
 
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '@/types/database.types';
+import { workerConvex, api } from '@/lib/convex/worker-client';
+import type { Id } from '@convex/dataModel';
 import type { ComputedDeadline } from '@/lib/deadlines/calculator';
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                             */
-/* ------------------------------------------------------------------ */
 
 export interface ScheduleResult {
   scheduled: number;
@@ -25,22 +16,11 @@ export interface ScheduleResult {
   errors: string[];
 }
 
-/* ------------------------------------------------------------------ */
-/*  Main entry point                                                  */
-/* ------------------------------------------------------------------ */
-
 /**
- * Persists computed deadlines to the deadline_events table.
- * Skips deadlines that have already been scheduled for this case.
- *
- * @param supabase  Authenticated or service-role Supabase client.
- * @param caseId  The case ID.
- * @param deadlines  Computed deadlines from the calculator.
- * @param timezone  IANA timezone string.
- * @returns  Schedule result with counts.
+ * Persists computed deadlines. Skips deadlines already scheduled for this case
+ * (keyed by anchor_event + deadline_date), preserving the old dedup behaviour.
  */
 export async function scheduleDeadlines(
-  supabase: SupabaseClient<Database>,
   caseId: string,
   deadlines: ComputedDeadline[],
   timezone: string,
@@ -49,99 +29,47 @@ export async function scheduleDeadlines(
   let skipped = 0;
   const errors: string[] = [];
 
-  // Load existing deadline events for this case to avoid duplicates
-  const { data: existing, error: fetchError } = await supabase
-    .from('deadline_events')
-    .select('id, anchor_event, deadline_date')
-    .eq('case_id', caseId);
-
-  if (fetchError) {
+  let existing: Array<{ anchor_event: string; deadline_date: string | null }>;
+  try {
+    existing = await workerConvex.query(api.service.listDeadlinesByCase, {
+      caseId: caseId as Id<'cases'>,
+    });
+  } catch (err) {
     return {
       scheduled: 0,
       skipped: 0,
-      errors: [`Failed to fetch existing deadlines: ${fetchError.message}`],
+      errors: [`Failed to fetch existing deadlines: ${err instanceof Error ? err.message : 'unknown'}`],
     };
   }
 
-  // Build a set of existing rule_ids (using anchor_event + deadline_date as key)
   const existingKeys = new Set(
-    (existing ?? []).map(
-      (e) => {
-        const row = e as unknown as { anchor_event: string; deadline_date: string };
-        return `${row.anchor_event}:${row.deadline_date}`;
-      },
-    ),
+    existing.map((e) => `${e.anchor_event}:${e.deadline_date ?? ''}`),
   );
 
   for (const deadline of deadlines) {
-    const key = `${deadline.anchor_event}:${deadline.deadline_date.toISOString()}`;
-
+    // Existing keys use the serialized ISO string; compare on ISO form.
+    const iso = deadline.deadline_date.toISOString();
+    const key = `${deadline.anchor_event}:${iso}`;
     if (existingKeys.has(key)) {
       skipped++;
       continue;
     }
 
-    const payload: Record<string, unknown> = {
-      case_id: caseId,
-      deadline_date: deadline.deadline_date.toISOString(),
-      timezone,
-      anchor_event: deadline.anchor_event,
-      prompt_message: deadline.prompt_message,
-    };
-
-    const { error: insertError } = await supabase
-      .from('deadline_events')
-      // @ts-expect-error — Supabase generic doesn't resolve table Insert type
-      .insert(payload);
-
-    if (insertError) {
+    try {
+      await workerConvex.mutation(api.service.createDeadline, {
+        caseId: caseId as Id<'cases'>,
+        deadlineDate: deadline.deadline_date.getTime(),
+        timezone,
+        anchorEvent: deadline.anchor_event,
+        promptMessage: deadline.prompt_message,
+      });
+      scheduled++;
+    } catch (err) {
       errors.push(
-        `Failed to schedule deadline ${deadline.rule_id}: ${insertError.message}`,
+        `Failed to schedule deadline ${deadline.rule_id}: ${err instanceof Error ? err.message : 'unknown'}`,
       );
-      continue;
     }
-
-    scheduled++;
   }
 
   return { scheduled, skipped, errors };
-}
-
-/**
- * Marks a deadline event as fired (prompt was sent).
- */
-export async function markDeadlineFired(
-  supabase: SupabaseClient<Database>,
-  deadlineEventId: string,
-): Promise<void> {
-  await supabase
-    .from('deadline_events')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type from manual Database definition
-    .update({ fired_at: new Date().toISOString() })
-    .eq('id', deadlineEventId);
-}
-
-/**
- * Fetches all unfired, undismissed deadline events that are due
- * (deadline_date <= now). Used by the deadline-check cron job.
- */
-export async function getDueDeadlines(
-  supabase: SupabaseClient<Database>,
-): Promise<Record<string, unknown>[]> {
-  const { data, error } = await supabase
-    .from('deadline_events')
-    .select('*')
-    .is('fired_at', null)
-    .is('dismissed_at', null)
-    .lte('deadline_date', new Date().toISOString())
-    .order('deadline_date', { ascending: true })
-    .limit(100);
-
-  if (error) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to fetch due deadlines:', error.message);
-    return [];
-  }
-
-  return (data ?? []) as Record<string, unknown>[];
 }

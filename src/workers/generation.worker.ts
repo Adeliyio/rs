@@ -12,7 +12,8 @@ import { Worker, type Job } from 'bullmq';
 import { randomUUID } from 'node:crypto';
 import { getRedis } from '@/lib/redis';
 import { QUEUE_NAMES } from '@/lib/queue/config';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { workerConvex, api } from '@/lib/convex/worker-client';
+import type { Id } from '@convex/dataModel';
 import { decryptAnswersPii } from '@/lib/crypto';
 import {
   generateLetter,
@@ -38,21 +39,16 @@ import type { Deduction, ItemizationStatus } from '@/lib/ai/deposit-generation';
 /* ------------------------------------------------------------------ */
 
 async function loadCaseData(caseId: string, userId: string) {
-  const supabase = createServiceRoleClient();
-  const { data, error } = await supabase
-    .from('cases')
-    .select('id, user_id, wedge, jurisdiction, diagnostic_state, payment_status, status')
-    .eq('id', caseId)
-    .eq('user_id', userId)
-    .single();
+  const caseRow = await workerConvex.query(api.service.getCase, {
+    caseId: caseId as Id<'cases'>,
+  });
 
-  if (error || !data) {
+  if (!caseRow || caseRow.user_id !== userId) {
     throw new Error(`Case not found: ${caseId}`);
   }
 
   return {
-    supabase,
-    caseRow: data as unknown as {
+    caseRow: caseRow as unknown as {
       id: string;
       user_id: string;
       wedge: string;
@@ -72,7 +68,7 @@ async function processDepositGeneration(
   caseId: string,
   userId: string,
 ): Promise<void> {
-  const { supabase, caseRow } = await loadCaseData(caseId, userId);
+  const { caseRow } = await loadCaseData(caseId, userId);
   const answers = decryptAnswersPii(
     (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
   );
@@ -111,61 +107,37 @@ async function processDepositGeneration(
 
   const generatedLetter = result.letter;
 
-  const letterPayload: Record<string, unknown> = {
-    case_id: caseId,
+  await workerConvex.mutation(api.service.createLetter, {
+    caseId: caseId as Id<'cases'>,
     content: generatedLetter.content,
-    pdf_url: null,
-    grounding_context_ids: generatedLetter.grounding_context_ids,
-    citation_validation: {
+    groundingContextIds: generatedLetter.grounding_context_ids,
+    citationValidation: {
       valid: generatedLetter.citation_validation.valid,
       stripped: generatedLetter.citation_validation.stripped,
       pass: generatedLetter.citation_validation.pass,
     },
-  };
-
-  const { error: letterError } = await supabase
-    .from('letters')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-    .insert(letterPayload)
-    .select()
-    .single();
-
-  if (letterError) {
-    throw new Error(`Failed to save letter: ${letterError.message}`);
-  }
+  });
 
   // Audit log
-  const auditPayload: Record<string, unknown> = {
-    case_id: caseId,
-    user_id: userId,
-    correlation_id: correlationId,
-    grounding_context_ids: generatedLetter.grounding_context_ids,
-    model_version: AI_CONFIG.generation.model,
-    prompt_version: 'deposit_v1',
-    citation_validation_result: {
+  await workerConvex.mutation(api.service.insertAudit, {
+    caseId: caseId as Id<'cases'>,
+    userId: userId as Id<'users'>,
+    correlationId,
+    groundingContextIds: generatedLetter.grounding_context_ids,
+    modelVersion: AI_CONFIG.generation.model,
+    promptVersion: 'deposit_v1',
+    citationValidationResult: {
       valid_count: generatedLetter.citation_validation.valid.length,
       stripped_count: generatedLetter.citation_validation.stripped.length,
       pass: generatedLetter.citation_validation.pass,
     },
-  };
-  // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-  await supabase.from('audit_log').insert(auditPayload);
+  });
 
-  // Update case status
-  const caseUpdatePayload: Record<string, unknown> = {
-    status: 'generated',
-    updated_at: new Date().toISOString(),
-  };
-  // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type
-  await supabase.from('cases').update(caseUpdatePayload).eq('id', caseId);
-
-  const historyPayload: Record<string, unknown> = {
-    case_id: caseId,
-    previous_status: caseRow.status,
-    new_status: 'generated',
-  };
-  // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-  await supabase.from('case_status_history').insert(historyPayload);
+  // Update case status → generated (records status history).
+  await workerConvex.mutation(api.service.setCaseStatus, {
+    caseId: caseId as Id<'cases'>,
+    newStatus: 'generated',
+  });
 
   // Schedule deadlines (best-effort)
   try {
@@ -179,7 +151,7 @@ async function processDepositGeneration(
       timezone,
     );
     if (deadlines.length > 0) {
-      await scheduleDeadlines(supabase, caseId, deadlines, timezone);
+      await scheduleDeadlines(caseId, deadlines, timezone);
     }
   } catch (deadlineErr) {
     // eslint-disable-next-line no-console
@@ -188,8 +160,9 @@ async function processDepositGeneration(
 
   // Queue letter delivery email (best-effort)
   try {
-    const { data: userData } = await supabase.auth.admin.getUserById(userId);
-    const userEmail = userData?.user?.email;
+    const userEmail = await workerConvex.query(api.service.userEmailById, {
+      userId: userId as Id<'users'>,
+    });
     if (userEmail) {
       const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
       const downloadUrl = `${appUrl}/case/${caseId}`;
@@ -216,7 +189,7 @@ async function processSubscriptionGeneration(
   caseId: string,
   userId: string,
 ): Promise<void> {
-  const { supabase, caseRow } = await loadCaseData(caseId, userId);
+  const { caseRow } = await loadCaseData(caseId, userId);
   const answers = decryptAnswersPii(
     (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
   );
@@ -242,67 +215,42 @@ async function processSubscriptionGeneration(
 
   const generatedSequence = result.sequence;
 
-  const sequencePayload: Record<string, unknown> = {
-    case_id: caseId,
+  await workerConvex.mutation(api.service.createSequence, {
+    caseId: caseId as Id<'cases'>,
     vertical: generatedSequence.vertical,
-    current_step: 1,
-    next_send_at: null,
     steps: {
       steps: generatedSequence.steps,
       jurisdiction: generatedSequence.jurisdiction,
       sent_dates: {},
     },
-    grounding_context_ids: generatedSequence.grounding_context_ids,
-    citation_validation: {
+    groundingContextIds: generatedSequence.grounding_context_ids,
+    citationValidation: {
       valid: generatedSequence.citation_validation.valid,
       stripped: generatedSequence.citation_validation.stripped,
       pass: generatedSequence.citation_validation.pass,
     },
-  };
-
-  const { error: seqError } = await supabase
-    .from('sequences')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-    .insert(sequencePayload)
-    .select()
-    .single();
-
-  if (seqError) {
-    throw new Error(`Failed to save sequence: ${seqError.message}`);
-  }
+  });
 
   // Audit log
-  const auditPayload: Record<string, unknown> = {
-    case_id: caseId,
-    user_id: userId,
-    correlation_id: correlationId,
-    grounding_context_ids: generatedSequence.grounding_context_ids,
-    model_version: AI_CONFIG.generation.model,
-    prompt_version: 'subscription_v1',
-    citation_validation_result: {
+  await workerConvex.mutation(api.service.insertAudit, {
+    caseId: caseId as Id<'cases'>,
+    userId: userId as Id<'users'>,
+    correlationId,
+    groundingContextIds: generatedSequence.grounding_context_ids,
+    modelVersion: AI_CONFIG.generation.model,
+    promptVersion: 'subscription_v1',
+    citationValidationResult: {
       valid_count: generatedSequence.citation_validation.valid.length,
       stripped_count: generatedSequence.citation_validation.stripped.length,
       pass: generatedSequence.citation_validation.pass,
     },
-  };
-  // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-  await supabase.from('audit_log').insert(auditPayload);
+  });
 
-  // Update case status
-  const caseUpdatePayload: Record<string, unknown> = {
-    status: 'generated',
-    updated_at: new Date().toISOString(),
-  };
-  // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type
-  await supabase.from('cases').update(caseUpdatePayload).eq('id', caseId);
-
-  const historyPayload: Record<string, unknown> = {
-    case_id: caseId,
-    previous_status: caseRow.status,
-    new_status: 'generated',
-  };
-  // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-  await supabase.from('case_status_history').insert(historyPayload);
+  // Update case status → generated (records status history).
+  await workerConvex.mutation(api.service.setCaseStatus, {
+    caseId: caseId as Id<'cases'>,
+    newStatus: 'generated',
+  });
 }
 
 /* ------------------------------------------------------------------ */

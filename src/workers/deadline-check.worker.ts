@@ -1,27 +1,21 @@
 /**
  * Deadline check worker — processes deadline-check queue jobs.
  *
- * Polls for due deadline events and fires prompts via in-app
- * notification + email delivery. Runs as a repeatable job
- * (every 5 minutes).
+ * Polls Convex for due deadline events and fires prompts via email delivery.
+ * Runs as a repeatable job (every 5 minutes). Uses the service Convex client
+ * (workerConvex) — the replacement for the Supabase service-role client.
  */
 
 import { Worker, type Job } from 'bullmq';
 import { getRedis } from '@/lib/redis';
 import { QUEUE_NAMES } from '@/lib/queue/config';
 import { getQueue } from '@/lib/queue/queues';
-import { getDueDeadlines, markDeadlineFired } from '@/lib/deadlines/scheduler';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { workerConvex, api } from '@/lib/convex/worker-client';
+import type { Id } from '@convex/dataModel';
 import type { EmailDeliveryJobPayload } from '@/types/jobs/email-delivery.job';
 
-async function processDeadlineCheck(
-  _job: Job,
-): Promise<void> {
-  const supabase = createServiceRoleClient();
-
-  // Fetch all due, unfired, undismissed deadlines
-  const dueDeadlines = await getDueDeadlines(supabase);
-
+async function processDeadlineCheck(_job: Job): Promise<void> {
+  const dueDeadlines = await workerConvex.query(api.service.getDueDeadlines, {});
   if (dueDeadlines.length === 0) return;
 
   // eslint-disable-next-line no-console
@@ -30,32 +24,25 @@ async function processDeadlineCheck(
   const emailQueue = getQueue(QUEUE_NAMES.OUTCOME_FOLLOWUP);
 
   for (const deadline of dueDeadlines) {
-    const deadlineId = deadline['id'] as string;
-    const caseId = deadline['case_id'] as string;
-    const promptMessage = deadline['prompt_message'] as string;
-    const deadlineDate = deadline['deadline_date'] as string;
+    const deadlineId = deadline.id as string;
+    const caseId = deadline.case_id as string;
+    const promptMessage = deadline.prompt_message as string;
+    const deadlineDate = deadline.deadline_date as string;
 
-    // Look up the user's email for this case
-    const { data: caseData } = await supabase
-      .from('cases')
-      .select('user_id')
-      .eq('id', caseId)
-      .single();
-
-    if (!caseData) {
+    const caseRow = await workerConvex.query(api.service.getCase, {
+      caseId: caseId as Id<'cases'>,
+    });
+    if (!caseRow) {
       // eslint-disable-next-line no-console
       console.warn(`[DeadlineWorker] Case ${caseId} not found for deadline ${deadlineId}`);
       continue;
     }
 
-    const userId = (caseData as unknown as { user_id: string }).user_id;
-
-    // Look up user email from Supabase Auth
-    const { data: userData } = await supabase.auth.admin.getUserById(userId);
-    const userEmail = userData?.user?.email;
+    const userEmail = await workerConvex.query(api.service.userEmailById, {
+      userId: caseRow.user_id as Id<'users'>,
+    });
 
     if (userEmail) {
-      // Enqueue email delivery
       const emailPayload: EmailDeliveryJobPayload = {
         to: userEmail,
         subject: 'Deadline Approaching',
@@ -67,16 +54,14 @@ async function processDeadlineCheck(
           case_url: `${process.env.APP_URL ?? 'http://localhost:3000'}/case/${caseId}`,
         },
       };
-
-      await emailQueue.add(
-        `deadline-email-${deadlineId}`,
-        emailPayload,
-        { jobId: `deadline-email-${deadlineId}` }, // Idempotent
-      );
+      await emailQueue.add(`deadline-email-${deadlineId}`, emailPayload, {
+        jobId: `deadline-email-${deadlineId}`,
+      });
     }
 
-    // Mark deadline as fired
-    await markDeadlineFired(supabase, deadlineId);
+    await workerConvex.mutation(api.service.markDeadlineFired, {
+      deadlineEventId: deadlineId as Id<'deadlineEvents'>,
+    });
 
     // eslint-disable-next-line no-console
     console.log(`[DeadlineWorker] Fired deadline ${deadlineId} for case ${caseId}`);
@@ -86,14 +71,10 @@ async function processDeadlineCheck(
 export function createDeadlineCheckWorker(): Worker {
   const connection = getRedis();
 
-  const worker = new Worker(
-    QUEUE_NAMES.DEADLINE_CHECK,
-    processDeadlineCheck,
-    {
-      connection,
-      concurrency: 1, // Single-threaded check
-    },
-  );
+  const worker = new Worker(QUEUE_NAMES.DEADLINE_CHECK, processDeadlineCheck, {
+    connection,
+    concurrency: 1,
+  });
 
   worker.on('completed', (job) => {
     // eslint-disable-next-line no-console

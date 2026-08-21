@@ -9,7 +9,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { workerConvex, api } from '@/lib/convex/worker-client';
 import {
   GOVERNMENT_DOMAIN_ALLOWLIST,
   type TavilyResult,
@@ -35,52 +35,29 @@ function hashQuery(query: string): string {
 async function getCachedResults(
   queryHash: string,
 ): Promise<TavilyResult[] | null> {
-  const supabase = createServiceRoleClient();
+  const cached = await workerConvex.query(api.service.getTavily, { queryHash });
+  if (!cached) return null;
 
-  const { data, error } = await supabase
-    .from('tavily_cache')
-    .select('results, created_at')
-    .eq('query_hash', queryHash)
-    .single();
-
-  if (error || !data) return null;
-
-  const cacheRow = data as unknown as { results: unknown; created_at: string };
-
-  // Check TTL
-  const createdAt = new Date(cacheRow.created_at);
-  const now = new Date();
-  const daysSinceCreation =
-    (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
-
-  if (daysSinceCreation > CACHE_TTL_DAYS) {
-    // Cache expired — delete and return null
-    await supabase
-      .from('tavily_cache')
-      .delete()
-      .eq('query_hash', queryHash);
+  // Check TTL against fetched_at.
+  const fetchedAt = new Date(cached.fetched_at);
+  const daysSince = (Date.now() - fetchedAt.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysSince > CACHE_TTL_DAYS) {
+    await workerConvex.mutation(api.service.deleteTavily, { queryHash });
     return null;
   }
 
-  return cacheRow.results as TavilyResult[];
+  return cached.results as TavilyResult[];
 }
 
 async function setCachedResults(
   queryHash: string,
-  query: string,
+  _query: string,
   results: TavilyResult[],
 ): Promise<void> {
-  const supabase = createServiceRoleClient();
-
-  const payload = {
-    query_hash: queryHash,
-    query,
+  await workerConvex.mutation(api.service.upsertTavily, {
+    queryHash,
     results,
-  };
-
-  // @ts-expect-error — service-role Supabase client resolves Insert generics as never
-  await supabase.from('tavily_cache').upsert(payload, {
-    onConflict: 'query_hash',
+    ttlDays: CACHE_TTL_DAYS,
   });
 }
 
