@@ -1,5 +1,29 @@
 const isDev = process.env.NODE_ENV !== 'production';
 
+/**
+ * The browser's ConvexReactClient connects to NEXT_PUBLIC_CONVEX_URL over
+ * WebSocket + HTTP, so the CSP connect-src must allow that origin (and its ws
+ * form). Derive it from the env var so self-hosted (e.g. convex.resolvaio.com)
+ * and local dev (127.0.0.1:3210) both work without editing the policy.
+ */
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL ?? '';
+const convexConnectSrc = (() => {
+  if (!convexUrl) return '';
+  try {
+    const u = new URL(convexUrl);
+    const wsProto = u.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Convex HTTP actions run on the next port up (site origin); allow the whole
+    // host so both the API (:3210) and HTTP-actions (:3211) endpoints resolve.
+    return `${u.protocol}//${u.hostname}:* ${wsProto}//${u.hostname}:*`;
+  } catch {
+    return convexUrl;
+  }
+})();
+// In dev, also allow plain localhost variants for convenience.
+const devConnect = isDev
+  ? 'http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*'
+  : '';
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // 'standalone' output requires symlinks — enabled in Docker/Linux builds.
@@ -96,7 +120,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.resolvaio.com wss://*.resolvaio.com https://api.openai.com https://api.tavily.com https://api.paddle.com https://sandbox-api.paddle.com https://plausible.io",
+              `connect-src 'self' ${convexConnectSrc} ${devConnect} https://*.resolvaio.com wss://*.resolvaio.com https://api.openai.com https://api.tavily.com https://api.paddle.com https://sandbox-api.paddle.com https://plausible.io`,
               "frame-src https://cdn.paddle.com https://sandbox-buy.paddle.com https://buy.paddle.com",
               "object-src 'none'",
               "base-uri 'self'",
