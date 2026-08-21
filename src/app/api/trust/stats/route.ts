@@ -11,6 +11,12 @@ import { NextResponse } from 'next/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { api } from '@convex/api';
 
+// This route calls an external Convex deployment — never cache it (Next 14
+// caches GET route handlers + fetch() by default, which would freeze the
+// response, including a transient error, forever).
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+
 const MIN_CASES_FOR_DISPLAY = 50;
 
 export async function GET() {

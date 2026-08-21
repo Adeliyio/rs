@@ -19,6 +19,8 @@ import { encryptAnswersPii, decryptAnswersPii } from '@/lib/crypto';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import type { Wedge } from '@/types/enums';
 import type { Id } from '@convex/dataModel';
+// Calls Convex — never cache (Next 14 caches GET route handlers by default).
+export const dynamic = 'force-dynamic';
 
 /* ------------------------------------------------------------------ */
 /*  GET                                                               */

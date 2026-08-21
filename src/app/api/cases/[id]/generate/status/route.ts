@@ -20,6 +20,8 @@ import {
   getGenerationQueueDepth,
 } from '@/lib/queue/enqueue';
 import type { Id } from '@convex/dataModel';
+// Calls Convex — never cache (Next 14 caches GET route handlers by default).
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   _request: Request,

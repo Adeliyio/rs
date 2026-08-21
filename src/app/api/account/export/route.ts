@@ -10,6 +10,8 @@ import { NextResponse } from 'next/server';
 import { q, currentUser, api } from '@/lib/convex/server';
 import { decryptAnswersPii } from '@/lib/crypto';
 import type { DiagnosticState } from '@/types/diagnostic.types';
+// Calls Convex — never cache (Next 14 caches GET route handlers by default).
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

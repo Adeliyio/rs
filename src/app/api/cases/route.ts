@@ -12,6 +12,8 @@ import { NextResponse } from 'next/server';
 
 import { q, m, currentUser, api } from '@/lib/convex/server';
 import { WEDGE, DEPOSIT_JURISDICTION } from '@/types/enums';
+// Calls Convex — never cache (Next 14 caches GET route handlers by default).
+export const dynamic = 'force-dynamic';
 
 const US_STATES = [
   'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',

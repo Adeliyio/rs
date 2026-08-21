@@ -6,6 +6,8 @@
 import { NextResponse } from 'next/server';
 
 import { q, currentUser, api } from '@/lib/convex/server';
+// Calls Convex — never cache (Next 14 caches GET route handlers by default).
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {

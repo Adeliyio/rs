@@ -4,6 +4,8 @@ import { requireAdmin } from '@/lib/admin/auth';
 import { logAdminAction } from '@/lib/admin/audit';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { api } from '@convex/api';
+// Calls Convex — never cache (Next 14 caches GET route handlers by default).
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
