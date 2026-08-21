@@ -105,10 +105,10 @@ export async function POST(request: Request) {
 
     /* ---- Idempotency + store (single service call) ---- */
     const convex = createServiceConvexClient();
-    const secret = serviceSecret();
+    const svcSecret = serviceSecret();
 
     const record = await convex.mutation(api.service.recordWebhook, {
-      secret,
+      secret: svcSecret,
       eventId: event.event_id,
       provider: 'paddle',
       payload: JSON.parse(rawBody) as Record<string, unknown>,
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
     }
 
     // Mark as processed
-    await convex.mutation(api.service.markWebhookProcessed, { secret, eventId: event.event_id });
+    await convex.mutation(api.service.markWebhookProcessed, { secret: svcSecret, eventId: event.event_id });
 
     return NextResponse.json({ ok: true, event_type: event.event_type });
   } catch (err) {

@@ -309,19 +309,14 @@ export default async function CasePage({
   // Load available counties from KB for escalation (deposit only)
   const availableCounties = getAvailableCounties(caseRow.jurisdiction);
 
-  // Load packet URL if it exists
-  if (packetData) {
-    const { data: packetRow } = await supabase
-      .from('packets')
-      .select('bundle_url')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (packetRow) {
-      caseDetailData.packet_url =
-        (packetRow as unknown as { bundle_url: string | null }).bundle_url ?? undefined;
+  // Load packet URL (R2 object key) if a packet exists.
+  if (hasPacket) {
+    const packetList = await q(api.packets.listByCaseMine, {
+      caseId: caseId as Id<'cases'>,
+    });
+    const latestPacket = packetList[0];
+    if (latestPacket) {
+      caseDetailData.packet_url = latestPacket.bundle_url ?? undefined;
     }
   }
 
