@@ -1,12 +1,12 @@
 /**
- * GET /api/cases/[id]/payment-status
- *
- * Lightweight endpoint for polling payment status during checkout.
- * Returns only the payment_status field to minimize data transfer.
+ * GET /api/cases/[id]/payment-status — lightweight payment-status poll.
+ * Ownership enforced by cases.getMine.
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+
+import { q, currentUser, api } from '@/lib/convex/server';
+import type { Id } from '@convex/dataModel';
 
 export async function GET(
   _request: Request,
@@ -15,28 +15,17 @@ export async function GET(
   try {
     const { id: caseId } = await params;
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from('cases')
-      .select('payment_status')
-      .eq('id', caseId)
-      .single();
-
-    if (error || !data) {
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
-    const row = data as unknown as { payment_status: string };
-    return NextResponse.json({ payment_status: row.payment_status });
+    return NextResponse.json({ payment_status: caseRow.payment_status });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
     return NextResponse.json({ error: message }, { status: 500 });

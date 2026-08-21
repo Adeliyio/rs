@@ -1,20 +1,17 @@
 /**
  * POST /api/cases/[id]/pdf
  *
- * Generates a PDF from the case's stored letter content.
- * Uploads the PDF to Supabase Storage and updates the letter
- * record with the PDF URL.
- *
- * Requires: case has a generated letter, user is authenticated
- * and owns the case, payment gate passes.
+ * Renders the case's letter to a PDF, uploads it to R2, and returns a 15-min
+ * signed URL. Ownership via cases.getMine / letters.latestByCaseMine. R2 upload,
+ * signing, and the letter pdf_url patch go through the service layer.
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { renderLetterPdf } from '@/lib/pdf/renderer';
-import type { Tables } from '@/types/database.types';
 
-type LetterRow = Pick<Tables<'letters'>, 'id' | 'content' | 'pdf_url'>;
+import { q, currentUser, api } from '@/lib/convex/server';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { renderLetterPdf } from '@/lib/pdf/renderer';
+import type { Id } from '@convex/dataModel';
 
 export async function POST(
   _request: Request,
@@ -23,121 +20,86 @@ export async function POST(
   try {
     const { id: caseId } = await params;
 
-    /* ---- Auth ---- */
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    /* ---- Load case (RLS enforces ownership) ---- */
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, user_id, status, wedge, payment_status')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
-
-    const caseRow = caseData as unknown as { id: string; user_id: string; status: string; wedge: string; payment_status: string };
-
     if (caseRow.wedge !== 'deposit') {
       return NextResponse.json(
         { error: 'PDF generation is only available for deposit cases.' },
         { status: 400 },
       );
     }
-
     if (caseRow.payment_status !== 'paid') {
-      return NextResponse.json(
-        { error: 'Payment required before PDF generation.' },
-        { status: 402 },
-      );
+      return NextResponse.json({ error: 'Payment required before PDF generation.' }, { status: 402 });
     }
 
-    /* ---- Load letter ---- */
-    const { data: letterData, error: letterError } = await supabase
-      .from('letters')
-      .select('id, content, pdf_url')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (letterError || !letterData) {
+    const letter = await q(api.letters.latestByCaseMine, { caseId: caseId as Id<'cases'> });
+    if (!letter) {
       return NextResponse.json(
         { error: 'No letter found for this case. Generate a letter first.' },
         { status: 404 },
       );
     }
 
-    const letter = letterData as unknown as LetterRow;
+    const convex = createServiceConvexClient();
+    const secret = serviceSecret();
 
-    // If PDF already exists, generate a fresh signed URL from the stored path
+    // If a PDF already exists, return a fresh signed URL from the stored key.
     if (letter.pdf_url) {
-      const { data: existingSignedData, error: existingSignedError } =
-        await supabase.storage.from('documents').createSignedUrl(letter.pdf_url, 15 * 60);
-
-      if (existingSignedError || !existingSignedData?.signedUrl) {
-        // Stored path may be stale — fall through to re-render
-      } else {
-        return NextResponse.json({ pdf_url: existingSignedData.signedUrl });
+      try {
+        const existing = await convex.action(api.service.signObject, {
+          secret,
+          key: letter.pdf_url,
+          ttl: 'userFacing',
+        });
+        return NextResponse.json({ pdf_url: existing });
+      } catch {
+        // stale key — fall through to re-render
       }
     }
 
-    /* ---- Render PDF ---- */
-    const pdfBuffer = await renderLetterPdf({
-      content: letter.content,
-    });
+    /* ---- Render + upload ---- */
+    const pdfBuffer = await renderLetterPdf({ content: letter.content });
+    const storageKey = `${user.id}/${caseId}/demand-letter.pdf`;
+    // Copy into a fresh ArrayBuffer (renderLetterPdf may return a Node Buffer
+    // whose .buffer is a pooled/shared allocation).
+    const pdfBytes = new Uint8Array(pdfBuffer.byteLength);
+    pdfBytes.set(pdfBuffer);
 
-    /* ---- Upload to Supabase Storage ---- */
-    const filePath = `${user.id}/${caseId}/demand-letter.pdf`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('documents')
-      .upload(filePath, pdfBuffer, {
+    try {
+      await convex.action(api.service.uploadObject, {
+        secret,
+        key: storageKey,
+        bytes: pdfBytes.buffer,
         contentType: 'application/pdf',
-        upsert: true,
       });
-
-    if (uploadError) {
-      return NextResponse.json(
-        { error: 'Failed to upload PDF. Please try again.' },
-        { status: 500 },
-      );
+    } catch {
+      return NextResponse.json({ error: 'Failed to upload PDF. Please try again.' }, { status: 500 });
     }
 
-    // Generate a signed URL with 15-minute TTL (SEC-03)
-    const { data: signedData, error: signedError } = await supabase.storage
-      .from('documents')
-      .createSignedUrl(filePath, 15 * 60); // 15 minutes
-
-    if (signedError || !signedData?.signedUrl) {
-      return NextResponse.json(
-        { error: 'Failed to generate signed URL for PDF' },
-        { status: 500 },
-      );
+    let signedUrl: string;
+    try {
+      signedUrl = await convex.action(api.service.signObject, {
+        secret,
+        key: storageKey,
+        ttl: 'userFacing',
+      });
+    } catch {
+      return NextResponse.json({ error: 'Failed to generate signed URL for PDF' }, { status: 500 });
     }
 
-    const signedUrl = signedData.signedUrl;
-
-    /* ---- Update letter with storage path (not URL — we regenerate signed URLs on demand) ---- */
-    const { error: updateError } = await supabase
-      .from('letters')
-      // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type from manual Database definition
-      .update({ pdf_url: filePath })
-      .eq('id', letter.id);
-
-    if (updateError) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to update letter pdf_url:', updateError.message);
-    }
+    // Persist the R2 key on the letter (we regenerate signed URLs on demand).
+    await convex.mutation(api.service.setLetterPdfUrl, {
+      secret,
+      letterId: letter.id as Id<'letters'>,
+      pdfUrl: storageKey,
+    });
 
     return NextResponse.json({ pdf_url: signedUrl });
   } catch (err) {

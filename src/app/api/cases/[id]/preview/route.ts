@@ -11,9 +11,10 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { q, currentUser, api } from '@/lib/convex/server';
 import { decryptAnswersPii } from '@/lib/crypto';
 import { loadKbEntry } from '@/lib/kb/loader';
+import type { Id } from '@convex/dataModel';
 
 export async function GET(
   _request: Request,
@@ -22,32 +23,15 @@ export async function GET(
   try {
     const { id: caseId } = await params;
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge, jurisdiction, diagnostic_state')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
-
-    const caseRow = caseData as unknown as {
-      id: string;
-      wedge: string;
-      jurisdiction: string;
-      diagnostic_state: Record<string, unknown> | null;
-    };
 
     if (caseRow.wedge !== 'deposit') {
       return NextResponse.json(

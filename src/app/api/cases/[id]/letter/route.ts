@@ -1,13 +1,12 @@
 /**
- * GET /api/cases/[id]/letter
- *
- * Returns the most recent generated letter for a case.
- * Used by the letter-view component to display the generated content.
- * Requires authentication; RLS enforces ownership.
+ * GET /api/cases/[id]/letter — most recent generated letter for a case.
+ * Ownership enforced by letters.latestByCaseMine (via parent case).
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+
+import { q, currentUser, api } from '@/lib/convex/server';
+import type { Id } from '@convex/dataModel';
 
 export async function GET(
   _request: Request,
@@ -16,62 +15,30 @@ export async function GET(
   try {
     const { id: caseId } = await params;
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Verify case belongs to user via RLS
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
-      return NextResponse.json({ error: 'Case not found' }, { status: 404 });
+    let letter;
+    try {
+      letter = await q(api.letters.latestByCaseMine, { caseId: caseId as Id<'cases'> });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Not found')) {
+        return NextResponse.json({ error: 'Case not found' }, { status: 404 });
+      }
+      throw err;
     }
 
-    // Fetch the most recent letter for this case
-    const { data: letterData, error: letterError } = await supabase
-      .from('letters')
-      .select('id, content, pdf_url, grounding_context_ids, citation_validation, created_at')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (letterError || !letterData) {
-      return NextResponse.json(
-        { error: 'No letter found for this case.' },
-        { status: 404 },
-      );
+    if (!letter) {
+      return NextResponse.json({ error: 'No letter found for this case.' }, { status: 404 });
     }
 
-    const letter = letterData as unknown as {
-      id: string;
-      content: string;
-      pdf_url: string | null;
-      grounding_context_ids: string[] | null;
-      citation_validation: Record<string, unknown> | null;
-      created_at: string;
-    };
-
-    // Check if there's a rebuttal table stored in the letter content
-    // The rebuttal table is stored separately from content in the generation pipeline
-    // but may be concatenated in the content field. Check for markdown table markers.
+    // Extract a rebuttal table if present in the content (unchanged logic).
     let rebuttalTable: string | undefined;
-    const tableMatch = letter.content.match(
-      /\|.*Landlord.*Deduction.*\|[\s\S]*?\|.*\|/,
-    );
-    if (tableMatch) {
-      rebuttalTable = tableMatch[0];
-    }
+    const tableMatch = letter.content.match(/\|.*Landlord.*Deduction.*\|[\s\S]*?\|.*\|/);
+    if (tableMatch) rebuttalTable = tableMatch[0];
 
     return NextResponse.json({
       id: letter.id,
