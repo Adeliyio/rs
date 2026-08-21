@@ -1,5 +1,17 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import {
+  convexAuthNextjsMiddleware,
+  createRouteMatcher,
+  nextjsMiddlewareRedirect,
+} from '@convex-dev/auth/nextjs/server';
+
+/**
+ * Middleware — replaces the Supabase session-refresh middleware.
+ *
+ * Uses convexAuthNextjsMiddleware to resolve the Convex Auth session, then keeps
+ * the app's existing subdomain routing (resolvaio.com marketing vs
+ * app.resolvaio.com app) and the public/protected route policy.
+ */
 
 /** Routes that do not require an authenticated session. */
 const PUBLIC_ROUTES = [
@@ -24,6 +36,7 @@ const PUBLIC_PREFIXES = [
   '/api/webhooks/',
   '/api/trust/',
   '/api/waitlist',
+  '/api/keep-alive',
 ];
 
 /** Pages that should only be served on the app subdomain. */
@@ -40,12 +53,6 @@ const APP_ONLY_PREFIXES = [
   '/api/sequences',
 ];
 
-/**
- * The root domain (resolvaio.com) serves marketing pages.
- * The app subdomain (app.resolvaio.com) serves the authenticated app.
- *
- * In development (localhost), all routes are served from the same host.
- */
 const APP_HOSTNAME = process.env.APP_HOSTNAME ?? 'app.resolvaio.com';
 const ROOT_HOSTNAME = process.env.ROOT_HOSTNAME ?? 'resolvaio.com';
 
@@ -62,31 +69,30 @@ function isAppOnlyPath(pathname: string): boolean {
 }
 
 function isLocalhost(hostname: string): boolean {
-  return hostname === 'localhost' || hostname.startsWith('127.0.0.1') || hostname.startsWith('192.168.');
+  return (
+    hostname === 'localhost' ||
+    hostname.startsWith('127.0.0.1') ||
+    hostname.startsWith('192.168.')
+  );
 }
 
-/**
- * Refreshes the Supabase auth session on every request and redirects
- * unauthenticated users away from protected routes.
- *
- * Subdomain routing:
- * - resolvaio.com → marketing pages, login, register
- * - app.resolvaio.com → authenticated case management
- * - localhost → both (development mode, no subdomain enforcement)
- */
-export async function middleware(request: NextRequest): Promise<NextResponse> {
+const isProtected = createRouteMatcher(
+  // Everything that isn't a known public route/prefix is protected. We express
+  // this as "not public" inside the handler rather than a positive matcher,
+  // because the public set is large and prefix-based.
+  ['/((?!$).*)'],
+);
+
+export default convexAuthNextjsMiddleware(async (request: NextRequest, { convexAuth }) => {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host')?.split(':')[0] ?? '';
-
-  // Skip subdomain enforcement in development
   const isDev = isLocalhost(hostname);
 
-  // Subdomain routing (production only)
+  /* ---- Subdomain routing (production only) ---- */
   if (!isDev) {
     const isAppSubdomain = hostname === APP_HOSTNAME || hostname.startsWith('app.');
     const isRootDomain = hostname === ROOT_HOSTNAME || hostname === `www.${ROOT_HOSTNAME}`;
 
-    // Root domain requesting an app-only page → redirect to app subdomain
     if (isRootDomain && isAppOnlyPath(pathname)) {
       const appUrl = request.nextUrl.clone();
       appUrl.hostname = APP_HOSTNAME;
@@ -94,8 +100,18 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       return NextResponse.redirect(appUrl);
     }
 
-    // App subdomain requesting a marketing page → redirect to root domain
-    if (isAppSubdomain && !isAppOnlyPath(pathname) && isPublicPath(pathname) && pathname !== '/login' && pathname !== '/register' && pathname !== '/auth/callback' && pathname !== '/auth/confirm' && pathname !== '/forgot-password' && pathname !== '/update-password' && !pathname.startsWith('/api/')) {
+    if (
+      isAppSubdomain &&
+      !isAppOnlyPath(pathname) &&
+      isPublicPath(pathname) &&
+      pathname !== '/login' &&
+      pathname !== '/register' &&
+      pathname !== '/auth/callback' &&
+      pathname !== '/auth/confirm' &&
+      pathname !== '/forgot-password' &&
+      pathname !== '/update-password' &&
+      !pathname.startsWith('/api/')
+    ) {
       const rootUrl = request.nextUrl.clone();
       rootUrl.hostname = ROOT_HOSTNAME;
       rootUrl.port = '';
@@ -103,70 +119,27 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // Allow webhook, health, and public API endpoints without auth
+  /* ---- Public API endpoints bypass auth ---- */
   if (isPublicPath(pathname) && pathname.startsWith('/api/')) {
-    return NextResponse.next();
+    return;
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const authed = await convexAuth.isAuthenticated();
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    // Supabase credentials are required — block all protected routes
-    if (!isPublicPath(pathname)) {
-      const errorUrl = request.nextUrl.clone();
-      errorUrl.pathname = '/login';
-      errorUrl.searchParams.set('error', 'configuration_error');
-      return NextResponse.redirect(errorUrl);
-    }
-    return NextResponse.next();
-  }
-
-  let supabaseResponse = NextResponse.next({ request });
-
-  // eslint-disable-next-line @typescript-eslint/no-deprecated -- We use getAll/setAll; the deprecation warning is for the old get/set/remove API
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(
-        cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]
-      ) {
-        cookiesToSet.forEach(({ name, value }) => {
-          request.cookies.set(name, value);
-        });
-        supabaseResponse = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => {
-          const cookieOptions = options ?? {};
-          supabaseResponse.cookies.set(name, value, cookieOptions);
-        });
-      },
-    },
-  });
-
-  // IMPORTANT: Do not write any logic between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to
-  // debug issues with users being randomly logged out.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Redirect unauthenticated users to login
-  if (!user && !isPublicPath(pathname)) {
+  /* ---- Redirect unauthenticated users away from protected routes ---- */
+  if (!authed && isProtected(request) && !isPublicPath(pathname)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
-    // VULN-12: Only set `next` if it's a safe relative path (no open redirect)
+    // VULN-12: only set `next` for a safe relative path (no open redirect)
     if (pathname.startsWith('/') && !pathname.startsWith('//') && !pathname.includes('://')) {
       loginUrl.searchParams.set('next', pathname);
     }
-    return NextResponse.redirect(loginUrl);
+    return nextjsMiddlewareRedirect(request, loginUrl.pathname + loginUrl.search);
   }
 
-  // Authenticated user on root domain hitting a non-public page → send to app subdomain
-  if (user && !isDev && !isPublicPath(pathname)) {
-    const hostHeader = hostname;
-    const isRootDomain = hostHeader === ROOT_HOSTNAME || hostHeader === `www.${ROOT_HOSTNAME}`;
+  /* ---- Authenticated user on root domain hitting app page → app subdomain ---- */
+  if (authed && !isDev && !isPublicPath(pathname)) {
+    const isRootDomain = hostname === ROOT_HOSTNAME || hostname === `www.${ROOT_HOSTNAME}`;
     if (isRootDomain) {
       const appUrl = request.nextUrl.clone();
       appUrl.hostname = APP_HOSTNAME;
@@ -175,18 +148,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return supabaseResponse;
-}
+  return;
+});
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - Common static file extensions
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };

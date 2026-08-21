@@ -5,10 +5,13 @@ import { z } from 'zod';
 /* ------------------------------------------------------------------ */
 
 const serverEnvSchema = z.object({
-  // Core — Supabase. REQUIRED — app will not boot without these.
-  NEXT_PUBLIC_SUPABASE_URL: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_URL is required'),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required'),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
+  // Core — Convex. REQUIRED — app will not boot without these.
+  NEXT_PUBLIC_CONVEX_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_URL is required'),
+  // Convex Auth "site" URL (HTTP actions origin, port 3211 self-hosted).
+  CONVEX_SITE_URL: z.string().min(1, 'CONVEX_SITE_URL is required'),
+  // Shared secret for trusted server→Convex service functions (replaces the
+  // Supabase service-role key). Never exposed to the browser.
+  CONVEX_SERVICE_SECRET: z.string().min(1, 'CONVEX_SERVICE_SECRET is required'),
   APP_URL: z.string().min(1).default('http://localhost:3000'),
 
   // AI — required for generation
@@ -34,8 +37,7 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
 /* ------------------------------------------------------------------ */
 
 const clientEnvSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_URL is required'),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'NEXT_PUBLIC_SUPABASE_ANON_KEY is required'),
+  NEXT_PUBLIC_CONVEX_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_URL is required'),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string().optional().default(''),
   NEXT_PUBLIC_PADDLE_ENVIRONMENT: z
@@ -66,9 +68,10 @@ function validateServerEnv(): ServerEnv {
 
 function validateClientEnv(): ClientEnv {
   const parsed = clientEnvSchema.safeParse({
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
+    NEXT_PUBLIC_PADDLE_ENVIRONMENT: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
   });
   if (!parsed.success) {
     const formatted = parsed.error.format();

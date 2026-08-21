@@ -1,8 +1,11 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
+import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
+
 import { CookieConsent } from '@/components/cookie-consent';
 import { PlausibleAnalytics } from '@/components/analytics';
+import { ConvexClientProvider } from '@/components/convex-provider';
 
 import './globals.css';
 
@@ -19,6 +22,15 @@ export const metadata: Metadata = {
   description:
     'Demand letters and cancellation emails grounded in verified US consumer protection statutes. Security deposit recovery in California, Texas, New York, and Florida. Subscription cancellation in all 50 states.',
   metadataBase: new URL('https://resolvaio.com'),
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+  },
+  manifest: '/manifest.json',
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -48,12 +60,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>): React.JSX.Element {
   return (
-    <html lang="en-US" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
-        <CookieConsent />
-        <PlausibleAnalytics />
-      </body>
-    </html>
+    <ConvexAuthNextjsServerProvider>
+      <html lang="en-US" suppressHydrationWarning>
+        <body className={`${inter.variable} font-sans antialiased`}>
+          <ConvexClientProvider>
+            {children}
+            <CookieConsent />
+            <PlausibleAnalytics />
+          </ConvexClientProvider>
+        </body>
+      </html>
+    </ConvexAuthNextjsServerProvider>
   );
 }

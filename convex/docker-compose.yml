@@ -1,0 +1,70 @@
+# =============================================================================
+# Self-hosted Convex backend + dashboard for Resolvaio.
+#
+# Runs alongside the existing VPS apps (foundrvideo :3001, synqall :3002,
+# resolvaio :3003) and apt-installed Redis. Convex uses its own ports:
+#   - 3210  backend API        (CONVEX_SELF_HOSTED_URL / NEXT_PUBLIC_CONVEX_URL)
+#   - 3211  backend HTTP actions (CONVEX_SITE_URL — OAuth callbacks, etc.)
+#   - 6791  dashboard
+#
+# Bring up on the VPS:
+#   cd /var/www/resolvaio/convex
+#   docker compose up -d
+#   docker compose exec backend ./generate_admin_key.sh   # → admin key
+#
+# By default the backend stores data in SQLite inside the named volume. For
+# production durability you can point it at Postgres via DATABASE_URL (see the
+# get-convex/convex-backend self-hosting guide).
+#
+# Nginx should proxy:
+#   convex-api.resolvaio.com  → 127.0.0.1:3210
+#   convex-http.resolvaio.com → 127.0.0.1:3211   (public — OAuth + client)
+#   convex-dash.resolvaio.com → 127.0.0.1:6791   (restrict / basic-auth this)
+# =============================================================================
+
+services:
+  backend:
+    image: ghcr.io/get-convex/convex-backend:latest
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    ports:
+      - '127.0.0.1:3210:3210'
+      - '127.0.0.1:3211:3211'
+    volumes:
+      - convex_data:/convex/data
+    environment:
+      # Public URLs the backend advertises. MUST match the Nginx-proxied
+      # HTTPS hostnames in production so OAuth redirects and client
+      # connections resolve correctly.
+      - CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN:-http://127.0.0.1:3210}
+      - CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN:-http://127.0.0.1:3211}
+      # Instance identity. Generate a strong random secret and keep it stable.
+      - INSTANCE_NAME=${CONVEX_INSTANCE_NAME:-resolvaio}
+      - INSTANCE_SECRET=${CONVEX_INSTANCE_SECRET}
+      # Optional: point at Postgres instead of the default embedded SQLite.
+      # - DATABASE_URL=${CONVEX_DATABASE_URL}
+      - DISABLE_BEACON=true
+      - REDACT_LOGS_TO_CLIENT=true
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3210/version']
+      interval: 10s
+      start_period: 20s
+      timeout: 5s
+      retries: 5
+
+  dashboard:
+    image: ghcr.io/get-convex/convex-dashboard:latest
+    stop_grace_period: 10s
+    stop_signal: SIGINT
+    ports:
+      - '127.0.0.1:6791:6791'
+    environment:
+      # The dashboard talks to the backend over the browser, so this must be
+      # the publicly reachable backend URL in production.
+      - NEXT_PUBLIC_DEPLOYMENT_URL=${CONVEX_CLOUD_ORIGIN:-http://127.0.0.1:3210}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  convex_data:

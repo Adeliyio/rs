@@ -37,6 +37,12 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@convex/api": [
+        "./convex/_generated/api"
+      ],
+      "@convex/*": [
+        "./convex/*"
       ]
     },
     "noEmit": true
