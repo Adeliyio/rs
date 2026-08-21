@@ -8,6 +8,7 @@
 import { NextResponse } from 'next/server';
 
 import { m, currentUser, api } from '@/lib/convex/server';
+import { cancelOutcomeEmails } from '@/lib/outcomes/outcome-scheduler';
 import type { Id } from '@convex/dataModel';
 
 interface RefusalRequestBody {
@@ -59,6 +60,13 @@ export async function POST(
         return NextResponse.json({ error: 'Case not found' }, { status: 404 });
       }
       throw err;
+    }
+
+    // R-2: closing via refusal must also cancel scheduled outcome emails.
+    try {
+      await cancelOutcomeEmails(caseId);
+    } catch {
+      // best-effort
     }
 
     return NextResponse.json({ case: updated });

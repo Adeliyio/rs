@@ -15,6 +15,7 @@ import { QUEUE_NAMES } from '@/lib/queue/config';
 import { workerConvex, api } from '@/lib/convex/worker-client';
 import type { Id } from '@convex/dataModel';
 import { decryptAnswersPii } from '@/lib/crypto';
+import { checkRefusal } from '@/lib/refusal/refusal-checker';
 import {
   generateLetter,
   type DepositDiagnosticAnswers,
@@ -38,26 +39,44 @@ import type { Deduction, ItemizationStatus } from '@/lib/ai/deposit-generation';
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
+/**
+ * A "skip" sentinel — the worker's guards mirror the /generate route's gates so
+ * the async path is independently safe (R-3), not just safe-by-caller. Returns
+ * null when generation must be skipped (already done, unpaid, refused).
+ */
 async function loadCaseData(caseId: string, userId: string) {
-  const caseRow = await workerConvex.query(api.service.getCase, {
+  const caseRow = (await workerConvex.query(api.service.getCase, {
     caseId: caseId as Id<'cases'>,
-  });
+  })) as {
+    id: string;
+    user_id: string;
+    wedge: string;
+    jurisdiction: string;
+    diagnostic_state: DiagnosticState | null;
+    payment_status: string;
+    status: string;
+  } | null;
 
   if (!caseRow || caseRow.user_id !== userId) {
     throw new Error(`Case not found: ${caseId}`);
   }
 
-  return {
-    caseRow: caseRow as unknown as {
-      id: string;
-      user_id: string;
-      wedge: string;
-      jurisdiction: string;
-      diagnostic_state: DiagnosticState | null;
-      payment_status: string;
-      status: string;
-    },
-  };
+  // R-3: independent guards, mirroring the /generate route.
+  // 1. Idempotency — only generate from `intake`. If a prior run already flipped
+  //    it to `generated` (or beyond), a letter/sequence exists; skip silently.
+  if (caseRow.status !== 'intake') {
+    // eslint-disable-next-line no-console
+    console.log(`[GenerationWorker] Skip ${caseId}: status is '${caseRow.status}', not 'intake'.`);
+    return { caseRow, skip: true as const };
+  }
+  // 2. Deposit paywall — never generate an unpaid deposit letter.
+  if (caseRow.wedge === 'deposit' && caseRow.payment_status !== 'paid') {
+    // eslint-disable-next-line no-console
+    console.warn(`[GenerationWorker] Skip ${caseId}: deposit case is not paid.`);
+    return { caseRow, skip: true as const };
+  }
+
+  return { caseRow, skip: false as const };
 }
 
 /* ------------------------------------------------------------------ */
@@ -68,10 +87,19 @@ async function processDepositGeneration(
   caseId: string,
   userId: string,
 ): Promise<void> {
-  const { caseRow } = await loadCaseData(caseId, userId);
+  const { caseRow, skip } = await loadCaseData(caseId, userId);
+  if (skip) return;
   const answers = decryptAnswersPii(
     (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
   );
+
+  // R-3: refusal re-check (mirrors the /generate route's hard-block gate).
+  const refusal = checkRefusal(answers, 'deposit');
+  if (refusal.triggered && refusal.severity === 'hard_block') {
+    // eslint-disable-next-line no-console
+    console.warn(`[GenerationWorker] Skip ${caseId}: refusal hard-block (${refusal.rule?.rule_id}).`);
+    return;
+  }
 
   const diagnosticAnswers: DepositDiagnosticAnswers = {
     wedge: 'deposit',
@@ -189,10 +217,19 @@ async function processSubscriptionGeneration(
   caseId: string,
   userId: string,
 ): Promise<void> {
-  const { caseRow } = await loadCaseData(caseId, userId);
+  const { caseRow, skip } = await loadCaseData(caseId, userId);
+  if (skip) return;
   const answers = decryptAnswersPii(
     (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
   );
+
+  // R-3: refusal re-check (mirrors the /generate route's hard-block gate).
+  const refusal = checkRefusal(answers, 'subscription');
+  if (refusal.triggered && refusal.severity === 'hard_block') {
+    // eslint-disable-next-line no-console
+    console.warn(`[GenerationWorker] Skip ${caseId}: refusal hard-block (${refusal.rule?.rule_id}).`);
+    return;
+  }
 
   const diagnosticAnswers: DiagnosticAnswers = {
     wedge: 'subscription',

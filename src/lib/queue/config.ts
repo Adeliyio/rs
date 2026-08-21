@@ -10,6 +10,10 @@ export const QUEUE_NAMES = {
   DEADLINE_CHECK: 'deadline-check',
   WEBHOOK_PROCESS: 'webhook-process',
   OUTCOME_FOLLOWUP: 'outcome-followup',
+  // R-6: dedicated queue for ALL transactional email delivery. Previously all
+  // emails rode on OUTCOME_FOLLOWUP; splitting them means a burst of one email
+  // type (or the outcome delayed-job backlog) no longer starves the others.
+  EMAIL_DELIVERY: 'email-delivery',
   LAW_MONITOR: 'law-monitor',
 } as const;
 
@@ -72,6 +76,15 @@ export const QUEUE_CONFIGS: Record<QueueName, QueueConfig> = {
       backoff: DEFAULT_BACKOFF,
       removeOnComplete: { count: 1000 },
       removeOnFail: { count: 3000 },
+    },
+  },
+  [QUEUE_NAMES.EMAIL_DELIVERY]: {
+    name: QUEUE_NAMES.EMAIL_DELIVERY,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: DEFAULT_BACKOFF,
+      removeOnComplete: { count: 2000 },
+      removeOnFail: { count: 5000 },
     },
   },
   [QUEUE_NAMES.LAW_MONITOR]: {

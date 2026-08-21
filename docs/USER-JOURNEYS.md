@@ -293,40 +293,44 @@ with a status badge. "New Case" and "Home" both go to `/new`. Settings →
   client + a renamed variable — would `ReferenceError` on post-`generated`
   statuses; now uses `q(api.packets.listByCaseMine)`.
 
-### Product / UX (pre-existing, not migration-caused)
-- **A1** Marketing `?wedge=`/`?plan=` params are ignored by `/new`.
-- **A2** Subscription funnels → `/new`, deposit funnels → `/register` (inconsistent).
-- **A4** Google OAuth exists in code but has no UI button.
-- **A5** Register password `minLength` says 6; code enforces 8 + upper + digit.
-- **A7** `DeclineScreen` unreachable during intake.
-- **A9** `ExtractionConfirmation` + the parse/confirm loop are orphaned (not mounted).
-- **Deposit payment dead-end**: if the Paddle webhook exceeds the 60s poll window,
-  the user gets a manual "refresh the page" error.
-- **Reload-heavy**: most completions use `window.location.reload()`/`router.refresh()`
-  rather than reactive updates — only the subscription sequence is reactive.
+### Product / UX — ✅ ALL FIXED
+- ✅ **A1** `/new` now reads `?wedge=`/`?plan=` and opens the matching state picker.
+- ✅ **A2** Deposit + subscription marketing CTAs all point to `/new?wedge=…`.
+- ✅ **A4** "Continue with Google" button added to login + register (`GoogleButton`).
+  Requires `AUTH_GOOGLE_ID`/`SECRET` on the Convex deployment to function.
+- ✅ **A5** Register password inputs enforce `minLength=8` with an honest placeholder.
+- ✅ **A7** Intake renders the `DeclineScreen` when `/generate` returns a 422 refusal.
+- ✅ **A9** The parse→confirm loop is wired: the file-upload node runs parse
+  (GPT-4o Vision) → `ExtractionConfirmation` → merges confirmed fields into the
+  diagnostic answers.
+- **Deposit payment dead-end** (unchanged, low priority): if the Paddle webhook
+  exceeds the 60s poll window the user still sees a "refresh the page" message.
+- **UX-1 Reload-heavy** (unchanged, low priority): most completions still use
+  `router.refresh()`; only the subscription sequence is reactive.
 
-### Correctness / server-side (worth prioritizing)
-- **Auto-refund only fires from `/generate`, never from the webhook.** A user in
-  an unsupported jurisdiction who pays but never triggers generation is not
-  refunded. (The checkout route blocks unsupported jurisdictions pre-payment, but
-  only if the client called checkout-link first.)
-- **Outcome-email lifecycle is coupled only to the `/status` route.** A refund or
-  any internal close (`setStatusInternal` / `setPaymentStatusInternal`) neither
-  schedules nor cancels follow-ups — a refunded case can leave follow-up emails
-  scheduled.
-- **Async generation worker skips the payment + refusal + status + duplicate
-  checks** the synchronous route enforces. Safe only because the route is the sole
-  enqueuer today; not independently safe.
-- **Circuit breaker is fail-open on a Redis outage** — it runs synchronously
-  during exactly the spike it's meant to shed.
-- **Single `outcome-followup` queue backs all transactional email** (self-flagged
-  in code). Throughput problems couple all email types.
-- **A6/A8** Refusal is a two-step close and evaluates fail-open (see Journey 5).
-- **Packet route has no status/payment/eligibility gate** — any case owner can
-  generate a filing packet regardless of case state.
-- **Deadline re-fire risk**: `markDeadlineFired` runs after the email enqueue; a
-  crash in between can re-fire on the next 5-min tick (dedup only within job
-  retention).
+### Correctness / server-side — ✅ ALL FIXED
+- ✅ **R-1 Auto-refund** now also fires from the webhook's `transaction.completed`
+  for unsupported-jurisdiction deposit cases (defense-in-depth; the UI already
+  blocks creating such a case).
+- ✅ **R-2 Outcome-email lifecycle** — `cancelOutcomeEmails` now runs on every
+  close path: webhook refund, auto-refund, and the refusal route (not just
+  `/status`).
+- ✅ **R-3 Async generation worker** now re-checks status==`intake`, deposit
+  payment==`paid`, and the refusal hard-block before generating — independently
+  safe, not safe-by-caller.
+- ✅ **R-4 Circuit breaker** now fails **safe**: a Redis outage returns 503
+  (Retry-After) instead of bypassing load-shedding into synchronous generation.
+- ✅ **R-6 Email queue** — a dedicated `EMAIL_DELIVERY` queue now carries all
+  transactional email; `OUTCOME_FOLLOWUP` no longer doubles as the email bus.
+- ✅ **A6** `/generate` hard-block now **closes the case server-side** (atomic),
+  no longer relying on a second client `/refusal` call.
+- ✅ **A8** Refusal evaluation logs loudly on an unparseable/malformed rule (a KB
+  bug that would otherwise silently never fire); user-facing eval stays
+  fail-open by design (never wrongly blocks a real user).
+- ✅ **R-5 Packet route** now gates on deposit wedge + a sent-or-later status.
+- **Deadline re-fire risk** (unchanged, low priority): `markDeadlineFired` runs
+  after the email enqueue; the `deadline-email-{id}` jobId dedups within
+  retention.
 
 ### Migration behavioral changes (intended, documented for support)
 - **A3** Email verification & password reset are OTP codes, not links.

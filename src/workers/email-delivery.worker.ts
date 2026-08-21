@@ -46,7 +46,7 @@ export function createEmailDeliveryWorker(): Worker {
   const connection = getRedis();
 
   const worker = new Worker(
-    QUEUE_NAMES.OUTCOME_FOLLOWUP, // Reuse for email delivery — or use a dedicated queue
+    QUEUE_NAMES.EMAIL_DELIVERY, // R-6: dedicated transactional-email queue
     processEmailDelivery,
     {
       connection,

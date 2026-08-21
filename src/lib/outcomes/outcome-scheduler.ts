@@ -39,7 +39,7 @@ export async function scheduleOutcomeEmails(
   userEmail: string,
   appUrl: string,
 ): Promise<{ scheduled: number }> {
-  const queue = getQueue(QUEUE_NAMES.OUTCOME_FOLLOWUP);
+  const queue = getQueue(QUEUE_NAMES.EMAIL_DELIVERY);
   let scheduled = 0;
 
   for (const prompt of OUTCOME_PROMPTS) {
@@ -77,7 +77,7 @@ export async function scheduleOutcomeEmails(
 export async function cancelOutcomeEmails(
   caseId: string,
 ): Promise<void> {
-  const queue = getQueue(QUEUE_NAMES.OUTCOME_FOLLOWUP);
+  const queue = getQueue(QUEUE_NAMES.EMAIL_DELIVERY);
 
   for (const prompt of OUTCOME_PROMPTS) {
     const jobId = `outcome-${caseId}-${prompt.days}d`;

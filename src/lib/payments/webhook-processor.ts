@@ -9,6 +9,9 @@
 import { workerConvex, api } from '@/lib/convex/worker-client';
 import type { Id } from '@convex/dataModel';
 import { enqueuePaymentConfirmationEmail } from '@/lib/queue/enqueue';
+import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund';
+import { cancelOutcomeEmails } from '@/lib/outcomes/outcome-scheduler';
+import { DEPOSIT_JURISDICTION, type DepositJurisdiction } from '@/types/enums';
 import type {
   PaddleWebhookEvent,
   TransactionCompletedEvent,
@@ -54,6 +57,27 @@ async function handleTransactionCompleted(
     paymentStatus: 'paid',
   });
 
+  /* ---- R-1: defense-in-depth auto-refund ---- */
+  // The create-case + checkout routes already block unsupported deposit
+  // jurisdictions before payment, so this should be unreachable via the UI.
+  // But a Paddle-initiated or out-of-band charge could still land here — so if
+  // a paid deposit case is in an unsupported state, refund it now rather than
+  // waiting for the user to hit /generate.
+  const isDeposit = caseRow.wedge === 'deposit';
+  const supported =
+    isDeposit &&
+    DEPOSIT_JURISDICTION.includes(caseRow.jurisdiction as DepositJurisdiction);
+  if (isDeposit && !supported) {
+    try {
+      await processAutoRefundIfNeeded(caseRow.id, txn.id);
+    } catch (refundErr) {
+      // eslint-disable-next-line no-console
+      console.error('[Webhook] Auto-refund for unsupported jurisdiction failed:', refundErr);
+    }
+    // Do not send a "your letter is ready" confirmation for a refunded case.
+    return { ok: true, event_type: event.event_type };
+  }
+
   /* ---- payment confirmation email (best-effort) ---- */
   try {
     const userEmail = await workerConvex.query(api.service.userEmailById, {
@@ -98,6 +122,16 @@ async function handleTransactionRefunded(
     paymentStatus: 'refunded',
     newStatus: 'closed',
   });
+
+  // R-2: closing a case must also cancel any scheduled outcome-follow-up emails.
+  // This coupling used to live only in the /status route; a refund closes the
+  // case through a different path, so cancel here too. (Idempotent no-op if none.)
+  try {
+    await cancelOutcomeEmails(caseRow.id);
+  } catch (cancelErr) {
+    // eslint-disable-next-line no-console
+    console.error('[Webhook] Failed to cancel outcome emails on refund:', cancelErr);
+  }
 
   return { ok: true, event_type: event.event_type };
 }

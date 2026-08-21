@@ -11,6 +11,7 @@
 
 import { workerConvex, api } from '@/lib/convex/worker-client';
 import type { Id } from '@convex/dataModel';
+import { cancelOutcomeEmails } from '@/lib/outcomes/outcome-scheduler';
 import { DEPOSIT_JURISDICTION, type DepositJurisdiction } from '@/types/enums';
 
 /* ------------------------------------------------------------------ */
@@ -128,6 +129,13 @@ export async function processAutoRefundIfNeeded(
     paymentStatus: 'refunded',
     newStatus: 'closed',
   });
+
+  // R-2: cancel any scheduled outcome-follow-up emails for the now-closed case.
+  try {
+    await cancelOutcomeEmails(caseId);
+  } catch {
+    // best-effort
+  }
 
   // eslint-disable-next-line no-console
   console.log(

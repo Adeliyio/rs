@@ -54,6 +54,28 @@ export async function POST(
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
+    /* ---- R-5: eligibility gate ---- */
+    // Filing packets are a deposit-only escalation step and only make sense
+    // AFTER the demand letter has been sent and gone unanswered. Guard against
+    // building a packet for an intake/unpaid/subscription case.
+    if (caseRow.wedge !== 'deposit') {
+      return NextResponse.json(
+        { error: 'Filing packets are only available for deposit cases.' },
+        { status: 400 },
+      );
+    }
+    const PACKET_ELIGIBLE = new Set(['sent', 'awaiting', 'escalation_drafted', 'resolved', 'closed']);
+    if (!PACKET_ELIGIBLE.has(caseRow.status)) {
+      return NextResponse.json(
+        {
+          error:
+            'A filing packet is only available after your demand letter has been sent. ' +
+            'Send your letter first, then escalate if the deadline passes.',
+        },
+        { status: 409 },
+      );
+    }
+
     const convex = createServiceConvexClient();
     const secret = serviceSecret();
 

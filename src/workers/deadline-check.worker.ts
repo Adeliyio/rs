@@ -21,7 +21,7 @@ async function processDeadlineCheck(_job: Job): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(`[DeadlineWorker] Found ${dueDeadlines.length} due deadline(s)`);
 
-  const emailQueue = getQueue(QUEUE_NAMES.OUTCOME_FOLLOWUP);
+  const emailQueue = getQueue(QUEUE_NAMES.EMAIL_DELIVERY);
 
   for (const deadline of dueDeadlines) {
     const deadlineId = deadline.id as string;

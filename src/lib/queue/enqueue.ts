@@ -26,7 +26,8 @@ export async function enqueueEmailDelivery(
   payload: EmailDeliveryJobPayload,
   idempotencyKey?: string,
 ): Promise<string> {
-  const queue = getQueue(QUEUE_NAMES.OUTCOME_FOLLOWUP);
+  // R-6: all transactional email now rides the dedicated EMAIL_DELIVERY queue.
+  const queue = getQueue(QUEUE_NAMES.EMAIL_DELIVERY);
   const job = await queue.add('email-delivery', payload, {
     jobId: idempotencyKey,
   });

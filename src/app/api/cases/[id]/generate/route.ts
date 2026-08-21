@@ -517,11 +517,24 @@ export async function POST(
     }
 
     /* ---- Circuit breaker: check generation queue depth ---- */
+    // R-4: fail SAFE, not open. If we can't read the queue depth, Redis is
+    // unreachable — which also means we can't enqueue to shed load. Running
+    // synchronously in that state invites resource exhaustion during exactly
+    // the spike the breaker exists to survive. Return 503 and let the client
+    // retry, rather than bypassing load-shedding.
     let queueDepth = 0;
     try {
       queueDepth = await getGenerationQueueDepth();
     } catch {
-      // If Redis is unreachable, fall through to synchronous generation
+      return NextResponse.json(
+        {
+          error:
+            'We are experiencing high demand right now. Please try again in a moment — ' +
+            'your progress is saved.',
+          retry: true,
+        },
+        { status: 503, headers: { 'Retry-After': '15' } },
+      );
     }
 
     if (queueDepth >= CIRCUIT_BREAKER_THRESHOLD) {
