@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+
 import { requireAdmin } from '@/lib/admin/auth';
 import { logAdminAction } from '@/lib/admin/audit';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { api } from '@convex/api';
 
 export async function GET() {
   try {
@@ -10,21 +12,20 @@ export async function GET() {
       return NextResponse.json({ error: auth.error }, { status: auth.error === 'Unauthorized' ? 401 : 403 });
     }
 
-    // SEC-14: Audit log admin access
     void logAdminAction({ userId: auth.userId!, email: auth.email!, action: 'view_webhooks', ip: auth.ip });
 
-    const supabase = createServiceRoleClient();
-    const { data, error } = await supabase
-      .from('webhook_events')
-      .select('id, event_id, provider, processed_at, created_at')
-      .order('created_at', { ascending: false })
-      .limit(50);
+    const convex = createServiceConvexClient();
+    const rows = await convex.query(api.service.listRecentWebhooks, { secret: serviceSecret(), limit: 50 });
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const events = rows.map((w: Record<string, unknown>) => ({
+      id: w._id,
+      event_id: w.eventId,
+      provider: w.provider,
+      processed_at: w.processedAt ? new Date(w.processedAt as number).toISOString() : null,
+      created_at: new Date(w.createdAt as number).toISOString(),
+    }));
 
-    return NextResponse.json({ events: data ?? [] });
+    return NextResponse.json({ events });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
     return NextResponse.json({ error: message }, { status: 500 });

@@ -9,6 +9,7 @@
  */
 
 import type * as account from "../account.js";
+import type * as adminStats from "../adminStats.js";
 import type * as audit from "../audit.js";
 import type * as auth from "../auth.js";
 import type * as caseStatus from "../caseStatus.js";
@@ -32,6 +33,7 @@ import type * as storage from "../storage.js";
 import type * as storageActions from "../storageActions.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as tavily from "../tavily.js";
+import type * as trustStats from "../trustStats.js";
 import type * as users from "../users.js";
 import type * as waitlist from "../waitlist.js";
 import type * as webhooks from "../webhooks.js";
@@ -44,6 +46,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   account: typeof account;
+  adminStats: typeof adminStats;
   audit: typeof audit;
   auth: typeof auth;
   caseStatus: typeof caseStatus;
@@ -67,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   storageActions: typeof storageActions;
   subscriptions: typeof subscriptions;
   tavily: typeof tavily;
+  trustStats: typeof trustStats;
   users: typeof users;
   waitlist: typeof waitlist;
   webhooks: typeof webhooks;

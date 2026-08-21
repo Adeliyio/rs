@@ -10,7 +10,7 @@
  * SEC-22: Logs failed admin access attempts.
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { currentUser } from '@/lib/convex/server';
 import { headers } from 'next/headers';
 
 /* ------------------------------------------------------------------ */
@@ -130,13 +130,9 @@ function logFailedAdminAccess(
 export async function requireAdmin(): Promise<AdminAuthResult> {
   const ip = getClientIp();
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
+  const user = await currentUser();
 
-  if (error || !user) {
+  if (!user) {
     logFailedAdminAccess('unauthenticated', { ip });
     return { authorized: false, error: 'Unauthorized', ip };
   }

@@ -109,6 +109,30 @@ export const latestHistoryByStatus = query({
   },
 });
 
+export const adminStats = query({
+  args: { ...secretArg },
+  handler: async (ctx, { secret }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.adminStats.statsInternal, {});
+  },
+});
+
+export const listRecentCases = query({
+  args: { ...secretArg, limit: v.optional(v.number()) },
+  handler: async (ctx, { secret, limit }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.cases.listRecentInternal, { limit });
+  },
+});
+
+export const trustStats = query({
+  args: { ...secretArg },
+  handler: async (ctx, { secret }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.trustStats.statsInternal, {});
+  },
+});
+
 /* ------------------------------------------------------------------ */
 /*  documents / letters / sequences / packets                         */
 /* ------------------------------------------------------------------ */

@@ -6,7 +6,9 @@
  * (SEC-14 mitigation)
  */
 
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { api } from '@convex/api';
+import type { Id } from '@convex/dataModel';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -37,28 +39,22 @@ export interface AdminAuditEntry {
  */
 export async function logAdminAction(entry: AdminAuditEntry): Promise<void> {
   try {
-    const supabase = createServiceRoleClient();
+    const convex = createServiceConvexClient();
 
-    const payload: Record<string, unknown> = {
-      user_id: entry.userId,
-      correlation_id: `admin-${entry.action}-${Date.now()}`,
-      model_version: 'admin',
-      prompt_version: entry.action,
-      citation_validation_result: {
+    await convex.mutation(api.service.insertAudit, {
+      secret: serviceSecret(),
+      // entry.userId is the Convex users id in string form.
+      userId: entry.userId as Id<'users'>,
+      correlationId: `admin-${entry.action}-${Date.now()}`,
+      modelVersion: 'admin',
+      promptVersion: entry.action,
+      citationValidationResult: {
         action: entry.action,
         admin_email: entry.email,
         ip: entry.ip ?? 'unknown',
         ...entry.details,
       },
-    };
-
-    // @ts-expect-error — service-role Supabase client resolves Insert generics as never
-    const { error } = await supabase.from('audit_log').insert(payload);
-
-    if (error) {
-      // eslint-disable-next-line no-console
-      console.error(`[ADMIN AUDIT] Failed to log action="${entry.action}":`, error.message);
-    }
+    });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error(

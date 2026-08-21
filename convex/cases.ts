@@ -160,6 +160,19 @@ export const countByStatusInternal = internalQuery({
   },
 });
 
+/** Recent non-deleted cases for the admin dashboard, newest first. */
+export const listRecentInternal = internalQuery({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    const rows = await ctx.db.query('cases').collect();
+    return rows
+      .filter((c) => c.deletedAt === undefined)
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit ?? 100)
+      .map(serializeCase);
+  },
+});
+
 /** Total non-deleted case count (admin stats). */
 export const countAllInternal = internalQuery({
   args: {},
