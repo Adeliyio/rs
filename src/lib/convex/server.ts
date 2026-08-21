@@ -2,6 +2,11 @@ import 'server-only';
 
 import { fetchQuery, fetchMutation, fetchAction } from 'convex/nextjs';
 import { convexAuthNextjsToken } from '@convex-dev/auth/nextjs/server';
+import type {
+  FunctionReference,
+  FunctionArgs,
+  FunctionReturnType,
+} from 'convex/server';
 
 import { api } from '@convex/api';
 
@@ -23,28 +28,28 @@ export async function authToken(): Promise<string | undefined> {
 }
 
 /** Run a Convex query as the current user. */
-export async function q<Query extends Parameters<typeof fetchQuery>[0]>(
+export async function q<Query extends FunctionReference<'query'>>(
   query: Query,
-  args: Parameters<typeof fetchQuery<Query>>[1],
-) {
+  args: FunctionArgs<Query>,
+): Promise<FunctionReturnType<Query>> {
   const token = await convexAuthNextjsToken();
   return fetchQuery(query, args, { token });
 }
 
 /** Run a Convex mutation as the current user (POST/Server Action only). */
-export async function m<Mutation extends Parameters<typeof fetchMutation>[0]>(
+export async function m<Mutation extends FunctionReference<'mutation'>>(
   mutation: Mutation,
-  args: Parameters<typeof fetchMutation<Mutation>>[1],
-) {
+  args: FunctionArgs<Mutation>,
+): Promise<FunctionReturnType<Mutation>> {
   const token = await convexAuthNextjsToken();
   return fetchMutation(mutation, args, { token });
 }
 
 /** Run a Convex action as the current user (POST/Server Action only). */
-export async function a<Action extends Parameters<typeof fetchAction>[0]>(
+export async function a<Action extends FunctionReference<'action'>>(
   action: Action,
-  args: Parameters<typeof fetchAction<Action>>[1],
-) {
+  args: FunctionArgs<Action>,
+): Promise<FunctionReturnType<Action>> {
   const token = await convexAuthNextjsToken();
   return fetchAction(action, args, { token });
 }

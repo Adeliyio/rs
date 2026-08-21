@@ -28,7 +28,7 @@ async function assertOwnsKey(ctx: ActionCtx, key: string): Promise<string> {
 /** Upload bytes to R2 under the caller's own {userId}/... namespace. */
 export const upload = action({
   args: { key: v.string(), bytes: v.bytes(), contentType: v.optional(v.string()) },
-  handler: async (ctx, { key, bytes, contentType }) => {
+  handler: async (ctx, { key, bytes, contentType }): Promise<string> => {
     await assertOwnsKey(ctx, key);
     return ctx.runAction(internal.storageActions.uploadInternal, { key, bytes, contentType });
   },
@@ -40,7 +40,7 @@ export const signedUrl = action({
     key: v.string(),
     ttl: v.optional(v.union(v.literal('internal'), v.literal('userFacing'))),
   },
-  handler: async (ctx, { key, ttl }) => {
+  handler: async (ctx, { key, ttl }): Promise<string> => {
     await assertOwnsKey(ctx, key);
     return ctx.runAction(internal.storageActions.signInternal, { key, ttl });
   },

@@ -81,6 +81,7 @@ export const setStatusInternal = internalMutation({
   handler: async (ctx, { caseId, newStatus }) => {
     const caseDoc = await ctx.db.get(caseId);
     if (!caseDoc) throw new Error('Not found');
+    if (!isCaseStatus(newStatus)) throw new Error(`INVALID_STATUS:${newStatus}`);
     const now = Date.now();
     await ctx.db.patch(caseId, { status: newStatus, updatedAt: now });
     await ctx.db.insert('caseStatusHistory', {

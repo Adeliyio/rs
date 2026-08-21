@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { query, mutation, internalQuery, internalMutation } from './_generated/server';
+import { query, internalQuery, internalMutation } from './_generated/server';
 import { requireCaseOwner, assertOwnsCase } from './lib/authz';
 import { serializeDocument } from './lib/serialize';
 

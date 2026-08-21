@@ -4,13 +4,11 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Shield } from 'lucide-react';
 
-import {
-  requestPasswordResetAction,
-  confirmPasswordResetAction,
-} from '@/lib/convex/auth-actions';
+import { useResolvaioAuth } from '@/lib/convex/use-auth';
 import { Button } from '@/components/ui/button';
 
 export default function ForgotPasswordPage() {
+  const auth = useResolvaioAuth();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,14 +21,15 @@ export default function ForgotPasswordPage() {
     setError(null);
     setSuccess(null);
 
-    const result = await requestPasswordResetAction(formData);
+    const submittedEmail = (formData.get('email') as string) ?? '';
+    const result = await auth.requestReset(submittedEmail);
 
-    if ('error' in result) {
+    if (result.error) {
       setError(result.error);
     } else {
-      setEmail((formData.get('email') as string) ?? '');
+      setEmail(submittedEmail);
       setCodeSent(true);
-      setSuccess(result.success);
+      setSuccess(result.success ?? null);
     }
 
     setIsSubmitting(false);
@@ -39,9 +38,16 @@ export default function ForgotPasswordPage() {
   async function handleReset(formData: FormData) {
     setIsSubmitting(true);
     setError(null);
-    const result = await confirmPasswordResetAction(formData);
+    const code = (formData.get('code') as string) ?? '';
+    const password = (formData.get('password') as string) ?? '';
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      setIsSubmitting(false);
+      return;
+    }
+    const result = await auth.confirmReset(email, code, password);
     // redirects to /login on success; only returns on error
-    if (result?.error) setError(result.error);
+    if (result.error) setError(result.error);
     setIsSubmitting(false);
   }
 

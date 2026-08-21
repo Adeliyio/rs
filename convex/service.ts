@@ -30,7 +30,7 @@ const secretArg = { secret: v.string() };
 
 export const getCase = query({
   args: { ...secretArg, caseId: v.id('cases') },
-  handler: async (ctx, { secret, caseId }) => {
+  handler: async (ctx, { secret, caseId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.cases.getInternal, { caseId });
   },
@@ -38,7 +38,7 @@ export const getCase = query({
 
 export const listCasesByUser = query({
   args: { ...secretArg, userId: v.id('users') },
-  handler: async (ctx, { secret, userId }) => {
+  handler: async (ctx, { secret, userId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.cases.listByUserInternal, { userId });
   },
@@ -46,7 +46,7 @@ export const listCasesByUser = query({
 
 export const countCasesByStatus = query({
   args: { ...secretArg, statuses: v.array(v.string()) },
-  handler: async (ctx, { secret, statuses }) => {
+  handler: async (ctx, { secret, statuses }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.cases.countByStatusInternal, { statuses });
   },
@@ -54,7 +54,7 @@ export const countCasesByStatus = query({
 
 export const countAllCases = query({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.cases.countAllInternal, {});
   },
@@ -62,7 +62,7 @@ export const countAllCases = query({
 
 export const patchCase = mutation({
   args: { ...secretArg, caseId: v.id('cases'), patch: v.any() },
-  handler: async (ctx, { secret, caseId, patch }) => {
+  handler: async (ctx, { secret, caseId, patch }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.cases.patchInternal, { caseId, patch });
   },
@@ -70,7 +70,7 @@ export const patchCase = mutation({
 
 export const caseByPaddleTxn = query({
   args: { ...secretArg, paddleTransactionId: v.string() },
-  handler: async (ctx, { secret, paddleTransactionId }) => {
+  handler: async (ctx, { secret, paddleTransactionId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.payments.caseByPaddleTxnInternal, { paddleTransactionId });
   },
@@ -83,7 +83,7 @@ export const setPaymentStatus = mutation({
     paymentStatus: v.string(),
     newStatus: v.optional(v.string()),
   },
-  handler: async (ctx, { secret, caseId, paymentStatus, newStatus }) => {
+  handler: async (ctx, { secret, caseId, paymentStatus, newStatus }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.payments.setPaymentStatusInternal, {
       caseId,
@@ -95,7 +95,7 @@ export const setPaymentStatus = mutation({
 
 export const setCaseStatus = mutation({
   args: { ...secretArg, caseId: v.id('cases'), newStatus: v.string() },
-  handler: async (ctx, { secret, caseId, newStatus }) => {
+  handler: async (ctx, { secret, caseId, newStatus }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.caseStatus.setStatusInternal, { caseId, newStatus });
   },
@@ -103,7 +103,7 @@ export const setCaseStatus = mutation({
 
 export const latestHistoryByStatus = query({
   args: { ...secretArg, caseId: v.id('cases'), newStatus: v.string() },
-  handler: async (ctx, { secret, caseId, newStatus }) => {
+  handler: async (ctx, { secret, caseId, newStatus }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.caseStatus.latestHistoryByStatusInternal, { caseId, newStatus });
   },
@@ -115,7 +115,7 @@ export const latestHistoryByStatus = query({
 
 export const createDocument = mutation({
   args: { ...secretArg, caseId: v.id('cases'), filePath: v.string(), contentType: v.optional(v.string()) },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.documents.createInternal, a);
   },
@@ -123,7 +123,7 @@ export const createDocument = mutation({
 
 export const getDocument = query({
   args: { ...secretArg, documentId: v.id('documents') },
-  handler: async (ctx, { secret, documentId }) => {
+  handler: async (ctx, { secret, documentId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.documents.getInternal, { documentId });
   },
@@ -131,7 +131,7 @@ export const getDocument = query({
 
 export const patchDocument = mutation({
   args: { ...secretArg, documentId: v.id('documents'), patch: v.any() },
-  handler: async (ctx, { secret, documentId, patch }) => {
+  handler: async (ctx, { secret, documentId, patch }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.documents.patchInternal, { documentId, patch });
   },
@@ -139,7 +139,7 @@ export const patchDocument = mutation({
 
 export const listDocumentsByCase = query({
   args: { ...secretArg, caseId: v.id('cases') },
-  handler: async (ctx, { secret, caseId }) => {
+  handler: async (ctx, { secret, caseId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.documents.listByCaseInternal, { caseId });
   },
@@ -153,7 +153,7 @@ export const createLetter = mutation({
     groundingContextIds: v.optional(v.array(v.string())),
     citationValidation: v.optional(v.any()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.letters.createInternal, a);
   },
@@ -161,7 +161,7 @@ export const createLetter = mutation({
 
 export const latestLetterByCase = query({
   args: { ...secretArg, caseId: v.id('cases') },
-  handler: async (ctx, { secret, caseId }) => {
+  handler: async (ctx, { secret, caseId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.letters.latestByCaseInternal, { caseId });
   },
@@ -169,7 +169,7 @@ export const latestLetterByCase = query({
 
 export const setLetterPdfUrl = mutation({
   args: { ...secretArg, letterId: v.id('letters'), pdfUrl: v.string() },
-  handler: async (ctx, { secret, letterId, pdfUrl }) => {
+  handler: async (ctx, { secret, letterId, pdfUrl }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.letters.setPdfUrlInternal, { letterId, pdfUrl });
   },
@@ -185,7 +185,7 @@ export const createSequence = mutation({
     groundingContextIds: v.optional(v.array(v.string())),
     citationValidation: v.optional(v.any()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.sequences.createInternal, a);
   },
@@ -193,7 +193,7 @@ export const createSequence = mutation({
 
 export const latestSequenceByCase = query({
   args: { ...secretArg, caseId: v.id('cases') },
-  handler: async (ctx, { secret, caseId }) => {
+  handler: async (ctx, { secret, caseId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.sequences.latestByCaseInternal, { caseId });
   },
@@ -201,7 +201,7 @@ export const latestSequenceByCase = query({
 
 export const patchSequence = mutation({
   args: { ...secretArg, sequenceId: v.id('sequences'), patch: v.any() },
-  handler: async (ctx, { secret, sequenceId, patch }) => {
+  handler: async (ctx, { secret, sequenceId, patch }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.sequences.patchInternal, { sequenceId, patch });
   },
@@ -216,7 +216,7 @@ export const createPacket = mutation({
     bundleUrl: v.optional(v.string()),
     templateVersion: v.string(),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.packets.createInternal, a);
   },
@@ -224,7 +224,7 @@ export const createPacket = mutation({
 
 export const listPacketsByCase = query({
   args: { ...secretArg, caseId: v.id('cases') },
-  handler: async (ctx, { secret, caseId }) => {
+  handler: async (ctx, { secret, caseId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.packets.listByCaseInternal, { caseId });
   },
@@ -243,7 +243,7 @@ export const createDeadline = mutation({
     anchorEvent: v.string(),
     promptMessage: v.string(),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.deadlines.createInternal, a);
   },
@@ -251,7 +251,7 @@ export const createDeadline = mutation({
 
 export const listDeadlinesByCase = query({
   args: { ...secretArg, caseId: v.id('cases') },
-  handler: async (ctx, { secret, caseId }) => {
+  handler: async (ctx, { secret, caseId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.deadlines.listByCaseInternal, { caseId });
   },
@@ -259,7 +259,7 @@ export const listDeadlinesByCase = query({
 
 export const getDueDeadlines = query({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.deadlines.getDueInternal, {});
   },
@@ -267,7 +267,7 @@ export const getDueDeadlines = query({
 
 export const markDeadlineFired = mutation({
   args: { ...secretArg, deadlineEventId: v.id('deadlineEvents') },
-  handler: async (ctx, { secret, deadlineEventId }) => {
+  handler: async (ctx, { secret, deadlineEventId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.deadlines.markFiredInternal, { deadlineEventId });
   },
@@ -275,7 +275,7 @@ export const markDeadlineFired = mutation({
 
 export const countUpcomingDeadlines = query({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.deadlines.countUpcomingInternal, {});
   },
@@ -287,7 +287,7 @@ export const countUpcomingDeadlines = query({
 
 export const listVerifiedOutcomes = query({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.outcomes.listVerifiedInternal, {});
   },
@@ -299,7 +299,7 @@ export const listVerifiedOutcomes = query({
 
 export const getSubscriptionByPaddleId = query({
   args: { ...secretArg, paddleSubscriptionId: v.string() },
-  handler: async (ctx, { secret, paddleSubscriptionId }) => {
+  handler: async (ctx, { secret, paddleSubscriptionId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.subscriptions.getByPaddleIdInternal, { paddleSubscriptionId });
   },
@@ -315,7 +315,7 @@ export const createSubscription = mutation({
     currentPeriodStart: v.optional(v.number()),
     currentPeriodEnd: v.optional(v.number()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.subscriptions.createInternal, a);
   },
@@ -323,7 +323,7 @@ export const createSubscription = mutation({
 
 export const patchSubscriptionByPaddleId = mutation({
   args: { ...secretArg, paddleSubscriptionId: v.string(), patch: v.any() },
-  handler: async (ctx, { secret, paddleSubscriptionId, patch }) => {
+  handler: async (ctx, { secret, paddleSubscriptionId, patch }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.subscriptions.patchByPaddleIdInternal, {
       paddleSubscriptionId,
@@ -338,7 +338,7 @@ export const patchSubscriptionByPaddleId = mutation({
 
 export const deleteWaitlistByEmail = mutation({
   args: { ...secretArg, email: v.string() },
-  handler: async (ctx, { secret, email }) => {
+  handler: async (ctx, { secret, email }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.waitlist.deleteByEmailInternal, { email });
   },
@@ -361,7 +361,7 @@ export const insertAudit = mutation({
     citationValidationResult: v.optional(v.any()),
     aiCost: v.optional(v.number()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.audit.insertInternal, a);
   },
@@ -369,7 +369,7 @@ export const insertAudit = mutation({
 
 export const listRecentAudit = query({
   args: { ...secretArg, limit: v.optional(v.number()) },
-  handler: async (ctx, { secret, limit }) => {
+  handler: async (ctx, { secret, limit }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.audit.listRecentInternal, { limit });
   },
@@ -377,7 +377,7 @@ export const listRecentAudit = query({
 
 export const countAllAudit = query({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.audit.countAllInternal, {});
   },
@@ -385,7 +385,7 @@ export const countAllAudit = query({
 
 export const getWebhookByEventId = query({
   args: { ...secretArg, eventId: v.string() },
-  handler: async (ctx, { secret, eventId }) => {
+  handler: async (ctx, { secret, eventId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.webhooks.getByEventIdInternal, { eventId });
   },
@@ -393,7 +393,7 @@ export const getWebhookByEventId = query({
 
 export const recordWebhook = mutation({
   args: { ...secretArg, eventId: v.string(), provider: v.string(), payload: v.any() },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.webhooks.recordInternal, a);
   },
@@ -401,7 +401,7 @@ export const recordWebhook = mutation({
 
 export const markWebhookProcessed = mutation({
   args: { ...secretArg, eventId: v.string() },
-  handler: async (ctx, { secret, eventId }) => {
+  handler: async (ctx, { secret, eventId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.webhooks.markProcessedInternal, { eventId });
   },
@@ -409,7 +409,7 @@ export const markWebhookProcessed = mutation({
 
 export const listRecentWebhooks = query({
   args: { ...secretArg, limit: v.optional(v.number()) },
-  handler: async (ctx, { secret, limit }) => {
+  handler: async (ctx, { secret, limit }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.webhooks.listRecentInternal, { limit });
   },
@@ -417,7 +417,7 @@ export const listRecentWebhooks = query({
 
 export const countAllWebhooks = query({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.webhooks.countAllInternal, {});
   },
@@ -429,7 +429,7 @@ export const countAllWebhooks = query({
 
 export const getTavily = query({
   args: { ...secretArg, queryHash: v.string() },
-  handler: async (ctx, { secret, queryHash }) => {
+  handler: async (ctx, { secret, queryHash }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.tavily.getInternal, { queryHash });
   },
@@ -437,7 +437,7 @@ export const getTavily = query({
 
 export const deleteTavily = mutation({
   args: { ...secretArg, queryHash: v.string() },
-  handler: async (ctx, { secret, queryHash }) => {
+  handler: async (ctx, { secret, queryHash }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.tavily.deleteInternal, { queryHash });
   },
@@ -451,7 +451,7 @@ export const upsertTavily = mutation({
     results: v.any(),
     ttlDays: v.number(),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.tavily.upsertInternal, a);
   },
@@ -463,7 +463,7 @@ export const upsertTavily = mutation({
 
 export const createMonitorRun = mutation({
   args: { ...secretArg },
-  handler: async (ctx, { secret }) => {
+  handler: async (ctx, { secret }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.lawMonitor.createRunInternal, {});
   },
@@ -478,7 +478,7 @@ export const finishMonitorRun = mutation({
     status: v.union(v.literal('completed'), v.literal('failed')),
     error: v.optional(v.string()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.lawMonitor.finishRunInternal, a);
   },
@@ -486,7 +486,7 @@ export const finishMonitorRun = mutation({
 
 export const listMonitorRuns = query({
   args: { ...secretArg, limit: v.optional(v.number()) },
-  handler: async (ctx, { secret, limit }) => {
+  handler: async (ctx, { secret, limit }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.lawMonitor.listRunsInternal, { limit });
   },
@@ -494,7 +494,7 @@ export const listMonitorRuns = query({
 
 export const isRecentlyAlerted = query({
   args: { ...secretArg, statuteId: v.string(), sinceMs: v.number() },
-  handler: async (ctx, { secret, statuteId, sinceMs }) => {
+  handler: async (ctx, { secret, statuteId, sinceMs }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.lawMonitor.isRecentlyAlertedInternal, { statuteId, sinceMs });
   },
@@ -514,7 +514,7 @@ export const createAlert = mutation({
     confidence: v.number(),
     sourceUrls: v.array(v.string()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.lawMonitor.createAlertInternal, a);
   },
@@ -522,7 +522,7 @@ export const createAlert = mutation({
 
 export const listAlerts = query({
   args: { ...secretArg, status: v.optional(v.string()), limit: v.optional(v.number()) },
-  handler: async (ctx, { secret, status, limit }) => {
+  handler: async (ctx, { secret, status, limit }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.lawMonitor.listAlertsInternal, { status, limit });
   },
@@ -530,7 +530,7 @@ export const listAlerts = query({
 
 export const countAlertsByStatus = query({
   args: { ...secretArg, status: v.string() },
-  handler: async (ctx, { secret, status }) => {
+  handler: async (ctx, { secret, status }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.lawMonitor.countAlertsByStatusInternal, { status });
   },
@@ -544,7 +544,7 @@ export const updateAlertStatus = mutation({
     acknowledgedBy: v.optional(v.string()),
     dismissReason: v.optional(v.string()),
   },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.lawMonitor.updateAlertStatusInternal, a);
   },
@@ -556,7 +556,7 @@ export const updateAlertStatus = mutation({
 
 export const userEmailById = query({
   args: { ...secretArg, userId: v.id('users') },
-  handler: async (ctx, { secret, userId }) => {
+  handler: async (ctx, { secret, userId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runQuery(internal.users.emailByIdInternal, { userId });
   },
@@ -564,7 +564,7 @@ export const userEmailById = query({
 
 export const deleteUser = mutation({
   args: { ...secretArg, userId: v.id('users') },
-  handler: async (ctx, { secret, userId }) => {
+  handler: async (ctx, { secret, userId }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.users.deleteInternal, { userId });
   },
@@ -576,7 +576,7 @@ export const deleteUser = mutation({
 
 export const uploadObject = action({
   args: { ...secretArg, key: v.string(), bytes: v.bytes(), contentType: v.optional(v.string()) },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runAction(internal.storageActions.uploadInternal, a);
   },
@@ -584,7 +584,7 @@ export const uploadObject = action({
 
 export const signObject = action({
   args: { ...secretArg, key: v.string(), ttl: v.optional(v.union(v.literal('internal'), v.literal('userFacing'))) },
-  handler: async (ctx, { secret, ...a }) => {
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runAction(internal.storageActions.signInternal, a);
   },
@@ -592,7 +592,7 @@ export const signObject = action({
 
 export const deleteObjects = action({
   args: { ...secretArg, keys: v.array(v.string()) },
-  handler: async (ctx, { secret, keys }) => {
+  handler: async (ctx, { secret, keys }): Promise<any> => {
     assertSecret(secret);
     return ctx.runAction(internal.storageActions.removeInternal, { keys });
   },

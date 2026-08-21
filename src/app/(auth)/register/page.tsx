@@ -4,42 +4,61 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { LogoIcon } from '@/components/logo';
 
-import { signUpAction, verifyEmailAction } from '@/lib/convex/auth-actions';
+import { useResolvaioAuth } from '@/lib/convex/use-auth';
 import { Button } from '@/components/ui/button';
 
 
 export default function RegisterPage() {
+  const auth = useResolvaioAuth();
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   // After account creation, we switch to the OTP-code step.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData): Promise<void> {
+    const fullName = ((formData.get('fullName') as string | null) ?? '').trim();
+    const email = (formData.get('email') as string | null) ?? '';
     const password = formData.get('password') as string | null;
     const confirmPassword = formData.get('confirmPassword') as string | null;
 
+    if (!fullName) {
+      setFormError('Please enter your full name.');
+      return;
+    }
     if (password !== confirmPassword) {
       setPasswordMismatch(true);
       setFormError('Passwords do not match.');
       return;
     }
+    if (!password || password.length < 8) {
+      setFormError('Password must be at least 8 characters.');
+      return;
+    }
+    if (!/[A-Z]/.test(password)) {
+      setFormError('Password must contain at least one uppercase letter.');
+      return;
+    }
+    if (!/[0-9]/.test(password)) {
+      setFormError('Password must contain at least one number.');
+      return;
+    }
 
     setPasswordMismatch(false);
     setFormError(null);
-    const result = await signUpAction(formData);
-    if ('error' in result) {
+    const result = await auth.register(fullName, email, password);
+    if (result.error) {
       setFormError(result.error);
-    } else {
-      // Account created; a verification code was emailed.
-      setPendingEmail(result.pendingEmail);
+    } else if (result.pending) {
+      setPendingEmail(email);
     }
   }
 
   async function handleVerify(formData: FormData): Promise<void> {
     setFormError(null);
-    const result = await verifyEmailAction(formData);
-    // verifyEmailAction redirects on success; only returns on error.
-    if (result?.error) setFormError(result.error);
+    const email = (formData.get('email') as string | null) ?? '';
+    const code = (formData.get('code') as string | null) ?? '';
+    const result = await auth.verifyEmail(email, code);
+    if (result.error) setFormError(result.error);
   }
 
   const errorMessage = formError;

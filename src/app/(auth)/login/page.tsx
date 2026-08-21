@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { LogoIcon } from '@/components/logo';
 
-import { signInAction as signIn } from '@/lib/convex/auth-actions';
+import { useResolvaioAuth } from '@/lib/convex/use-auth';
 import { Button } from '@/components/ui/button';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -27,14 +27,21 @@ function LoginPageContent() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get('error');
   const urlMessage = searchParams.get('message');
+  const auth = useResolvaioAuth();
 
   const [formError, setFormError] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData): Promise<void> {
     setFormError(null);
-    const result = await signIn(formData);
-    // signIn redirects on success; if we reach here it returned an error
-    if (result?.error) {
+    const email = (formData.get('email') as string | null) ?? '';
+    const password = (formData.get('password') as string | null) ?? '';
+    if (!email || !password) {
+      setFormError('Please enter both your email and password.');
+      return;
+    }
+    const result = await auth.login(email, password);
+    // login() redirects on success; only returns on error
+    if (result.error) {
       setFormError(result.error);
     }
   }

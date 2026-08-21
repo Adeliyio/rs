@@ -52,23 +52,20 @@ export const getByIdInternal = internalQuery({
 export const deleteInternal = internalMutation({
   args: { userId: v.id('users') },
   handler: async (ctx, { userId }) => {
-    // Remove linked auth accounts/sessions if present. These tables come from
-    // authTables; we query by the userId field they store.
-    for (const table of ['authAccounts', 'authSessions', 'authRefreshTokens'] as const) {
-      try {
-        const rows = await ctx.db
-          .query(table)
-          // @ts-expect-error — authTables index name varies; filter fallback below
-          .collect();
-        for (const r of rows as Array<{ _id: import('./_generated/dataModel').GenericId<typeof table>; userId?: unknown }>) {
-          if ((r as { userId?: unknown }).userId === userId) {
-            await ctx.db.delete(r._id);
-          }
-        }
-      } catch {
-        // table shape differs across @convex-dev/auth versions — best-effort
-      }
-    }
+    // Remove linked auth accounts/sessions so the user is fully removed. These
+    // tables come from authTables and index by userId.
+    const accounts = await ctx.db
+      .query('authAccounts')
+      .withIndex('userIdAndProvider', (qb) => qb.eq('userId', userId))
+      .collect();
+    for (const acc of accounts) await ctx.db.delete(acc._id);
+
+    const sessions = await ctx.db
+      .query('authSessions')
+      .withIndex('userId', (qb) => qb.eq('userId', userId))
+      .collect();
+    for (const s of sessions) await ctx.db.delete(s._id);
+
     await ctx.db.delete(userId);
   },
 });
