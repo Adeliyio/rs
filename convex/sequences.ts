@@ -40,6 +40,72 @@ export const advanceMine = mutation({
   },
 });
 
+/**
+ * Owner-gated sequence advance. Validates step_number matches current_step,
+ * stamps sent_dates, computes next step + next_send_at, and transitions the
+ * parent case status (sent after step 1, awaiting after step 3) — all atomic.
+ * Mirrors POST /api/sequences/[id]/advance. The email side-effect stays in the
+ * route (BullMQ). Returns the data the route needs to enqueue the reminder.
+ */
+export const advanceStepMine = mutation({
+  args: { sequenceId: v.id('sequences'), stepNumber: v.number() },
+  handler: async (ctx, { sequenceId, stepNumber }) => {
+    const seq = await ctx.db.get(sequenceId);
+    if (!seq) throw new Error('Not found');
+    const caseDoc = await requireCaseOwner(ctx, seq.caseId);
+
+    if (stepNumber !== seq.currentStep) {
+      throw new Error(`STEP_MISMATCH:${seq.currentStep}:${stepNumber}`);
+    }
+
+    const now = Date.now();
+    const stepsData = (seq.steps ?? {}) as Record<string, unknown>;
+    const sentDates = (stepsData.sent_dates as Record<string, string>) ?? {};
+    sentDates[String(stepNumber)] = new Date(now).toISOString();
+    const updatedSteps = { ...stepsData, sent_dates: sentDates };
+
+    const maxSteps = 3;
+    const nextStep = stepNumber + 1;
+    const isComplete = stepNumber >= maxSteps;
+    const nextSendAt = isComplete ? undefined : now + 7 * 24 * 60 * 60 * 1000;
+
+    await ctx.db.patch(sequenceId, {
+      currentStep: isComplete ? maxSteps : nextStep,
+      nextSendAt,
+      steps: updatedSteps,
+      updatedAt: now,
+    });
+
+    // Case status transition.
+    let newStatus: string | null = null;
+    if (stepNumber === 1) newStatus = 'sent';
+    else if (stepNumber === 3) newStatus = 'awaiting';
+
+    if (newStatus && newStatus !== caseDoc.status) {
+      await ctx.db.patch(seq.caseId, {
+        status: newStatus as typeof caseDoc.status,
+        updatedAt: now,
+      });
+      await ctx.db.insert('caseStatusHistory', {
+        caseId: seq.caseId,
+        previousStatus: caseDoc.status,
+        newStatus: newStatus as typeof caseDoc.status,
+        changedAt: now,
+      });
+    }
+
+    return {
+      caseId: seq.caseId,
+      isComplete,
+      nextStep,
+      nextStepName:
+        ((stepsData.steps as { name?: string }[] | undefined) ?? [])[nextStep - 1]?.name ??
+        `Step ${nextStep}`,
+      companyName: (stepsData.jurisdiction as string) ?? 'the company',
+    };
+  },
+});
+
 export const createInternal = internalMutation({
   args: {
     caseId: v.id('cases'),

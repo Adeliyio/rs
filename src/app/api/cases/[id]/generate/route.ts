@@ -13,8 +13,10 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 
-import { createClient } from '@/lib/supabase/server';
+import { q, currentUser, api } from '@/lib/convex/server';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import type { Id } from '@convex/dataModel';
 import { decryptAnswersPii } from '@/lib/crypto';
 import { checkRefusal } from '@/lib/refusal/refusal-checker';
 import {
@@ -37,9 +39,11 @@ import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
 import { loadKbEntry } from '@/lib/kb/loader';
 import { DEPOSIT_JURISDICTION, JURISDICTION_TIMEZONE, type DepositJurisdiction } from '@/types/enums';
 import type { DiagnosticState } from '@/types/diagnostic.types';
-import type { Tables } from '@/types/database.types';
 import type { Deduction, ItemizationStatus } from '@/lib/ai/deposit-generation';
 import type { GeneratedSequence } from '@/types/generation.types';
+
+/** Trusted service Convex client type for the generation writes. */
+type ServiceConvex = ReturnType<typeof createServiceConvexClient>;
 
 /**
  * Circuit breaker threshold: if total generation jobs in the queue
@@ -60,65 +64,60 @@ interface UserInfo {
 /*  Types                                                             */
 /* ------------------------------------------------------------------ */
 
-type CaseRow = Pick<
-  Tables<'cases'>,
-  'id' | 'user_id' | 'status' | 'wedge' | 'jurisdiction' | 'diagnostic_state' | 'payment_status'
->;
+interface CaseRow {
+  id: string;
+  user_id: string;
+  status: string;
+  wedge: string;
+  jurisdiction: string;
+  diagnostic_state: Record<string, unknown> | null;
+  payment_status: string;
+}
 
 /* ------------------------------------------------------------------ */
-/*  Shared helpers                                                    */
+/*  Shared helpers (service Convex client — trusted writes)           */
 /* ------------------------------------------------------------------ */
 
 async function createAuditEntry(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  payload: Record<string, unknown>,
+  convex: ServiceConvex,
+  args: {
+    caseId: string;
+    userId: string;
+    correlationId: string;
+    groundingContextIds: string[];
+    modelVersion: string;
+    promptVersion: string;
+    citationValidationResult: Record<string, unknown>;
+  },
 ) {
-  const { error } = await supabase
-    .from('audit_log')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
-    .insert(payload);
-
-  if (error) {
+  try {
+    await convex.mutation(api.service.insertAudit, {
+      secret: serviceSecret(),
+      caseId: args.caseId as Id<'cases'>,
+      userId: args.userId as Id<'users'>,
+      correlationId: args.correlationId,
+      groundingContextIds: args.groundingContextIds,
+      modelVersion: args.modelVersion,
+      promptVersion: args.promptVersion,
+      citationValidationResult: args.citationValidationResult,
+    });
+  } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Failed to create audit_log entry:', error.message);
+    console.error('Failed to create audit_log entry:', err);
   }
 }
 
-async function updateCaseStatus(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  caseId: string,
-  previousStatus: string,
-) {
-  const caseUpdatePayload: Record<string, unknown> = {
-    status: 'generated',
-    updated_at: new Date().toISOString(),
-  };
-
-  const { error: caseUpdateError } = await supabase
-    .from('cases')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type from manual Database definition
-    .update(caseUpdatePayload)
-    .eq('id', caseId);
-
-  if (caseUpdateError) {
+async function updateCaseStatus(convex: ServiceConvex, caseId: string) {
+  try {
+    // Records the status-history row too.
+    await convex.mutation(api.service.setCaseStatus, {
+      secret: serviceSecret(),
+      caseId: caseId as Id<'cases'>,
+      newStatus: 'generated',
+    });
+  } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Failed to update case status to generated:', caseUpdateError.message);
-  }
-
-  const historyPayload: Record<string, unknown> = {
-    case_id: caseId,
-    previous_status: previousStatus,
-    new_status: 'generated',
-  };
-
-  const { error: historyError } = await supabase
-    .from('case_status_history')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
-    .insert(historyPayload);
-
-  if (historyError) {
-    // eslint-disable-next-line no-console
-    console.error('Failed to create case_status_history entry:', historyError.message);
+    console.error('Failed to update case status to generated:', err);
   }
 }
 
@@ -167,7 +166,7 @@ function replaceUserPlaceholders(
 /* ------------------------------------------------------------------ */
 
 async function handleSubscriptionGeneration(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  convex: ServiceConvex,
   caseId: string,
   caseRow: CaseRow,
   answers: Record<string, unknown>,
@@ -216,55 +215,46 @@ async function handleSubscriptionGeneration(
     userInfo,
   );
 
-  const sequencePayload: Record<string, unknown> = {
-    case_id: caseId,
-    vertical: generatedSequence.vertical,
-    current_step: 1,
-    next_send_at: null,
-    steps: {
-      steps: generatedSequence.steps,
-      jurisdiction: generatedSequence.jurisdiction,
-      sent_dates: {},
-    },
-    grounding_context_ids: generatedSequence.grounding_context_ids,
-    citation_validation: {
-      valid: generatedSequence.citation_validation.valid,
-      stripped: generatedSequence.citation_validation.stripped,
-      pass: generatedSequence.citation_validation.pass,
-    },
-  };
-
-  const { data: sequenceData, error: seqError } = await supabase
-    .from('sequences')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
-    .insert(sequencePayload)
-    .select()
-    .single();
-
-  if (seqError) {
+  let sequenceRow: { id: string };
+  try {
+    sequenceRow = await convex.mutation(api.service.createSequence, {
+      secret: serviceSecret(),
+      caseId: caseId as Id<'cases'>,
+      vertical: generatedSequence.vertical,
+      steps: {
+        steps: generatedSequence.steps,
+        jurisdiction: generatedSequence.jurisdiction,
+        sent_dates: {},
+      },
+      groundingContextIds: generatedSequence.grounding_context_ids,
+      citationValidation: {
+        valid: generatedSequence.citation_validation.valid,
+        stripped: generatedSequence.citation_validation.stripped,
+        pass: generatedSequence.citation_validation.pass,
+      },
+    });
+  } catch {
     return NextResponse.json(
       { error: 'Failed to save generated sequence. Please try again.' },
       { status: 500 },
     );
   }
 
-  const sequenceRow = sequenceData as unknown as { id: string };
-
-  await createAuditEntry(supabase, {
-    case_id: caseId,
-    user_id: userId,
-    correlation_id: correlationId,
-    grounding_context_ids: generatedSequence.grounding_context_ids,
-    model_version: AI_CONFIG.generation.model,
-    prompt_version: 'subscription_v1',
-    citation_validation_result: {
+  await createAuditEntry(convex, {
+    caseId,
+    userId,
+    correlationId,
+    groundingContextIds: generatedSequence.grounding_context_ids,
+    modelVersion: AI_CONFIG.generation.model,
+    promptVersion: 'subscription_v1',
+    citationValidationResult: {
       valid_count: generatedSequence.citation_validation.valid.length,
       stripped_count: generatedSequence.citation_validation.stripped.length,
       pass: generatedSequence.citation_validation.pass,
     },
   });
 
-  await updateCaseStatus(supabase, caseId, 'intake');
+  await updateCaseStatus(convex, caseId);
 
   return NextResponse.json({ sequence_id: sequenceRow.id });
 }
@@ -274,7 +264,7 @@ async function handleSubscriptionGeneration(
 /* ------------------------------------------------------------------ */
 
 async function handleDepositGeneration(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  convex: ServiceConvex,
   caseId: string,
   caseRow: CaseRow,
   answers: Record<string, unknown>,
@@ -320,49 +310,41 @@ async function handleDepositGeneration(
 
   const generatedLetter = result.letter;
 
-  const letterPayload: Record<string, unknown> = {
-    case_id: caseId,
-    content: generatedLetter.content,
-    pdf_url: null,
-    grounding_context_ids: generatedLetter.grounding_context_ids,
-    citation_validation: {
-      valid: generatedLetter.citation_validation.valid,
-      stripped: generatedLetter.citation_validation.stripped,
-      pass: generatedLetter.citation_validation.pass,
-    },
-  };
-
-  const { data: letterData, error: letterError } = await supabase
-    .from('letters')
-    // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
-    .insert(letterPayload)
-    .select()
-    .single();
-
-  if (letterError) {
+  let letterRow: { id: string };
+  try {
+    letterRow = await convex.mutation(api.service.createLetter, {
+      secret: serviceSecret(),
+      caseId: caseId as Id<'cases'>,
+      content: generatedLetter.content,
+      groundingContextIds: generatedLetter.grounding_context_ids,
+      citationValidation: {
+        valid: generatedLetter.citation_validation.valid,
+        stripped: generatedLetter.citation_validation.stripped,
+        pass: generatedLetter.citation_validation.pass,
+      },
+    });
+  } catch {
     return NextResponse.json(
       { error: 'Failed to save generated letter. Please try again.' },
       { status: 500 },
     );
   }
 
-  const letterRow = letterData as unknown as { id: string };
-
-  await createAuditEntry(supabase, {
-    case_id: caseId,
-    user_id: userId,
-    correlation_id: correlationId,
-    grounding_context_ids: generatedLetter.grounding_context_ids,
-    model_version: AI_CONFIG.generation.model,
-    prompt_version: 'deposit_v1',
-    citation_validation_result: {
+  await createAuditEntry(convex, {
+    caseId,
+    userId,
+    correlationId,
+    groundingContextIds: generatedLetter.grounding_context_ids,
+    modelVersion: AI_CONFIG.generation.model,
+    promptVersion: 'deposit_v1',
+    citationValidationResult: {
       valid_count: generatedLetter.citation_validation.valid.length,
       stripped_count: generatedLetter.citation_validation.stripped.length,
       pass: generatedLetter.citation_validation.pass,
     },
   });
 
-  await updateCaseStatus(supabase, caseId, 'intake');
+  await updateCaseStatus(convex, caseId);
 
   /* ---- Schedule deadline events (best-effort) ---- */
   try {
@@ -376,8 +358,7 @@ async function handleDepositGeneration(
       timezone,
     );
     if (deadlines.length > 0) {
-      // @ts-expect-error — Supabase SSR generic mismatch with SupabaseClient<Database>
-      await scheduleDeadlines(supabase, caseId, deadlines, timezone);
+      await scheduleDeadlines(caseId, deadlines, timezone);
     }
   } catch (deadlineErr) {
     // Non-critical — log but don't fail generation
@@ -387,8 +368,10 @@ async function handleDepositGeneration(
 
   /* ---- Queue letter delivery email (best-effort) ---- */
   try {
-    const { data: userData } = await supabase.auth.admin.getUserById(userId);
-    const userEmail = userData?.user?.email;
+    const userEmail = await convex.query(api.service.userEmailById, {
+      secret: serviceSecret(),
+      userId: userId as Id<'users'>,
+    });
     if (userEmail) {
       const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
       const downloadUrl = `${appUrl}/case/${caseId}`;
@@ -422,17 +405,9 @@ export async function POST(
     const { id: caseId } = await params;
 
     /* ---- Auth ---- */
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     /* ---- Rate limit ---- */
@@ -444,21 +419,13 @@ export async function POST(
       );
     }
 
-    /* ---- Load case (RLS enforces ownership) ---- */
-    const { data, error: fetchError } = await supabase
-      .from('cases')
-      .select('id, user_id, status, wedge, jurisdiction, diagnostic_state, payment_status')
-      .eq('id', caseId)
-      .single();
-
-    if (fetchError || !data) {
-      return NextResponse.json(
-        { error: 'Case not found' },
-        { status: 404 },
-      );
+    /* ---- Load case (ownership enforced by cases.getMine) ---- */
+    const caseRow = (await q(api.cases.getMine, { caseId: caseId as Id<'cases'> })) as CaseRow | null;
+    if (!caseRow) {
+      return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
-    const caseRow = data as unknown as CaseRow;
+    const convex = createServiceConvexClient();
 
     /* ---- Validate case state ---- */
     if (caseRow.status !== 'intake') {
@@ -517,12 +484,8 @@ export async function POST(
       );
       if (!isSupported) {
         try {
-          const { data: txnData } = await supabase
-            .from('cases')
-            .select('paddle_transaction_id')
-            .eq('id', caseId)
-            .single();
-          const txnId = (txnData as unknown as { paddle_transaction_id?: string })?.paddle_transaction_id;
+          const txnId = (caseRow as unknown as { paddle_transaction_id?: string | null })
+            .paddle_transaction_id;
           if (txnId) {
             await processAutoRefundIfNeeded(caseId, txnId);
           }
@@ -570,19 +533,16 @@ export async function POST(
 
     /* ---- Extract user identity for personalization ---- */
     const userInfo: UserInfo = {
-      fullName:
-        (user.user_metadata?.full_name as string | undefined) ??
-        user.email?.split('@')[0] ??
-        '',
+      fullName: user.name ?? user.email?.split('@')[0] ?? '',
       email: user.email ?? '',
     };
 
     /* ---- Normal path: generate synchronously ---- */
     if (wedge === 'subscription') {
-      return await handleSubscriptionGeneration(supabase, caseId, caseRow, answers, user.id, userInfo);
+      return await handleSubscriptionGeneration(convex, caseId, caseRow, answers, user.id, userInfo);
     }
 
-    return await handleDepositGeneration(supabase, caseId, caseRow, answers, user.id);
+    return await handleDepositGeneration(convex, caseId, caseRow, answers, user.id);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console

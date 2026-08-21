@@ -1,19 +1,18 @@
 /**
  * POST /api/cases/[id]/checkout
  *
- * Links a Paddle transaction to a case after successful checkout.
- * Called by the client after Paddle checkout completes.
- *
- * Sets case.paddle_transaction_id so the webhook handler can match
- * transaction.completed events to cases.
- *
- * Does NOT mark as paid — that happens via the webhook for security.
+ * Links a Paddle transaction to a case after checkout so the webhook can match
+ * transaction.completed events. Does NOT mark as paid (webhook does that).
+ * Ownership via cases.getMine / cases.updateMine.
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+
+import { q, m, currentUser, api } from '@/lib/convex/server';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { assignPriceVariant } from '@/lib/pricing/ab-pricing';
 import { DEPOSIT_JURISDICTION } from '@/types/enums';
+import type { Id } from '@convex/dataModel';
 
 export async function POST(
   request: Request,
@@ -22,61 +21,30 @@ export async function POST(
   try {
     const { id: caseId } = await params;
 
-    /* ---- Auth ---- */
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    /* ---- Parse body ---- */
     const body = (await request.json()) as { transaction_id?: string };
     const transactionId = body.transaction_id;
-
     if (!transactionId || typeof transactionId !== 'string') {
-      return NextResponse.json(
-        { error: 'Missing transaction_id' },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: 'Missing transaction_id' }, { status: 400 });
     }
 
-    /* ---- Load case ---- */
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, user_id, wedge, jurisdiction, payment_status, paddle_transaction_id')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
-    const caseRow = caseData as unknown as {
-      id: string;
-      user_id: string;
-      wedge: string;
-      jurisdiction: string;
-      payment_status: string;
-      paddle_transaction_id: string | null;
-    };
-
-    /* ---- Already linked ---- */
     if (caseRow.paddle_transaction_id) {
       return NextResponse.json({ ok: true, already_linked: true });
     }
 
-    /* ---- Unsupported jurisdiction check ---- */
     if (
       caseRow.wedge === 'deposit' &&
-      !DEPOSIT_JURISDICTION.includes(
-        caseRow.jurisdiction as (typeof DEPOSIT_JURISDICTION)[number],
-      )
+      !DEPOSIT_JURISDICTION.includes(caseRow.jurisdiction as (typeof DEPOSIT_JURISDICTION)[number])
     ) {
-      // Flag for auto-refund — webhook processor will handle
       return NextResponse.json(
         {
           error: 'This jurisdiction is not supported for deposit cases. A refund will be issued.',
@@ -86,46 +54,32 @@ export async function POST(
       );
     }
 
-    /* ---- Link transaction ---- */
-    const { error: updateError } = await supabase
-      .from('cases')
-      // @ts-expect-error — Supabase SSR generic doesn't resolve table Update type from manual Database definition
-      .update({
-        paddle_transaction_id: transactionId,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', caseId);
+    await m(api.cases.updateMine, {
+      caseId: caseId as Id<'cases'>,
+      patch: { paddleTransactionId: transactionId },
+    });
 
-    if (updateError) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to link transaction:', updateError.message);
-      return NextResponse.json(
-        { error: 'Failed to start checkout. Please try again.' },
-        { status: 500 },
-      );
-    }
-
-    /* ---- Log A/B price variant for analytics (best-effort) ---- */
+    /* ---- Log A/B price variant (best-effort) ---- */
     try {
       const variant = assignPriceVariant(caseId);
-      const auditPayload: Record<string, unknown> = {
-        case_id: caseId,
-        user_id: user.id,
-        correlation_id: `checkout-${transactionId}`,
-        model_version: 'pricing',
-        prompt_version: 'ab_test_v1',
-        citation_validation_result: {
+      const convex = createServiceConvexClient();
+      await convex.mutation(api.service.insertAudit, {
+        secret: serviceSecret(),
+        caseId: caseId as Id<'cases'>,
+        userId: user.id as Id<'users'>,
+        correlationId: `checkout-${transactionId}`,
+        modelVersion: 'pricing',
+        promptVersion: 'ab_test_v1',
+        citationValidationResult: {
           action: 'checkout',
           price_variant_amount: variant.amount,
           price_variant_label: variant.label,
           price_id: variant.priceId,
           transaction_id: transactionId,
         },
-      };
-      // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-      await supabase.from('audit_log').insert(auditPayload);
+      });
     } catch {
-      // Non-critical — don't fail checkout
+      // non-critical
     }
 
     return NextResponse.json({ ok: true, transaction_id: transactionId });

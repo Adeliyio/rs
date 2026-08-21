@@ -1,35 +1,21 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-
 /**
  * GET /auth/callback
  *
- * Handles the OAuth redirect from providers (e.g. Google) and email-based
- * auth flows. Exchanges the authorization `code` for a session, then
- * redirects to the main app.
+ * Under Supabase this exchanged an OAuth/recovery `code` for a session. With
+ * Convex Auth, the OAuth (Google) callback is handled by Convex Auth's own HTTP
+ * routes on the Convex deployment (CONVEX_SITE_URL/api/auth/callback/google),
+ * and password reset is an OTP flow on /forgot-password.
+ *
+ * This route is kept only so old links resolve: it sends the user to the app if
+ * they already have a session, or to login otherwise. The middleware performs
+ * the actual auth gating.
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+export function GET(request: NextRequest): NextResponse {
   const { searchParams, origin } = request.nextUrl;
-  const code = searchParams.get('code');
-
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      // Check if this is a password reset flow
-      const type = searchParams.get('type');
-      if (type === 'recovery') {
-        return NextResponse.redirect(new URL('/update-password', origin));
-      }
-
-      return NextResponse.redirect(new URL('/new', origin));
-    }
+  if (searchParams.get('type') === 'recovery') {
+    return NextResponse.redirect(new URL('/forgot-password', origin));
   }
-
-  // Something went wrong — redirect back to login with an error hint
-  return NextResponse.redirect(
-    new URL('/login?error=auth_failed', request.nextUrl.origin),
-  );
+  return NextResponse.redirect(new URL('/new', origin));
 }

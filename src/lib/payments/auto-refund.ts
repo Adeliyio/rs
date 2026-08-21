@@ -9,7 +9,8 @@
  * should be immediate and include a clear explanation.
  */
 
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { workerConvex, api } from '@/lib/convex/worker-client';
+import type { Id } from '@convex/dataModel';
 import { DEPOSIT_JURISDICTION, type DepositJurisdiction } from '@/types/enums';
 
 /* ------------------------------------------------------------------ */
@@ -84,25 +85,14 @@ export async function processAutoRefundIfNeeded(
   caseId: string,
   transactionId: string,
 ): Promise<AutoRefundResult> {
-  const supabase = createServiceRoleClient();
+  // Load case (trusted service context)
+  const caseRow = await workerConvex.query(api.service.getCase, {
+    caseId: caseId as Id<'cases'>,
+  });
 
-  // Load case
-  const { data: caseData, error: caseError } = await supabase
-    .from('cases')
-    .select('id, wedge, jurisdiction, payment_status')
-    .eq('id', caseId)
-    .single();
-
-  if (caseError || !caseData) {
+  if (!caseRow) {
     return { refunded: false, error: `Case ${caseId} not found` };
   }
-
-  const caseRow = caseData as unknown as {
-    id: string;
-    wedge: string;
-    jurisdiction: string;
-    payment_status: string;
-  };
 
   // Only check deposit cases
   if (caseRow.wedge !== 'deposit') {
@@ -132,22 +122,12 @@ export async function processAutoRefundIfNeeded(
     return { refunded: false, error: refundResult.error };
   }
 
-  // Update case status
-  // @ts-expect-error — service-role Supabase client resolves Update generics as never
-  await supabase.from('cases').update({
-    payment_status: 'refunded',
-    status: 'closed',
-    updated_at: new Date().toISOString(),
-  }).eq('id', caseId);
-
-  // Record status history
-  const historyPayload = {
-    case_id: caseId,
-    previous_status: caseRow.payment_status === 'paid' ? 'intake' : 'intake',
-    new_status: 'closed',
-  };
-  // @ts-expect-error — service-role Supabase client resolves Insert generics as never
-  await supabase.from('case_status_history').insert(historyPayload);
+  // Update case → refunded + closed (records status history).
+  await workerConvex.mutation(api.service.setPaymentStatus, {
+    caseId: caseId as Id<'cases'>,
+    paymentStatus: 'refunded',
+    newStatus: 'closed',
+  });
 
   // eslint-disable-next-line no-console
   console.log(

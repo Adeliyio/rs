@@ -25,9 +25,10 @@ const nextConfig = {
   },
   images: {
     remotePatterns: [
+      // Cloudflare R2 (public bucket / custom domain), if images are served.
       {
         protocol: 'https',
-        hostname: '*.supabase.co',
+        hostname: '*.r2.cloudflarestorage.com',
       },
     ],
   },
@@ -83,7 +84,8 @@ const nextConfig = {
             //   a full migration to a nonce-aware style system.
             //
             // External domains: Paddle CDN (payment overlay), Plausible (analytics),
-            //   Supabase (REST + realtime), OpenAI (generation), Tavily (search).
+            //   Convex (self-hosted REST + WebSocket, on *.resolvaio.com),
+            //   OpenAI (generation), Tavily (search).
             //
             key: 'Content-Security-Policy',
             value: [
@@ -94,7 +96,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              "connect-src 'self' https://*.resolvaio.com https://*.supabase.co wss://*.supabase.co https://api.openai.com https://api.tavily.com https://api.paddle.com https://sandbox-api.paddle.com",
+              "connect-src 'self' https://*.resolvaio.com wss://*.resolvaio.com https://api.openai.com https://api.tavily.com https://api.paddle.com https://sandbox-api.paddle.com https://plausible.io",
               "frame-src https://cdn.paddle.com https://sandbox-buy.paddle.com https://buy.paddle.com",
               "object-src 'none'",
               "base-uri 'self'",

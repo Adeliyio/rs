@@ -1,6 +1,5 @@
 import { v } from 'convex/values';
-import { mutation, internalMutation } from './_generated/server';
-import { requireUser } from './lib/authz';
+import { internalMutation } from './_generated/server';
 
 /**
  * Waitlist entries. Under Supabase, INSERT required any authenticated user
@@ -11,7 +10,13 @@ import { requireUser } from './lib/authz';
  * code via the by_email_state_wedge index.
  */
 
-export const join = mutation({
+/**
+ * Insert a waitlist entry. The route is public (marketing pages call it for
+ * users in unsupported jurisdictions who may not be signed in), rate-limited by
+ * IP at the Next.js layer, and reached through the service secret — so no
+ * per-user auth is required here.
+ */
+export const joinInternal = internalMutation({
   args: {
     email: v.string(),
     name: v.optional(v.string()),
@@ -19,8 +24,6 @@ export const join = mutation({
     wedge: v.union(v.literal('deposit'), v.literal('subscription')),
   },
   handler: async (ctx, { email, name, state, wedge }) => {
-    await requireUser(ctx); // matches RLS: auth.uid() IS NOT NULL
-
     const existing = await ctx.db
       .query('waitlistEntries')
       .withIndex('by_email_state_wedge', (q) =>

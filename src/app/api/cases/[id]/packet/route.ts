@@ -9,7 +9,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { q, currentUser, api } from '@/lib/convex/server';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { decryptAnswersPii } from '@/lib/crypto';
 import {
   loadSmallClaimsPacket,
@@ -19,6 +20,7 @@ import {
 } from '@/lib/packets/packet-assembler';
 import { generatePacketBundle } from '@/lib/packets/bundle-generator';
 import type { DiagnosticState } from '@/types/diagnostic.types';
+import type { Id } from '@convex/dataModel';
 
 export async function POST(
   request: Request,
@@ -28,13 +30,8 @@ export async function POST(
     const { id: caseId } = await params;
 
     /* ---- Auth ---- */
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -51,25 +48,14 @@ export async function POST(
       );
     }
 
-    /* ---- Load case ---- */
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge, jurisdiction, diagnostic_state, payment_status, status')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    /* ---- Load case (ownership enforced by cases.getMine) ---- */
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
-    const caseRow = caseData as unknown as {
-      id: string;
-      wedge: string;
-      jurisdiction: string;
-      diagnostic_state: Record<string, unknown> | null;
-      payment_status: string;
-      status: string;
-    };
+    const convex = createServiceConvexClient();
+    const secret = serviceSecret();
 
     /* ---- Load packet template ---- */
     let template;
@@ -121,110 +107,86 @@ export async function POST(
 
     /* ---- Load demand letter PDF if available ---- */
     let demandLetterPdf: Buffer | undefined;
-    const { data: letterData } = await supabase
-      .from('letters')
-      .select('pdf_url')
-      .eq('case_id', caseId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
+    const letter = await q(api.letters.latestByCaseMine, { caseId: caseId as Id<'cases'> });
+    if (letter?.pdf_url) {
+      try {
+        const storageKey = letter.pdf_url;
+        // SSRF defense (SEC-05): reject anything that isn't a plain R2 key.
+        const isValidKey =
+          !storageKey.includes('://') &&
+          !storageKey.startsWith('/') &&
+          !storageKey.startsWith('\\');
 
-    if (letterData) {
-      const letterRow = letterData as unknown as { pdf_url: string | null };
-      if (letterRow.pdf_url) {
-        try {
-          // pdf_url now stores a storage path (not a full URL) — generate
-          // a short-lived signed URL for internal fetch (SEC-03 + SEC-05).
-          const storagePath = letterRow.pdf_url;
-
-          // SSRF defense (SEC-05): validate the path is a simple storage
-          // path, not an arbitrary URL.  A valid storage path is a relative
-          // path like "userId/caseId/demand-letter.pdf". Reject anything
-          // that looks like a URL or contains protocol/host components.
-          const isValidStoragePath =
-            !storagePath.includes('://') &&
-            !storagePath.startsWith('/') &&
-            !storagePath.startsWith('\\');
-
-          if (isValidStoragePath) {
-            const { data: signedData } = await supabase.storage
-              .from('documents')
-              .createSignedUrl(storagePath, 5 * 60); // 5-minute TTL for internal fetch
-
-            if (signedData?.signedUrl) {
-              const pdfResponse = await fetch(signedData.signedUrl);
-              if (pdfResponse.ok) {
-                demandLetterPdf = Buffer.from(await pdfResponse.arrayBuffer());
-              }
-            }
+        if (isValidKey) {
+          const signedUrl = await convex.action(api.service.signObject, {
+            secret,
+            key: storageKey,
+            ttl: 'internal',
+          });
+          const pdfResponse = await fetch(signedUrl);
+          if (pdfResponse.ok) {
+            demandLetterPdf = Buffer.from(await pdfResponse.arrayBuffer());
           }
-        } catch {
-          // Demand letter PDF not available — continue without it
         }
+      } catch {
+        // Demand letter PDF not available — continue without it
       }
     }
 
     /* ---- Generate ZIP bundle ---- */
     const bundle = await generatePacketBundle(packet, demandLetterPdf);
 
-    /* ---- Upload to Supabase Storage ---- */
-    const storagePath = `${user.id}/${caseId}/${bundle.filename}`;
+    /* ---- Upload to R2 ---- */
+    const storageKey = `${user.id}/${caseId}/${bundle.filename}`;
+    const zipBytes = new Uint8Array(bundle.buffer.byteLength);
+    zipBytes.set(bundle.buffer);
 
-    const { error: uploadError } = await supabase.storage
-      .from('documents')
-      .upload(storagePath, bundle.buffer, {
+    try {
+      await convex.action(api.service.uploadObject, {
+        secret,
+        key: storageKey,
+        bytes: zipBytes.buffer,
         contentType: 'application/zip',
-        upsert: true,
       });
-
-    if (uploadError) {
+    } catch {
       return NextResponse.json(
         { error: 'Failed to upload filing packet. Please try again.' },
         { status: 500 },
       );
     }
 
-    // Generate a signed URL with 15-minute TTL (SEC-03)
-    const { data: packetSignedData, error: packetSignedError } =
-      await supabase.storage
-        .from('documents')
-        .createSignedUrl(storagePath, 15 * 60); // 15 minutes
-
-    if (packetSignedError || !packetSignedData?.signedUrl) {
-      return NextResponse.json(
-        { error: 'Failed to generate signed URL for packet' },
-        { status: 500 },
-      );
+    let bundleSignedUrl: string;
+    try {
+      bundleSignedUrl = await convex.action(api.service.signObject, {
+        secret,
+        key: storageKey,
+        ttl: 'userFacing',
+      });
+    } catch {
+      return NextResponse.json({ error: 'Failed to generate signed URL for packet' }, { status: 500 });
     }
 
-    /* ---- Create packets record (store path, not URL) ---- */
-    const packetPayload = {
-      case_id: caseId,
-      venue: template.venue_name,
-      type: body.venue_type,
-      bundle_url: storagePath,
-      template_version: '1.0.0',
-    };
-
-    const { data: packetRecord, error: insertError } = await supabase
-      .from('packets')
-      // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type
-      .insert(packetPayload)
-      .select()
-      .single();
-
-    if (insertError) {
+    /* ---- Create packets record (store R2 key) ---- */
+    let packetRow: { id: string };
+    try {
+      packetRow = await convex.mutation(api.service.createPacket, {
+        secret,
+        caseId: caseId as Id<'cases'>,
+        venue: template.venue_name,
+        type: body.venue_type,
+        bundleUrl: storageKey,
+        templateVersion: '1.0.0',
+      });
+    } catch {
       return NextResponse.json(
         { error: 'Failed to save filing packet. Please try again.' },
         { status: 500 },
       );
     }
 
-    const packetRow = packetRecord as unknown as { id: string };
-
     return NextResponse.json({
       packet_id: packetRow.id,
-      bundle_url: packetSignedData.signedUrl,
+      bundle_url: bundleSignedUrl,
       filename: bundle.filename,
       file_count: bundle.file_count,
       filing_checklist: packet.filing_checklist,

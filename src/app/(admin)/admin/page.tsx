@@ -1,19 +1,21 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { currentUser } from '@/lib/convex/server';
 import { AdminDashboard } from '@/features/admin/components/admin-dashboard';
 
 /**
  * Admin dashboard — server component.
- * Restricted to admin users (checked via Supabase user metadata).
+ * Restricted to admin users (email allowlist via ADMIN_EMAILS).
  */
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '').split(',').filter(Boolean);
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+  .split(',')
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await currentUser();
 
-  if (!user || !ADMIN_EMAILS.includes(user.email ?? '')) {
+  if (!user || !ADMIN_EMAILS.includes((user.email ?? '').toLowerCase())) {
     redirect('/');
   }
 

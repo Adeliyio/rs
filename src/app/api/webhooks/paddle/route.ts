@@ -16,7 +16,8 @@ import { NextResponse } from 'next/server';
 
 import { verifyPaddleWebhookSignature } from '@/lib/payments/paddle-client';
 import { processWebhookEvent } from '@/lib/payments/webhook-processor';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { api } from '@convex/api';
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import type { PaddleWebhookEvent } from '@/types/external/paddle.types';
 
@@ -102,37 +103,20 @@ export async function POST(request: Request) {
       );
     }
 
-    /* ---- Idempotency check ---- */
-    const supabase = createServiceRoleClient();
+    /* ---- Idempotency + store (single service call) ---- */
+    const convex = createServiceConvexClient();
+    const secret = serviceSecret();
 
-    const { data: existingEvent } = await supabase
-      .from('webhook_events')
-      .select('id')
-      .eq('event_id', event.event_id)
-      .single();
-
-    if (existingEvent) {
-      // Already processed — return 200 to stop Paddle retries
-      return NextResponse.json({ ok: true, duplicate: true });
-    }
-
-    /* ---- Store event for audit trail ---- */
-    const webhookPayload = {
-      event_id: event.event_id,
+    const record = await convex.mutation(api.service.recordWebhook, {
+      secret,
+      eventId: event.event_id,
       provider: 'paddle',
       payload: JSON.parse(rawBody) as Record<string, unknown>,
-    };
-    // @ts-expect-error — service-role Supabase client resolves Insert generics as never
-    const { error: insertError } = await supabase.from('webhook_events').insert(webhookPayload);
+    });
 
-    if (insertError) {
-      // eslint-disable-next-line no-console
-      console.error(
-        '[Paddle Webhook] Failed to store event:',
-        insertError.message,
-      );
-      // Continue processing even if storage fails —
-      // Paddle will retry, and we'll catch the duplicate
+    if (record.duplicate) {
+      // Already processed — return 200 to stop Paddle retries
+      return NextResponse.json({ ok: true, duplicate: true });
     }
 
     /* ---- Process event ---- */
@@ -144,14 +128,11 @@ export async function POST(request: Request) {
         `[Paddle Webhook] Processing failed for ${event.event_type}:`,
         result.error,
       );
-      // Still return 200 — we've stored the event and can reprocess.
-      // Returning 4xx/5xx would cause Paddle to retry endlessly.
+      // Still return 200 — the event is stored and can be reprocessed.
     }
 
     // Mark as processed
-    const processedPayload = { processed_at: new Date().toISOString() };
-    // @ts-expect-error — service-role Supabase client resolves Update generics as never
-    await supabase.from('webhook_events').update(processedPayload).eq('event_id', event.event_id);
+    await convex.mutation(api.service.markWebhookProcessed, { secret, eventId: event.event_id });
 
     return NextResponse.json({ ok: true, event_type: event.event_type });
   } catch (err) {

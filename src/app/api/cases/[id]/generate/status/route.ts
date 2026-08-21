@@ -14,11 +14,12 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { q, currentUser, api } from '@/lib/convex/server';
 import {
   getJobQueuePosition,
   getGenerationQueueDepth,
 } from '@/lib/queue/enqueue';
+import type { Id } from '@convex/dataModel';
 
 export async function GET(
   _request: Request,
@@ -27,33 +28,16 @@ export async function GET(
   try {
     const { id: caseId } = await params;
 
-    /* ---- Auth ---- */
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     /* ---- Load case to verify ownership and get wedge ---- */
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge, status')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
-
-    const caseRow = caseData as unknown as {
-      id: string;
-      wedge: string;
-      status: string;
-    };
 
     /* ---- If case is already generated, return immediately ---- */
     if (caseRow.status === 'generated' || caseRow.status === 'sent') {

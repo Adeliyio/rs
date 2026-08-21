@@ -13,14 +13,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { q, m, currentUser, api } from '@/lib/convex/server';
 import { loadDiagnosticGraph, loadDisclaimers } from '@/lib/kb/loader';
 import { encryptAnswersPii, decryptAnswersPii } from '@/lib/crypto';
 import type { DiagnosticState } from '@/types/diagnostic.types';
-import type { Tables, UpdateTables } from '@/types/database.types';
 import type { Wedge } from '@/types/enums';
-
-type CaseRow = Pick<Tables<'cases'>, 'id' | 'wedge' | 'diagnostic_state'>;
+import type { Id } from '@convex/dataModel';
 
 /* ------------------------------------------------------------------ */
 /*  GET                                                               */
@@ -45,36 +43,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const supabase = await createClient();
-
-    // Verify authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Load the case (RLS ensures user can only see their own)
-    const { data, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge, diagnostic_state')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !data) {
-      return NextResponse.json(
-        { error: 'Case not found' },
-        { status: 404 },
-      );
+    // Load the case (ownership enforced by cases.getMine)
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
+      return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
-
-    const caseRow = data as unknown as CaseRow;
 
     // Load the diagnostic graph from KB
     const graph = loadDiagnosticGraph(caseRow.wedge as Wedge);
@@ -114,46 +92,31 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const supabase = await createClient();
-
-    // Verify authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // If the diagnostic collected a jurisdiction answer, sync it to the case row
+    // If the diagnostic collected a jurisdiction answer, sync it to the case.
     const jurisdictionAnswer = body.state.answers?.jurisdiction as string | undefined;
 
-    // Encrypt PII fields before saving to the database (VULN-02)
+    // Encrypt PII fields before saving (VULN-02).
     const encryptedState: DiagnosticState = body.state.answers
       ? { ...body.state, answers: encryptAnswersPii(body.state.answers) }
       : body.state;
 
-    // Update diagnostic_state on the case (RLS validates ownership)
-    const updatePayload: UpdateTables<'cases'> = {
-      diagnostic_state: encryptedState as unknown as Record<string, unknown>,
-      updated_at: new Date().toISOString(),
-      ...(jurisdictionAnswer ? { jurisdiction: jurisdictionAnswer } : {}),
-    };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (supabase
-      .from('cases') as any)
-      .update(updatePayload)
-      .eq('id', body.caseId);
-
-    if (updateError) {
-      return NextResponse.json(
-        { error: updateError.message },
-        { status: 500 },
-      );
+    try {
+      await m(api.cases.saveDiagnosticState, {
+        caseId: body.caseId as Id<'cases'>,
+        diagnosticState: encryptedState,
+        jurisdiction: jurisdictionAnswer,
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Not found')) {
+        return NextResponse.json({ error: 'Case not found' }, { status: 404 });
+      }
+      throw err;
     }
 
     return NextResponse.json({ ok: true });

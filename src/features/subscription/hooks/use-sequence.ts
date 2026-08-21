@@ -7,24 +7,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
+import { useQuery } from 'convex/react';
 
-import type { Database } from '@/types/database.types';
+import { api } from '@convex/api';
+import type { Id } from '@convex/dataModel';
 import type {
   GeneratedSequence,
   SequenceStep,
 } from '@/types/generation.types';
-
-/* ------------------------------------------------------------------ */
-/*  Supabase browser client                                           */
-/* ------------------------------------------------------------------ */
-
-function getSupabase() {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-  );
-}
 
 /* ------------------------------------------------------------------ */
 /*  Return type                                                       */
@@ -89,74 +79,37 @@ export function useSequence(caseId: string): UseSequenceReturn {
   const [stepSentDates, setStepSentDates] = useState<Record<number, string>>(
     {},
   );
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /* ---- Load sequence on mount ---- */
+  // Reactive Convex query — ownership enforced in latestByCaseMine.
+  const row = useQuery(api.sequences.latestByCaseMine, {
+    caseId: caseId as Id<'cases'>,
+  }) as SequenceRow | null | undefined;
+
+  const isLoading = row === undefined;
+
+  /* ---- Derive state when the query resolves ---- */
   useEffect(() => {
-    let cancelled = false;
+    if (row === undefined) return; // still loading
+    if (row === null) {
+      setError('No sequence found for this case.');
+      return;
+    }
+    setError(null);
+    setSequence(rowToSequence(row));
+    setCurrentStep(row.current_step);
 
-    async function load() {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const supabase = getSupabase();
-
-        const { data, error: fetchError } = await supabase
-          .from('sequences')
-          .select('*')
-          .eq('case_id', caseId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (fetchError) {
-          if (!cancelled) setError(fetchError.message);
-          return;
-        }
-
-        if (!data) {
-          if (!cancelled) setError('No sequence found for this case.');
-          return;
-        }
-
-        const row = data as unknown as SequenceRow;
-        const seq = rowToSequence(row);
-
-        if (!cancelled) {
-          setSequence(seq);
-          setCurrentStep(row.current_step);
-
-          // Extract sent dates from the steps JSONB if present
-          const stepsData = row.steps as Record<string, unknown>;
-          const sentDates = (stepsData['sent_dates'] as Record<string, string>) ?? {};
-          const parsedDates: Record<number, string> = {};
-          for (const [key, val] of Object.entries(sentDates)) {
-            const num = Number(key);
-            if (!Number.isNaN(num) && typeof val === 'string') {
-              parsedDates[num] = val;
-            }
-          }
-          setStepSentDates(parsedDates);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : 'Failed to load sequence.',
-          );
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
+    const stepsData = row.steps as Record<string, unknown>;
+    const sentDates = (stepsData['sent_dates'] as Record<string, string>) ?? {};
+    const parsedDates: Record<number, string> = {};
+    for (const [key, val] of Object.entries(sentDates)) {
+      const num = Number(key);
+      if (!Number.isNaN(num) && typeof val === 'string') {
+        parsedDates[num] = val;
       }
     }
-
-    void load();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [caseId]);
+    setStepSentDates(parsedDates);
+  }, [row]);
 
   /* ---- Mark step as sent ---- */
   const markAsSent = useCallback(
@@ -176,16 +129,12 @@ export function useSequence(caseId: string): UseSequenceReturn {
           throw new Error(errorBody.error ?? `HTTP ${response.status}`);
         }
 
-        const result = await response.json() as {
-          current_step: number;
-          sent_at: string;
-        };
-
-        // Update local state optimistically
-        setCurrentStep(result.current_step);
+        // The reactive Convex query (latestByCaseMine) will refresh
+        // currentStep + sent dates automatically. Apply a light optimistic
+        // update so the UI responds immediately.
         setStepSentDates((prev) => ({
           ...prev,
-          [stepNumber]: result.sent_at,
+          [stepNumber]: new Date().toISOString(),
         }));
       } catch (err) {
         setError(

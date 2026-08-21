@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { mutation, internalMutation, internalQuery } from './_generated/server';
+import { query, mutation, internalMutation, internalQuery } from './_generated/server';
 import { requireCaseOwner } from './lib/authz';
 import { serializeCase, serializeStatusHistory } from './lib/serialize';
 
@@ -72,6 +72,27 @@ export const transitionMine = mutation({
 });
 
 /**
+ * Owner-gated refusal: records a refusal_trigger, closes the case, and writes a
+ * status-history row. Mirrors POST /api/cases/[id]/refusal.
+ */
+export const setRefusalMine = mutation({
+  args: { caseId: v.id('cases'), refusalTrigger: v.string() },
+  handler: async (ctx, { caseId, refusalTrigger }) => {
+    const caseDoc = await requireCaseOwner(ctx, caseId);
+    const now = Date.now();
+    await ctx.db.patch(caseId, { refusalTrigger, status: 'closed', updatedAt: now });
+    await ctx.db.insert('caseStatusHistory', {
+      caseId,
+      previousStatus: caseDoc.status,
+      newStatus: 'closed',
+      changedAt: now,
+    });
+    const updated = await ctx.db.get(caseId);
+    return serializeCase(updated!);
+  },
+});
+
+/**
  * Internal transition for trusted contexts (workers, webhooks, generate route)
  * that previously wrote status + history via the service-role client.
  * No state-machine guard here — callers already enforce their own flow.
@@ -107,6 +128,22 @@ export const insertHistoryInternal = internalMutation({
       newStatus: newStatus as CaseStatus,
       changedAt: Date.now(),
     });
+  },
+});
+
+/** Owner-gated: most-recent history row matching a target new_status. */
+export const latestHistoryByStatusMine = query({
+  args: { caseId: v.id('cases'), newStatus: v.string() },
+  handler: async (ctx, { caseId, newStatus }) => {
+    await requireCaseOwner(ctx, caseId);
+    const rows = await ctx.db
+      .query('caseStatusHistory')
+      .withIndex('by_case', (q) => q.eq('caseId', caseId))
+      .collect();
+    const match = rows
+      .filter((r) => r.newStatus === newStatus)
+      .sort((a, b) => b.changedAt - a.changedAt)[0];
+    return match ? serializeStatusHistory(match) : null;
   },
 });
 

@@ -2,8 +2,8 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
-import { createClient } from '@/lib/supabase/server';
-import type { Tables } from '@/types/database.types';
+import { q, currentUser, api } from '@/lib/convex/server';
+import type { Id } from '@convex/dataModel';
 import type { CaseStatus, Wedge } from '@/types/enums';
 import type { GeneratedSequence, SequenceStep } from '@/types/generation.types';
 
@@ -38,7 +38,19 @@ import IntakeClient from './intake-client';
 /*  Types                                                             */
 /* ------------------------------------------------------------------ */
 
-type CaseRow = Tables<'cases'>;
+interface CaseRow {
+  id: string;
+  user_id: string;
+  status: string;
+  wedge: string;
+  jurisdiction: string;
+  diagnostic_state: Record<string, unknown> | null;
+  payment_status: string;
+  paddle_transaction_id: string | null;
+  refusal_trigger: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
 
 interface SequenceRow {
   id: string;
@@ -63,13 +75,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const { data } = await supabase
-    .from('cases')
-    .select('wedge, jurisdiction')
-    .eq('id', id)
-    .single();
+  const data = await q(api.cases.getMine, { caseId: id as Id<'cases'> });
 
   if (!data) {
     return { title: 'Case Not Found' };
@@ -157,22 +164,13 @@ export default async function CasePage({
   const { id: caseId } = await params;
 
   /* ---- Auth + case load ---- */
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await currentUser();
   if (!user) {
     notFound();
   }
 
-  const { data: caseData, error: caseError } = await supabase
-    .from('cases')
-    .select('*')
-    .eq('id', caseId)
-    .single();
-
-  if (caseError || !caseData) {
+  const caseData = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+  if (!caseData) {
     notFound();
   }
 
@@ -198,14 +196,10 @@ export default async function CasePage({
 
   if (status === 'generated') {
     if (wedge === 'subscription') {
-      // Load the sequence from Supabase to pass to the delivery component
-      const { data: seqData } = await supabase
-        .from('sequences')
-        .select('*')
-        .eq('case_id', caseId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      // Load the latest sequence (ownership enforced by latestByCaseMine).
+      const seqData = await q(api.sequences.latestByCaseMine, {
+        caseId: caseId as Id<'cases'>,
+      });
 
       if (seqData) {
         const seqRow = seqData as unknown as SequenceRow;
@@ -245,30 +239,21 @@ export default async function CasePage({
   /*  → CaseDetail (+ OutcomePrompt for sent/awaiting via client)     */
   /* ================================================================ */
 
-  // Gather supplemental data for CaseDetail
-  const { count: documentsCount } = await supabase
-    .from('documents')
-    .select('id', { count: 'exact', head: true })
-    .eq('case_id', caseId);
+  // Gather supplemental data for CaseDetail (all ownership-enforced).
+  const documentsCount = await q(api.documents.countByCaseMine, {
+    caseId: caseId as Id<'cases'>,
+  });
 
-  // Check for letter (deposit wedge)
-  const { data: letterData } = await supabase
-    .from('letters')
-    .select('id, created_at')
-    .eq('case_id', caseId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single();
+  const letterData = await q(api.letters.latestByCaseMine, {
+    caseId: caseId as Id<'cases'>,
+  });
+  const letterRow = letterData
+    ? { id: letterData.id, created_at: letterData.created_at ?? '' }
+    : null;
 
-  const letterRow = letterData as unknown as { id: string; created_at: string } | null;
-
-  // Check for packet
-  const { data: packetData } = await supabase
-    .from('packets')
-    .select('id')
-    .eq('case_id', caseId)
-    .limit(1)
-    .single();
+  const hasPacket = await q(api.packets.hasByCaseMine, {
+    caseId: caseId as Id<'cases'>,
+  });
 
   // Extract useful fields from diagnostic_state
   const diagnosticState = caseRow.diagnostic_state as Record<string, unknown> | null;
@@ -278,7 +263,7 @@ export default async function CasePage({
     caseRow,
     documentsCount ?? 0,
     !!letterRow,
-    !!packetData,
+    hasPacket,
     letterRow?.created_at,
   );
 
@@ -294,33 +279,22 @@ export default async function CasePage({
   }
 
   // Find when the letter/sequence was marked as sent for OutcomePrompt
-  const { data: sentHistoryData } = await supabase
-    .from('case_status_history')
-    .select('changed_at')
-    .eq('case_id', caseId)
-    .eq('new_status', 'sent')
-    .order('changed_at', { ascending: false })
-    .limit(1)
-    .single();
+  const sentHistoryData = await q(api.caseStatus.latestHistoryByStatusMine, {
+    caseId: caseId as Id<'cases'>,
+    newStatus: 'sent',
+  });
 
-  const sentAt = sentHistoryData
-    ? (sentHistoryData as unknown as { changed_at: string }).changed_at
-    : undefined;
+  const sentAt = sentHistoryData?.changed_at ?? undefined;
 
   // Check if statutory deadline has expired (for escalation flow)
   let deadlineExpired = false;
   if (status === 'awaiting' && wedge === 'deposit') {
-    const { data: deadlineData } = await supabase
-      .from('deadline_events')
-      .select('fire_at, fired_at')
-      .eq('case_id', caseId)
-      .order('fire_at', { ascending: false })
-      .limit(1)
-      .single();
+    const deadlineData = await q(api.deadlines.latestByCaseMine, {
+      caseId: caseId as Id<'cases'>,
+    });
 
-    if (deadlineData) {
-      const deadlineRow = deadlineData as unknown as { fire_at: string; fired_at: string | null };
-      deadlineExpired = new Date(deadlineRow.fire_at) <= new Date();
+    if (deadlineData?.deadline_date) {
+      deadlineExpired = new Date(deadlineData.deadline_date) <= new Date();
     } else if (sentAt) {
       // Fallback: if no deadline_events were scheduled, use a default
       // 30-day window from when the letter was sent

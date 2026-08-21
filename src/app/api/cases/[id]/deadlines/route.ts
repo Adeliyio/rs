@@ -11,7 +11,7 @@
 
 import { NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
+import { q, currentUser, api } from '@/lib/convex/server';
 import { decryptAnswersPii } from '@/lib/crypto';
 import { computeDeadlines, getActionableDeadlines } from '@/lib/deadlines/calculator';
 import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
@@ -19,6 +19,7 @@ import { loadKbEntry } from '@/lib/kb/loader';
 import { JURISDICTION_TIMEZONE } from '@/types/enums';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import type { DepositJurisdiction } from '@/types/enums';
+import type { Id } from '@convex/dataModel';
 
 export async function GET(
   _request: Request,
@@ -27,27 +28,15 @@ export async function GET(
   try {
     const { id: caseId } = await params;
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge, jurisdiction, diagnostic_state')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!caseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
-
-    const caseRow = caseData as unknown as { id: string; wedge: string; jurisdiction: string; diagnostic_state: Record<string, unknown> | null };
 
     const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
     const answers = decryptAnswersPii(
@@ -106,27 +95,15 @@ export async function POST(
   try {
     const { id: caseId } = await params;
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge, jurisdiction, diagnostic_state')
-      .eq('id', caseId)
-      .single();
-
-    if (caseError || !caseData) {
+    const postCaseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
+    if (!postCaseRow) {
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
-
-    const postCaseRow = caseData as unknown as { id: string; wedge: string; jurisdiction: string; diagnostic_state: Record<string, unknown> | null };
 
     const postDiagnosticState = postCaseRow.diagnostic_state as DiagnosticState | null;
     const answers = decryptAnswersPii(
@@ -150,8 +127,7 @@ export async function POST(
       'America/New_York';
 
     const { deadlines } = computeDeadlines(deadlineRules, answers, timezone);
-    // @ts-expect-error — Supabase SSR generic mismatch with SupabaseClient<Database>
-    const result = await scheduleDeadlines(supabase, caseId, deadlines, timezone);
+    const result = await scheduleDeadlines(caseId, deadlines, timezone);
 
     return NextResponse.json(result);
   } catch (err) {

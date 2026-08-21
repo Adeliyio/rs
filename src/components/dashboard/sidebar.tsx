@@ -11,7 +11,7 @@ import {
   Shield,
 } from 'lucide-react';
 
-import { signOut } from '@/lib/supabase/auth-actions';
+import { useResolvaioAuth } from '@/lib/convex/use-auth';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -100,6 +100,7 @@ export function Sidebar({
   userEmail,
 }: SidebarProps): React.JSX.Element {
   const pathname = usePathname();
+  const auth = useResolvaioAuth();
 
   const activeCases = cases.filter(
     (c) => c.status !== 'resolved' && c.status !== 'closed'
@@ -264,15 +265,14 @@ export function Sidebar({
               {userEmail ?? ''}
             </p>
           </div>
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="shrink-0 rounded-md p-1.5 text-sidebar-muted transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={() => void auth.logout()}
+            className="shrink-0 rounded-md p-1.5 text-sidebar-muted transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            aria-label="Sign out"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
         </div>
       </div>
     </aside>

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { createClient } from '@/lib/supabase/server';
+import { q, currentUser, api } from '@/lib/convex/server';
 import { Sidebar } from '@/components/dashboard/sidebar';
 
 import type { CaseSummary } from '@/components/dashboard/sidebar';
@@ -19,38 +19,22 @@ export default async function AppLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>): Promise<React.JSX.Element> {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await currentUser();
   if (!user) {
     redirect('/login');
   }
 
-  // TODO: Remove type assertion when real database types are generated via `pnpm db:gen-types`
-  const { data: casesData } = await supabase
-    .from('cases')
-    .select('id, wedge, jurisdiction, status, updated_at')
-    .order('updated_at', { ascending: false });
+  const casesData = await q(api.cases.listMine, {});
 
-  const cases: CaseSummary[] =
-    (casesData as unknown as { id: string; wedge: string; jurisdiction: string; status: string; updated_at: string }[] | null)?.map(
-      (row) => ({
-        id: row.id,
-        wedge: row.wedge as CaseSummary['wedge'],
-        jurisdiction: row.jurisdiction,
-        status: row.status as CaseSummary['status'],
-        updated_at: row.updated_at,
-      }),
-    ) ?? [];
+  const cases: CaseSummary[] = casesData.map((row) => ({
+    id: row.id,
+    wedge: row.wedge as CaseSummary['wedge'],
+    jurisdiction: row.jurisdiction,
+    status: row.status as CaseSummary['status'],
+    updated_at: row.updated_at ?? '',
+  }));
 
-  const userName =
-    user.user_metadata?.full_name as string | undefined ??
-    user.email?.split('@')[0] ??
-    'User';
-
+  const userName = user.name ?? user.email?.split('@')[0] ?? 'User';
   const userEmail = user.email ?? '';
 
   return (

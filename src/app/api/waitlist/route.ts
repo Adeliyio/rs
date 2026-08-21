@@ -14,7 +14,8 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
-import { createClient } from '@/lib/supabase/server';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { api } from '@convex/api';
 import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import { WEDGE, type Wedge } from '@/types/enums';
 
@@ -23,6 +24,7 @@ import { WEDGE, type Wedge } from '@/types/enums';
 /* ------------------------------------------------------------------ */
 
 const waitlistSchema = z.object({
+  name: z.string().max(100).optional(),
   email: z.string().email('Invalid email address'),
   state: z
     .string()
@@ -75,40 +77,23 @@ export async function POST(request: Request) {
       );
     }
 
-    const { email, state, wedge } = parsed.data;
+    const { name, email, state, wedge } = parsed.data;
 
-    /* ---- Insert into waitlist_entries ---- */
-    const supabase = await createClient();
-
-    const insertPayload: Record<string, unknown> = {
+    /* ---- Insert into waitlist (service; dedup handled in the mutation) ---- */
+    const convex = createServiceConvexClient();
+    const result = await convex.mutation(api.service.joinWaitlist, {
+      secret: serviceSecret(),
       email,
+      name,
       state,
       wedge,
-    };
+    });
 
-    const { error: insertError } = await supabase
-      .from('waitlist_entries')
-      // @ts-expect-error — Supabase SSR generic doesn't resolve table Insert type from manual Database definition
-      .insert(insertPayload);
-
-    if (insertError) {
-      // Handle unique constraint violation (duplicate entry)
-      if (
-        insertError.code === '23505' ||
-        insertError.message?.includes('duplicate') ||
-        insertError.message?.includes('unique')
-      ) {
-        // Already on waitlist — still return success
-        return NextResponse.json({
-          ok: true,
-          message: 'You are already on the waitlist for this state.',
-        });
-      }
-
-      return NextResponse.json(
-        { error: 'Failed to join waitlist. Please try again.' },
-        { status: 500 },
-      );
+    if (result.duplicate) {
+      return NextResponse.json({
+        ok: true,
+        message: 'You are already on the waitlist for this state.',
+      });
     }
 
     return NextResponse.json({

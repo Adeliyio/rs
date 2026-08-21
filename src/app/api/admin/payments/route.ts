@@ -8,7 +8,9 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin/auth';
 import { logAdminAction } from '@/lib/admin/audit';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { api } from '@convex/api';
+import type { Id } from '@convex/dataModel';
 
 /* ------------------------------------------------------------------ */
 /*  GET — List payment events                                         */
@@ -26,68 +28,44 @@ export async function GET() {
   // SEC-14: Audit log admin access
   void logAdminAction({ userId: auth.userId!, email: auth.email!, action: 'view_payments', ip: auth.ip });
 
-  const supabase = createServiceRoleClient();
-
-  // Fetch transaction-related webhook events
-  const { data, error } = await supabase
-    .from('webhook_events')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch payment data.' },
-      { status: 500 },
-    );
-  }
-
-  // Parse raw_payload to extract transaction details
-  const payments = ((data ?? []) as unknown as {
-    id: string;
-    event_id: string;
+  const convex = createServiceConvexClient();
+  const rows = (await convex.query(api.service.listRecentWebhooks, {
+    secret: serviceSecret(),
+    limit: 100,
+  })) as Array<{
+    _id: string;
+    eventId: string;
     provider: string;
-    raw_payload: string;
-    processed_at: string | null;
-    created_at: string;
-  }[])
-    .filter((e) => {
-      try {
-        const payload = JSON.parse(e.raw_payload) as { event_type?: string };
-        return payload.event_type?.startsWith('transaction.');
-      } catch {
-        return false;
-      }
-    })
+    payload: { event_type?: string; data?: Record<string, unknown> } | null;
+    processedAt?: number;
+    createdAt: number;
+  }>;
+
+  // `payload` is stored as a jsonb object (not a string).
+  const payments = rows
+    .filter((e) => e.payload?.event_type?.startsWith('transaction.'))
     .map((e) => {
-      try {
-        const payload = JSON.parse(e.raw_payload) as {
-          event_type: string;
-          data: {
-            id: string;
-            total?: string;
-            currency_code?: string;
-            status?: string;
-            customer_id?: string;
-          };
-        };
-        return {
-          id: e.id,
-          event_id: e.event_id,
-          event_type: payload.event_type,
-          transaction_id: payload.data.id,
-          amount: payload.data.total ?? '0',
-          currency: payload.data.currency_code ?? 'USD',
-          status: payload.data.status ?? 'unknown',
-          customer_id: payload.data.customer_id,
-          processed: !!e.processed_at,
-          created_at: e.created_at,
-        };
-      } catch {
-        return null;
-      }
-    })
-    .filter(Boolean);
+      const payload = e.payload!;
+      const data = (payload.data ?? {}) as {
+        id?: string;
+        total?: string;
+        currency_code?: string;
+        status?: string;
+        customer_id?: string;
+      };
+      return {
+        id: e._id,
+        event_id: e.eventId,
+        event_type: payload.event_type,
+        transaction_id: data.id,
+        amount: data.total ?? '0',
+        currency: data.currency_code ?? 'USD',
+        status: data.status ?? 'unknown',
+        customer_id: data.customer_id,
+        processed: !!e.processedAt,
+        created_at: new Date(e.createdAt).toISOString(),
+      };
+    });
 
   return NextResponse.json({ payments });
 }
@@ -171,21 +149,20 @@ export async function POST(request: Request) {
     }
 
     // Log the admin action to audit_log
-    const supabase = createServiceRoleClient();
-    const auditPayload: Record<string, unknown> = {
-      user_id: auth.userId,
-      correlation_id: `admin-refund-${body.transaction_id}`,
-      model_version: 'admin',
-      prompt_version: 'refund',
-      citation_validation_result: {
+    const convex = createServiceConvexClient();
+    await convex.mutation(api.service.insertAudit, {
+      secret: serviceSecret(),
+      userId: auth.userId as Id<'users'>,
+      correlationId: `admin-refund-${body.transaction_id}`,
+      modelVersion: 'admin',
+      promptVersion: 'refund',
+      citationValidationResult: {
         action: 'refund',
         transaction_id: body.transaction_id,
         reason: body.reason ?? 'Admin-initiated refund',
         admin_email: auth.email,
       },
-    };
-    // @ts-expect-error — service-role Supabase client resolves Insert generics as never
-    await supabase.from('audit_log').insert(auditPayload);
+    });
 
     return NextResponse.json({
       ok: true,

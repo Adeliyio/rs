@@ -1,48 +1,23 @@
 /**
- * GET /api/account/subscription
- *
- * Returns the current user's active subscription, if any.
- * Used by the settings page and subscription management UI.
+ * GET /api/account/subscription — the current user's active subscription (or null).
+ * Scoped to the caller inside subscriptions.currentMine.
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+
+import { q, currentUser, api } from '@/lib/convex/server';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .in('status', ['active', 'past_due'])
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error || !data) {
+    const sub = await q(api.subscriptions.currentMine, {});
+    if (!sub) {
       return NextResponse.json({ subscription: null });
     }
-
-    const sub = data as unknown as {
-      id: string;
-      plan: string;
-      status: string;
-      paddle_subscription_id: string;
-      current_period_start: string;
-      current_period_end: string;
-      cancel_at_period_end: boolean;
-      created_at: string;
-    };
 
     return NextResponse.json({
       subscription: {

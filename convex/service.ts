@@ -360,6 +360,20 @@ export const patchSubscriptionByPaddleId = mutation({
 /*  waitlist                                                          */
 /* ------------------------------------------------------------------ */
 
+export const joinWaitlist = mutation({
+  args: {
+    ...secretArg,
+    email: v.string(),
+    name: v.optional(v.string()),
+    state: v.string(),
+    wedge: v.union(v.literal('deposit'), v.literal('subscription')),
+  },
+  handler: async (ctx, { secret, ...a }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runMutation(internal.waitlist.joinInternal, a);
+  },
+});
+
 export const deleteWaitlistByEmail = mutation({
   args: { ...secretArg, email: v.string() },
   handler: async (ctx, { secret, email }): Promise<any> => {

@@ -118,6 +118,25 @@ export const updateMine = mutation({
   },
 });
 
+/**
+ * Save diagnostic state on an owned case, optionally syncing the jurisdiction
+ * the diagnostic collected. Mirrors PUT /api/diagnostic/state.
+ */
+export const saveDiagnosticState = mutation({
+  args: {
+    caseId: v.id('cases'),
+    diagnosticState: v.any(),
+    jurisdiction: v.optional(v.string()),
+  },
+  handler: async (ctx, { caseId, diagnosticState, jurisdiction }) => {
+    await requireCaseOwner(ctx, caseId);
+    const patch: Record<string, unknown> = { diagnosticState, updatedAt: Date.now() };
+    if (jurisdiction) patch.jurisdiction = jurisdiction;
+    await ctx.db.patch(caseId, patch);
+    return { ok: true };
+  },
+});
+
 /** Soft-delete an owned case. */
 export const softDeleteMine = mutation({
   args: { caseId: v.id('cases') },

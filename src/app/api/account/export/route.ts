@@ -1,85 +1,51 @@
 /**
- * GET /api/account/export
+ * GET /api/account/export — GDPR/CCPA data export as JSON.
  *
- * GDPR/CCPA data export — returns all user data as JSON.
- * Exports: cases, documents (metadata), letters, sequences,
- * packets, deadline_events, outcomes, subscriptions.
- *
- * Does NOT export: audit_log (system record), webhook_events (system).
+ * Gathers all of the user's data via account.exportMine (ownership inherent),
+ * then decrypts PII in diagnostic_state.answers before returning plaintext.
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+
+import { q, currentUser, api } from '@/lib/convex/server';
 import { decryptAnswersPii } from '@/lib/crypto';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    const user = await currentUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = user.id;
+    const data = await q(api.account.exportMine, {});
 
-    // Fetch all user data in parallel
-    const [
-      casesResult,
-      documentsResult,
-      lettersResult,
-      sequencesResult,
-      packetsResult,
-      deadlinesResult,
-      outcomesResult,
-      subscriptionsResult,
-    ] = await Promise.all([
-      supabase.from('cases').select('*').eq('user_id', userId),
-      supabase.from('documents').select('id, case_id, file_path, content_type, parse_status, created_at'),
-      supabase.from('letters').select('*'),
-      supabase.from('sequences').select('*'),
-      supabase.from('packets').select('*'),
-      supabase.from('deadline_events').select('*'),
-      supabase.from('outcomes').select('*'),
-      supabase.from('subscriptions').select('*').eq('user_id', userId),
-    ]);
-
-    // Decrypt PII in diagnostic_state.answers before exporting (GDPR export
-    // must return readable plaintext, not encrypted blobs)
-    const decryptedCases = (casesResult.data ?? []).map((caseRow) => {
-      const row = caseRow as unknown as Record<string, unknown>;
-      const diagnosticState = row.diagnostic_state as DiagnosticState | null;
+    // Decrypt PII in diagnostic_state.answers (export must be readable plaintext).
+    const decryptedCases = data.cases.map((caseRow: Record<string, unknown>) => {
+      const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
       if (diagnosticState?.answers) {
         return {
-          ...row,
+          ...caseRow,
           diagnostic_state: {
             ...diagnosticState,
             answers: decryptAnswersPii(diagnosticState.answers),
           },
         };
       }
-      return row;
+      return caseRow;
     });
 
     const exportData = {
       exported_at: new Date().toISOString(),
-      user: {
-        id: user.id,
-        email: user.email,
-        created_at: user.created_at,
-      },
+      user: { id: user.id, email: user.email },
       cases: decryptedCases,
-      documents: documentsResult.data ?? [],
-      letters: lettersResult.data ?? [],
-      sequences: sequencesResult.data ?? [],
-      packets: packetsResult.data ?? [],
-      deadline_events: deadlinesResult.data ?? [],
-      outcomes: outcomesResult.data ?? [],
-      subscriptions: subscriptionsResult.data ?? [],
+      documents: data.documents,
+      letters: data.letters,
+      sequences: data.sequences,
+      packets: data.packets,
+      deadline_events: data.deadline_events,
+      outcomes: data.outcomes,
+      subscriptions: data.subscriptions,
     };
 
     return new NextResponse(JSON.stringify(exportData, null, 2), {
