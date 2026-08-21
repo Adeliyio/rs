@@ -50,7 +50,7 @@ export async function POST(
     }
 
     /* ---- Fetch the case for its wedge (owned) ---- */
-    const caseRow = await q(api.cases.getMine, { caseId: doc.case_id as Id<'cases'> });
+    const caseRow = await q(api.cases.getMine, { caseId: doc.case_id });
     if (!caseRow) {
       return NextResponse.json({ error: 'Associated case not found' }, { status: 404 });
     }

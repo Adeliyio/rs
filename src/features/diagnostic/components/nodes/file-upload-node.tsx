@@ -78,7 +78,7 @@ export default function FileUploadNodeComponent({
   const inputRef = useRef<HTMLInputElement>(null);
 
   /* ---- Extraction phase (A9: upload → parse → confirm → merge) ---- */
-  type ExtractField = { value: unknown; confidence: number };
+  interface ExtractField { value: unknown; confidence: number }
   const [phase, setPhase] = useState<'upload' | 'parsing' | 'confirm'>('upload');
   const [parseError, setParseError] = useState<string | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState<{ documentId: string; fields: Record<string, ExtractField> } | null>(null);

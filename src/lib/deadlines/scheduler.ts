@@ -29,7 +29,7 @@ export async function scheduleDeadlines(
   let skipped = 0;
   const errors: string[] = [];
 
-  let existing: Array<{ anchor_event: string; deadline_date: string | null }>;
+  let existing: { anchor_event: string; deadline_date: string | null }[];
   try {
     existing = await workerConvex.query(api.service.listDeadlinesByCase, {
       caseId: caseId as Id<'cases'>,

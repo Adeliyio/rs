@@ -48,16 +48,27 @@ jobs:
       - name: Secret Scan
         run: pnpm scan-secrets
 
+      - name: Dependency Vulnerability Audit
+        # FAIL the build on a CRITICAL advisory in a production dependency.
+        # Level is 'critical' (not 'high') because the remaining high advisories
+        # are Next.js issues only patched in 15.x — a separate major upgrade —
+        # plus transitive build-time deps. The critical @auth/core + Next issues
+        # are already fixed. Revisit the level after the Next 14→15 migration.
+        run: pnpm audit --prod --audit-level critical --registry https://registry.npmjs.org
+
   build:
     name: Build
     runs-on: ubuntu-latest
     needs: lint-type-test
     timeout-minutes: 10
     env:
-      NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co'
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'placeholder-anon-key-for-build'
-      SUPABASE_SERVICE_ROLE_KEY: 'placeholder-service-role-key-for-build'
+      # Placeholder env for the build only — real values come from the
+      # deployment. env.ts requires the Convex vars post-migration.
+      NEXT_PUBLIC_CONVEX_URL: 'https://placeholder.convex.cloud'
+      CONVEX_SITE_URL: 'https://placeholder.convex.site'
+      CONVEX_SERVICE_SECRET: 'placeholder-service-secret-for-build'
       OPENAI_API_KEY: 'placeholder-openai-key-for-build'
+      ENCRYPTION_KEY: '0000000000000000000000000000000000000000000000000000000000000000'
 
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +100,5 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            --build-arg NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co \
-            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder \
+            --build-arg NEXT_PUBLIC_CONVEX_URL=https://placeholder.convex.cloud \
             -t resolvaio:${{ github.sha }} .

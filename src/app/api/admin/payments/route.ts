@@ -34,14 +34,14 @@ export async function GET() {
   const rows = (await convex.query(api.service.listRecentWebhooks, {
     secret: serviceSecret(),
     limit: 100,
-  })) as Array<{
+  })) as {
     _id: string;
     eventId: string;
     provider: string;
     payload: { event_type?: string; data?: Record<string, unknown> } | null;
     processedAt?: number;
     createdAt: number;
-  }>;
+  }[];
 
   // `payload` is stored as a jsonb object (not a string).
   const payments = rows
