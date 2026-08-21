@@ -1,74 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any -- Manual DB types; remove after pnpm db:gen-types */
 /**
  * POST /api/documents/[id]/parse
  *
- * Fetches a document record, creates a signed URL for the file in
- * Supabase Storage, determines the extraction schema from the case's
- * wedge, and calls GPT-4o Vision to extract structured fields.
+ * Verifies the caller owns the document (via its case), signs a short-lived R2
+ * URL, runs GPT-4o Vision extraction, and saves parsed_json / parse_status.
  *
- * On success: saves parsed_json and updates parse_status to 'parsed'.
- * On failure: updates parse_status to 'failed' and returns an error.
- *
- * Returns: { parsed_fields, confidence_scores }
+ * Ownership: documents.getMine enforces case ownership (RLS replacement). The
+ * R2 signing + document patch then use the service-gated Convex functions.
  */
 
 import { NextResponse } from 'next/server';
 
-import { createClient } from '@/lib/supabase/server';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { q, currentUser, api } from '@/lib/convex/server';
+import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { extractFromDocument } from '@/lib/ai/extraction';
+import type { Id } from '@convex/dataModel';
 
-/* ------------------------------------------------------------------ */
-/*  Types                                                             */
-/* ------------------------------------------------------------------ */
+const VALID_SCHEMAS = new Set(['lease_agreement', 'billing_statement', 'itemization']);
 
-interface DocumentRow {
-  id: string;
-  case_id: string;
-  file_path: string;
-  content_type: string | null;
-  parse_status: string;
+function resolveSchemaName(wedge: string): string {
+  return wedge === 'subscription' ? 'billing_statement' : 'lease_agreement';
 }
-
-interface CaseRow {
-  id: string;
-  wedge: string;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Schema resolution                                                 */
-/* ------------------------------------------------------------------ */
-
-/**
- * Valid extraction schema names. Any ?schema query parameter must match
- * one of these values to prevent arbitrary schema injection (VULN-13).
- */
-const VALID_SCHEMAS = new Set([
-  'lease_agreement',
-  'billing_statement',
-  'itemization',
-]);
-
-/**
- * Determines the extraction schema name based on the case wedge and
- * the document content type / context.
- */
-function resolveSchemaName(wedge: string, _contentType: string | null): string {
-  // For deposit cases, the primary documents are leases and itemisations.
-  // For subscription cases, the primary documents are billing statements.
-  if (wedge === 'subscription') {
-    return 'billing_statement';
-  }
-
-  // Deposit wedge — default to lease agreement. The parse endpoint can
-  // be called with a ?schema query parameter to override this for
-  // itemisation documents.
-  return 'lease_agreement';
-}
-
-/* ------------------------------------------------------------------ */
-/*  POST                                                              */
-/* ------------------------------------------------------------------ */
 
 export async function POST(
   request: Request,
@@ -77,90 +28,63 @@ export async function POST(
   try {
     const { id: documentId } = await params;
 
-    /* ---- Auth ---- */
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 },
-      );
+    const user = await currentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    /* ---- Optional schema override via query string (VULN-13: validated) ---- */
     const url = new URL(request.url);
     const schemaParam = url.searchParams.get('schema');
-    const schemaOverride = schemaParam && VALID_SCHEMAS.has(schemaParam) ? schemaParam : null;
-
     if (schemaParam && !VALID_SCHEMAS.has(schemaParam)) {
       return NextResponse.json(
         { error: `Invalid schema: '${schemaParam}'. Allowed: ${[...VALID_SCHEMAS].join(', ')}` },
         { status: 400 },
       );
     }
+    const schemaOverride = schemaParam && VALID_SCHEMAS.has(schemaParam) ? schemaParam : null;
 
-    /* ---- Fetch document record (RLS via case ownership) ---- */
-    const { data: docData, error: docError } = await supabase
-      .from('documents')
-      .select('id, case_id, file_path, content_type, parse_status')
-      .eq('id', documentId)
-      .single();
-
-    if (docError || !docData) {
-      return NextResponse.json(
-        { error: 'Document not found' },
-        { status: 404 },
-      );
+    /* ---- Fetch owned document (enforces case ownership) ---- */
+    const doc = await q(api.documents.getMine, { documentId: documentId as Id<'documents'> });
+    if (!doc) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 });
     }
 
-    const doc = docData as unknown as DocumentRow;
-
-    /* ---- Fetch associated case (for wedge) ---- */
-    const { data: caseData, error: caseError } = await supabase
-      .from('cases')
-      .select('id, wedge')
-      .eq('id', doc.case_id)
-      .single();
-
-    if (caseError || !caseData) {
-      return NextResponse.json(
-        { error: 'Associated case not found' },
-        { status: 404 },
-      );
+    /* ---- Fetch the case for its wedge (owned) ---- */
+    const caseRow = await q(api.cases.getMine, { caseId: doc.case_id as Id<'cases'> });
+    if (!caseRow) {
+      return NextResponse.json({ error: 'Associated case not found' }, { status: 404 });
     }
 
-    const caseRow = caseData as unknown as CaseRow;
+    const convex = createServiceConvexClient();
+    const secret = serviceSecret();
 
-    /* ---- Create signed URL for the file ---- */
-    const serviceClient = createServiceRoleClient();
-
-    const { data: signedUrlData, error: signedUrlError } = await serviceClient.storage
-      .from('documents')
-      .createSignedUrl(doc.file_path, 5 * 60); // 5-minute expiry (SEC-10)
-
-    if (signedUrlError || !signedUrlData?.signedUrl) {
-      // Update status to failed
-      await updateParseStatus(supabase, documentId, 'failed');
-      return NextResponse.json(
-        { error: 'Failed to access document. Please try again.' },
-        { status: 500 },
-      );
+    /* ---- Sign a 5-minute R2 URL (SEC-10) ---- */
+    let imageUrl: string;
+    try {
+      imageUrl = await convex.action(api.service.signObject, {
+        secret,
+        key: doc.file_path,
+        ttl: 'internal',
+      });
+    } catch {
+      await convex.mutation(api.service.patchDocument, {
+        secret,
+        documentId: documentId as Id<'documents'>,
+        patch: { parseStatus: 'failed' },
+      });
+      return NextResponse.json({ error: 'Failed to access document. Please try again.' }, { status: 500 });
     }
 
-    const imageUrl = signedUrlData.signedUrl as string;
-
-    /* ---- Determine extraction schema ---- */
-    const schemaName = schemaOverride ?? resolveSchemaName(caseRow.wedge, doc.content_type);
-
-    /* ---- Extract fields via GPT-4o Vision ---- */
+    /* ---- Extract via GPT-4o Vision ---- */
+    const schemaName = schemaOverride ?? resolveSchemaName(caseRow.wedge);
     const result = await extractFromDocument(imageUrl, doc.content_type ?? 'image/jpeg', schemaName);
 
     if (result.error) {
-      await updateParseStatus(supabase, documentId, 'failed');
+      await convex.mutation(api.service.patchDocument, {
+        secret,
+        documentId: documentId as Id<'documents'>,
+        patch: { parseStatus: 'failed' },
+      });
       return NextResponse.json(
         { error: 'Document extraction failed. Please try again with a clearer image.' },
         { status: 500 },
@@ -168,36 +92,22 @@ export async function POST(
     }
 
     /* ---- Save parsed result ---- */
-    const parsedJson: Record<string, unknown> = {
-      schema: schemaName,
-      fields: result.fields,
-      raw_response: result.raw_response,
-      extracted_at: new Date().toISOString(),
-    };
+    await convex.mutation(api.service.patchDocument, {
+      secret,
+      documentId: documentId as Id<'documents'>,
+      patch: {
+        parsedJson: {
+          schema: schemaName,
+          fields: result.fields,
+          raw_response: result.raw_response,
+          extracted_at: new Date().toISOString(),
+        },
+        parseStatus: 'parsed',
+      },
+    });
 
-    const updatePayload: Record<string, unknown> = {
-      parsed_json: parsedJson,
-      parse_status: 'parsed',
-      updated_at: new Date().toISOString(),
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (supabase
-      .from('documents') as any)
-      .update(updatePayload)
-      .eq('id', documentId);
-
-    if (updateError) {
-      return NextResponse.json(
-        { error: 'Failed to save parsed result. Please try again.' },
-        { status: 500 },
-      );
-    }
-
-    /* ---- Build response ---- */
     const parsedFields: Record<string, unknown> = {};
     const confidenceScores: Record<string, number> = {};
-
     for (const [key, field] of Object.entries(result.fields)) {
       parsedFields[key] = field.value;
       confidenceScores[key] = field.confidence;
@@ -211,35 +121,5 @@ export async function POST(
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
     return NextResponse.json({ error: message }, { status: 500 });
-  }
-}
-
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
-/* ------------------------------------------------------------------ */
-
-/**
- * Updates a document's parse_status. Best-effort — errors are logged
- * but not propagated.
- */
-async function updateParseStatus(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  documentId: string,
-  status: 'pending' | 'parsed' | 'confirmed' | 'failed',
-): Promise<void> {
-  const payload: Record<string, unknown> = {
-    parse_status: status,
-    updated_at: new Date().toISOString(),
-  };
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase
-    .from('documents') as any)
-    .update(payload)
-    .eq('id', documentId);
-
-  if (error) {
-    // eslint-disable-next-line no-console
-    console.error(`Failed to update parse_status to '${status}':`, error.message);
   }
 }

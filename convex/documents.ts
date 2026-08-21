@@ -1,5 +1,5 @@
 import { v } from 'convex/values';
-import { query, internalQuery, internalMutation } from './_generated/server';
+import { query, mutation, internalQuery, internalMutation } from './_generated/server';
 import { requireCaseOwner, assertOwnsCase } from './lib/authz';
 import { serializeDocument } from './lib/serialize';
 
@@ -42,6 +42,23 @@ export const getMine = query({
     if (!doc) return null;
     await assertOwnsCase(ctx, doc.caseId);
     return serializeDocument(doc);
+  },
+});
+
+/** Owner-gated confirmation of extracted fields. */
+export const confirmMine = mutation({
+  args: { documentId: v.id('documents'), confirmedFields: v.any() },
+  handler: async (ctx, { documentId, confirmedFields }) => {
+    const doc = await ctx.db.get(documentId);
+    if (!doc) throw new Error('Not found');
+    await assertOwnsCase(ctx, doc.caseId);
+    await ctx.db.patch(documentId, {
+      confirmedJson: confirmedFields,
+      parseStatus: 'confirmed',
+      authenticityAck: true,
+      updatedAt: Date.now(),
+    });
+    return { ok: true };
   },
 });
 
