@@ -13,7 +13,8 @@
 import { Worker, type Job } from 'bullmq';
 import { getRedis } from '@/lib/redis';
 import { QUEUE_NAMES } from '@/lib/queue/config';
-import { createServiceRoleClient } from '@/lib/supabase/service-role';
+import { workerConvex, api } from '@/lib/convex/worker-client';
+import type { Id } from '@convex/dataModel';
 import { getOpenAIClient } from '@/lib/ai/openai-client';
 import { AI_CONFIG } from '@/config/ai.config';
 import { searchTavily } from '@/lib/ai/tavily-client';
@@ -24,21 +25,7 @@ import {
   type LawMonitorJobPayload,
 } from '@/types/jobs/law-monitor.job';
 import type { Statute, KbEntry } from '@/types/kb.types';
-import type { SupabaseClient } from '@supabase/supabase-js';
 import { DEPOSIT_JURISDICTION, WEDGE } from '@/types/enums';
-
-/* ------------------------------------------------------------------ */
-/*  Supabase helper for tables not yet in generated types             */
-/* ------------------------------------------------------------------ */
-
-// statute_monitor_runs and statute_monitor_alerts tables are created
-// in migration 00008 but are not yet in the generated Database types.
-// After running `supabase gen types` these casts can be removed.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function db(): SupabaseClient<any, 'public', any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return
-  return createServiceRoleClient() as any;
-}
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                         */
@@ -105,15 +92,10 @@ async function isRecentlyAlerted(statuteId: string): Promise<boolean> {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - DEDUP_WINDOW_DAYS);
 
-  const { data } = await db()
-    .from('statute_monitor_alerts')
-    .select('id')
-    .eq('statute_id', statuteId)
-    .neq('status', 'dismissed')
-    .gte('created_at', cutoff.toISOString())
-    .limit(1);
-
-  return Array.isArray(data) && data.length > 0;
+  return workerConvex.query(api.service.isRecentlyAlerted, {
+    statuteId,
+    sinceMs: cutoff.getTime(),
+  });
 }
 
 /**
@@ -240,23 +222,12 @@ function formatTavilyForComparison(
 
 async function processLawMonitor(job: Job<LawMonitorJobPayload>): Promise<void> {
   const payload = lawMonitorJobSchema.parse(job.data);
-  const supabase = db();
 
   // eslint-disable-next-line no-console
   console.log(`[LawMonitor] Starting ${payload.run_type} run`);
 
   // Create monitoring run record
-  const { data: runRow, error: runError } = await supabase
-    .from('statute_monitor_runs')
-    .insert({ status: 'running' })
-    .select('id')
-    .single();
-
-  if (runError || !runRow) {
-    throw new Error(`Failed to create monitor run: ${runError?.message ?? 'unknown'}`);
-  }
-
-  const runId = (runRow as { id: string }).id;
+  const runId = await workerConvex.mutation(api.service.createMonitorRun, {});
   let statutesChecked = 0;
   let changesDetected = 0;
 
@@ -302,24 +273,22 @@ async function processLawMonitor(job: Job<LawMonitorJobPayload>): Promise<void> 
           changesDetected++;
 
           // Insert alert
-          const { error: alertError } = await supabase
-            .from('statute_monitor_alerts')
-            .insert({
-              run_id: runId,
-              statute_id: statute.statute_id,
+          try {
+            await workerConvex.mutation(api.service.createAlert, {
+              runId: runId as Id<'statuteMonitorRuns'>,
+              statuteId: statute.statute_id,
               citation: statute.citation,
               jurisdiction: entry.jurisdiction,
-              kb_entry_id: entry.id,
-              change_summary: analysis.change_summary,
-              change_details: analysis.change_details,
+              kbEntryId: entry.id,
+              changeSummary: analysis.change_summary,
+              changeDetails: analysis.change_details,
               severity: analysis.severity,
               confidence: analysis.confidence,
-              source_urls: analysis.source_urls,
+              sourceUrls: analysis.source_urls,
             });
-
-          if (alertError) {
+          } catch (alertError) {
             // eslint-disable-next-line no-console
-            console.error(`[LawMonitor] Failed to insert alert for ${statute.citation}:`, alertError.message);
+            console.error(`[LawMonitor] Failed to insert alert for ${statute.citation}:`, alertError);
             continue;
           }
 
@@ -367,15 +336,12 @@ async function processLawMonitor(job: Job<LawMonitorJobPayload>): Promise<void> 
     }
 
     // Mark run as completed
-    await supabase
-      .from('statute_monitor_runs')
-      .update({
-        status: 'completed',
-        completed_at: new Date().toISOString(),
-        statutes_checked: statutesChecked,
-        changes_detected: changesDetected,
-      })
-      .eq('id', runId);
+    await workerConvex.mutation(api.service.finishMonitorRun, {
+      runId: runId as Id<'statuteMonitorRuns'>,
+      statutesChecked,
+      changesDetected,
+      status: 'completed',
+    });
 
     // eslint-disable-next-line no-console
     console.log(
@@ -385,16 +351,13 @@ async function processLawMonitor(job: Job<LawMonitorJobPayload>): Promise<void> 
     const message = err instanceof Error ? err.message : String(err);
 
     // Mark run as failed
-    await supabase
-      .from('statute_monitor_runs')
-      .update({
-        status: 'failed',
-        completed_at: new Date().toISOString(),
-        statutes_checked: statutesChecked,
-        changes_detected: changesDetected,
-        error: message,
-      })
-      .eq('id', runId);
+    await workerConvex.mutation(api.service.finishMonitorRun, {
+      runId: runId as Id<'statuteMonitorRuns'>,
+      statutesChecked,
+      changesDetected,
+      status: 'failed',
+      error: message,
+    });
 
     throw err; // Re-throw for BullMQ retry
   }
