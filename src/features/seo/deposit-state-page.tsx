@@ -1,7 +1,14 @@
 import Link from 'next/link';
-import { ArrowRight, Scale, Clock, FileText } from 'lucide-react';
+import { ArrowRight, Scale, Clock, FileText, MapPin } from 'lucide-react';
 
 import { safeJsonLd } from '@/lib/safe-json-ld';
+import { JURISDICTIONS, shippableCounties } from '@/lib/seo/config';
+import {
+  breadcrumbSchema,
+  depositServiceSchema,
+  organizationSchema,
+  websiteSchema,
+} from '@/lib/seo/schema';
 
 interface DepositStatePageProps {
   stateCode: string;
@@ -20,6 +27,17 @@ export function DepositStatePage({
   statuteSummary,
   penaltyNote,
 }: DepositStatePageProps) {
+  const jurisdiction = JURISDICTIONS.find((j) => j.code === stateCode);
+  const counties = jurisdiction ? shippableCounties(jurisdiction) : [];
+  const statePath = jurisdiction?.page.path ?? `/deposit/${stateName.toLowerCase()}`;
+
+  const breadcrumb = breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Security Deposit', path: '/deposit' },
+    { name: stateName, path: statePath },
+  ]);
+  const service = depositServiceSchema({ stateName, path: statePath });
+
   return (
     <main className="min-h-screen bg-white">
       {/* Hero */}
@@ -156,28 +174,43 @@ export function DepositStatePage({
         </div>
       </section>
 
-      {/* JSON-LD structured data */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            '@context': 'https://schema.org',
-            '@type': 'Service',
-            name: `${stateName} Security Deposit Recovery`,
-            description: `Draft a demand letter for security deposit recovery in ${stateName}, grounded in ${primaryStatute}.`,
-            provider: {
-              '@type': 'Organization',
-              name: 'Resolvaio',
-              url: 'https://resolvaio.com',
-            },
-            areaServed: {
-              '@type': 'State',
-              name: stateName,
-            },
-            serviceType: 'Writing Assistance',
-          }),
-        }}
-      />
+      {/* Counties — internal links to the per-county pages (only verified ones ship) */}
+      {counties.length > 0 && (
+        <section className="py-16">
+          <div className="mx-auto max-w-4xl px-6">
+            <h2 className="text-2xl font-bold text-neutral-900">
+              {stateName} small claims by county
+            </h2>
+            <p className="mt-3 text-neutral-600">
+              If your landlord ignores the demand letter, here&apos;s where you file
+              in {stateName} — with each county&apos;s court and filing fee.
+            </p>
+            <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+              {counties.map((c) => (
+                <li key={c.slug}>
+                  <Link
+                    href={`${statePath}/${c.slug}`}
+                    className="flex items-start gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-[#3B4CCA]/40 hover:bg-neutral-50"
+                  >
+                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#3B4CCA]" />
+                    <span>
+                      <span className="block font-semibold text-neutral-900">{c.name}</span>
+                      <span className="mt-0.5 block text-sm text-neutral-500">{c.filingFee}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* JSON-LD structured data — all derived from seo/config (single source of
+          truth), so it can't drift from the visible page or hardcode the domain. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(service) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
 
       {/* Disclaimer */}
       <footer className="border-t border-neutral-100 py-8">

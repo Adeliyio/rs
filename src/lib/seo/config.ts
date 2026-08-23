@@ -108,7 +108,16 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
       priority: 0.9,
       changeFrequency: 'monthly',
     },
-    counties: [],
+    // CA small-claims fees are statewide statutory: $30 (≤$1,500), $50
+    // (≤$5,000), $75 (≤$12,500). Verified against official .courts.ca.gov.
+    counties: [
+      { slug: 'los-angeles-county', name: 'Los Angeles County', courtName: 'Superior Court of California, County of Los Angeles — Small Claims Division', courtUrl: 'https://www.lacourt.ca.gov/pages/lp/small-claims', filingFee: '$30–$75 (by claim amount)', note: 'Free Small Claims Advisor; self-represented e-filing available.', verified: true, sourceUrl: 'https://www.lacourt.ca.gov/pages/lp/small-claims' },
+      { slug: 'san-francisco-county', name: 'San Francisco County', courtName: 'Superior Court of California, County of San Francisco — Small Claims', courtUrl: 'https://sf.courts.ca.gov/divisions/civil-division', filingFee: '$30–$75 (by claim amount)', note: 'Small Claims counter at 400 McAllister Street, Room 103.', verified: true, sourceUrl: 'https://sf.courts.ca.gov/divisions/civil-division' },
+      { slug: 'san-diego-county', name: 'San Diego County', courtName: 'Superior Court of California, County of San Diego — Small Claims Division', courtUrl: 'https://www.sdcourt.ca.gov/sdcourt/smallclaims2', filingFee: '$30–$75 (by claim amount)', note: 'Small Claims Legal Advisor by phone.', verified: true, sourceUrl: 'https://www.sdcourt.ca.gov/sdcourt/smallclaims2' },
+      { slug: 'sacramento-county', name: 'Sacramento County', courtName: 'Superior Court of California, County of Sacramento — Small Claims', courtUrl: 'https://www.saccourt.ca.gov/small-claims/', filingFee: '$30–$75 (by claim amount)', note: 'Filed at the Carol Miller Justice Center; Small Claims Advisory Clinic.', verified: true, sourceUrl: 'https://www.saccourt.ca.gov/small-claims/' },
+      { slug: 'orange-county', name: 'Orange County', courtName: 'Superior Court of California, County of Orange — Small Claims', courtUrl: 'https://www.occourts.org/divisions/small-claims', filingFee: '$30–$75 (by claim amount)', note: 'File at the Central Justice Center, Santa Ana; e-file or drop-box.', verified: true, sourceUrl: 'https://www.occourts.org/divisions/small-claims' },
+      { slug: 'santa-clara-county', name: 'Santa Clara County', courtName: 'Superior Court of California, County of Santa Clara — Small Claims', courtUrl: 'https://santaclara.courts.ca.gov/self-help/self-help-topics/self-help-small-claims', filingFee: '$30–$75 (by claim amount)', note: 'Small Claims Clerk at the Downtown Superior Court, San Jose.', verified: true, sourceUrl: 'https://santaclara.courts.ca.gov/self-help/self-help-topics/self-help-small-claims' },
+    ],
   },
   {
     code: 'TX',
@@ -126,7 +135,21 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
       priority: 0.9,
       changeFrequency: 'monthly',
     },
-    counties: [],
+    // Texas has no separate small-claims court — claims are filed in Justice of
+    // the Peace (JP) courts, limit $20,000 (Gov't Code §27.031). The $54 base
+    // filing fee is statewide; service of citation is separate and per-defendant,
+    // varying by county. Dallas & Bexar service amounts are verified; Tarrant &
+    // Travis carry only the verified $54 base (service add-on unconfirmed).
+    // Harris & Collin fee pages were network-blocked from the researcher — both
+    // stay verified:false until a human confirms the fee.
+    counties: [
+      { slug: 'dallas-county', name: 'Dallas County', courtName: 'Dallas County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.dallascounty.org/government/jpcourts/', filingFee: '$54 filing + $80 service per defendant (~$134)', note: 'Money-only claims up to $20,000. Mandatory e-filing at JP 1-1 since March 2025 (eFileTexas.gov). File in the precinct where the defendant resides.', verified: true, sourceUrl: 'https://www.dallascounty.org/government/jpcourts/1-1/filing-fees.php' },
+      { slug: 'bexar-county', name: 'Bexar County (San Antonio)', courtName: 'Bexar County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.bexar.org/3395/Civil-Division', filingFee: '$54 filing + $92 service per party', note: 'Claims up to $20,000 (the county site’s older $10,000 figure is stale). File in the correct precinct; e-file via eFileTexas.gov.', verified: true, sourceUrl: 'https://www.bexar.org/3164/Filing-Fees' },
+      { slug: 'tarrant-county', name: 'Tarrant County (Fort Worth)', courtName: 'Tarrant County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.tarrantcountytx.gov/en/justices-of-the-peace.html', filingFee: '$54 filing (+ county service of citation)', note: 'Claims up to $20,000. Service of citation is charged separately per defendant — confirm the current amount with the court. File in the correct precinct; e-file via eFileTexas.gov.', verified: true, sourceUrl: 'https://www.tarrantcountytx.gov/en/justices-of-the-peace.html' },
+      { slug: 'travis-county', name: 'Travis County (Austin)', courtName: 'Travis County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.traviscountytx.gov/justices-of-the-peace', filingFee: '$54 filing (+ county service of citation)', note: 'Claims up to $20,000. Service of citation is charged separately per defendant — confirm the current amount with the court. File in the correct precinct; e-file via eFileTexas.gov.', verified: true, sourceUrl: 'https://www.traviscountytx.gov/justices-of-the-peace' },
+      { slug: 'harris-county', name: 'Harris County (Houston)', courtName: 'Harris County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.jp.hctx.net/', filingFee: 'Confirm with court', note: 'Claims up to $20,000. Service performed by Harris County Constables (separate per-defendant fee).', verified: false, sourceUrl: 'https://www.jp.hctx.net/civil/filing.htm' },
+      { slug: 'collin-county', name: 'Collin County', courtName: 'Collin County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.collincountytx.gov/Courts/Justices-Peace/civil-suits', filingFee: '$54 filing + $15 citation + $75 service per defendant (~$144)', note: 'Claims up to $20,000. Four JP precincts; all accept e-filing via eFileTexas.gov. Fees per the county’s FY2026 Adopted Fee Schedule.', verified: true, sourceUrl: 'https://www.collincountytx.gov/docs/default-source/budget-and-finance/documents/fy-2026-adopted-fee-schedule-by-department.pdf' },
+    ],
   },
   {
     code: 'NY',
@@ -144,7 +167,16 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
       priority: 0.9,
       changeFrequency: 'monthly',
     },
-    counties: [],
+    // NYC Civil Court small-claims fee: $15 (≤$1,000) / $20 (>$1,000). NYC
+    // boroughs cap at $10,000; Nassau District & Buffalo City courts at $5,000.
+    counties: [
+      { slug: 'manhattan', name: 'Manhattan (New York County)', courtName: 'NYC Civil Court, Small Claims Part', courtUrl: 'https://ww2.nycourts.gov/courts/nyc/smallclaims/index.shtml', filingFee: '$15–$20 (by claim amount)', note: '111 Centre St; small-claims trials are typically evening ("Night Court").', verified: true, sourceUrl: 'https://www.nycourts.gov/node/1051' },
+      { slug: 'brooklyn', name: 'Brooklyn (Kings County)', courtName: 'NYC Civil Court, Small Claims Part', courtUrl: 'https://ww2.nycourts.gov/courts/nyc/smallclaims/index.shtml', filingFee: '$15–$20 (by claim amount)', note: '141 Livingston St, Brooklyn.', verified: true, sourceUrl: 'https://www.nycourts.gov/node/1051' },
+      { slug: 'queens', name: 'Queens County', courtName: 'NYC Civil Court, Small Claims Part', courtUrl: 'https://ww2.nycourts.gov/courts/nyc/smallclaims/index.shtml', filingFee: '$15–$20 (by claim amount)', note: '89-17 Sutphin Blvd, Jamaica.', verified: true, sourceUrl: 'https://www.nycourts.gov/node/1051' },
+      { slug: 'bronx', name: 'Bronx County', courtName: 'NYC Civil Court, Small Claims Part', courtUrl: 'https://ww2.nycourts.gov/courts/nyc/smallclaims/index.shtml', filingFee: '$15–$20 (by claim amount)', note: '851 Grand Concourse, Bronx.', verified: true, sourceUrl: 'https://www.nycourts.gov/node/1051' },
+      { slug: 'nassau-county', name: 'Nassau County', courtName: 'Nassau County District Court, Small Claims Department', courtUrl: 'https://ww2.nycourts.gov/COURTS/10JD/nassau/district-smallclaims.shtml', filingFee: '$15–$20 (claims up to $5,000)', note: 'First District Court, 99 Main Street, Hempstead. Limit $5,000.', verified: true, sourceUrl: 'https://www.nycourts.gov/courts/10th-jd-nassau/nassau-county-district-court/nassau-district-court-case-types' },
+      { slug: 'erie-county-buffalo', name: 'Erie County (Buffalo)', courtName: 'Buffalo City Court, Small Claims Part', courtUrl: 'https://ww2.nycourts.gov/courts/8jd/Erie/bccsmclaims.shtml', filingFee: '$15–$20 (claims up to $5,000)', note: '50 Delaware Ave, Buffalo. Limit $5,000. Towns outside Buffalo use Justice Courts ($3,000).', verified: true, sourceUrl: 'https://ww2.nycourts.gov/courts/8jd/Erie/bccsmclaims.shtml' },
+    ],
   },
   {
     code: 'FL',
@@ -162,7 +194,18 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
       priority: 0.9,
       changeFrequency: 'monthly',
     },
-    counties: [],
+    // FL small-claims fees are statewide statutory (§34.041): $55/$80/$175/$300
+    // by claim amount. Miami-Dade, Broward, Orange verified against official
+    // clerk sources; Palm Beach, Hillsborough, Duval flagged unverified (their
+    // official fee pages blocked the crawler — verify before shipping those).
+    counties: [
+      { slug: 'miami-dade-county', name: 'Miami-Dade County', courtName: 'Miami-Dade County Court, Small Claims Division', courtUrl: 'https://www.miamidadeclerk.gov/clerk/small-claims.page', filingFee: '$55–$300 (by claim amount)', note: 'E-file via the Florida Courts E-Filing Portal.', verified: true, sourceUrl: 'https://www.miamidadeclerk.gov/library/small_claims/881-Web.pdf' },
+      { slug: 'broward-county', name: 'Broward County', courtName: 'Broward County Court, County Civil / Small Claims', courtUrl: 'https://www.browardclerk.org/Divisions/CountyCivil', filingFee: '$55–$300 (by claim amount)', note: 'Courthouse: 201 SE 6th St, Fort Lauderdale.', verified: true, sourceUrl: 'https://www.browardclerk.org/GeneralInformation/FeesAndCosts' },
+      { slug: 'orange-county', name: 'Orange County (Orlando)', courtName: 'Orange County Court, Small Claims Division', courtUrl: 'https://www.myorangeclerk.com/Divisions/Civil/Small-Claims', filingFee: '$55–$300 (by claim amount)', note: 'Self Help Center; 425 N. Orange Ave., Orlando.', verified: true, sourceUrl: 'https://www.myorangeclerk.com/Divisions/Civil/Small-FAQs' },
+      { slug: 'palm-beach-county', name: 'Palm Beach County', courtName: 'Palm Beach County Court, County Civil — Small Claims', courtUrl: 'https://www.mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims', filingFee: '$55–$300 (by claim amount)', verified: false, sourceUrl: 'https://www.mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims' },
+      { slug: 'hillsborough-county', name: 'Hillsborough County (Tampa)', courtName: 'Hillsborough County Court, Small Claims', courtUrl: 'https://hillsclerk.com/About-Us/Fees-and-Fines', filingFee: '$55–$300 (by claim amount)', verified: false, sourceUrl: 'https://hillsclerk.com/About-Us/Fees-and-Fines' },
+      { slug: 'duval-county', name: 'Duval County (Jacksonville)', courtName: 'Duval County Court, Small Claims', courtUrl: 'https://www.duvalclerk.com/departments/civil-court-services/small-claims', filingFee: '$55–$300 (by claim amount)', verified: false, sourceUrl: 'https://www.duvalclerk.com/about/fee-schedules' },
+    ],
   },
 ];
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { ConvexReactClient } from 'convex/react';
 import { ConvexAuthNextjsProvider } from '@convex-dev/auth/nextjs';
 

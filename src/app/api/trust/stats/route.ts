@@ -19,10 +19,25 @@ export const fetchCache = 'force-no-store';
 
 const MIN_CASES_FOR_DISPLAY = 50;
 
-export async function GET() {
+/**
+ * Shape of the service.trustStats result. The service wrapper is annotated
+ * `Promise<any>` to break Convex's circular type inference (TS2589), so we
+ * re-establish the concrete type at this boundary.
+ */
+interface TrustStats {
+  depositCompleted: number;
+  subscriptionCompleted: number;
+  recoveryCount: number;
+  totalRecovered: number;
+  jurisdictionsCovered: number;
+}
+
+export async function GET(): Promise<NextResponse> {
   try {
     const convex = createServiceConvexClient();
-    const s = await convex.query(api.service.trustStats, { secret: serviceSecret() });
+    const s = (await convex.query(api.service.trustStats, {
+      secret: serviceSecret(),
+    })) as TrustStats;
 
     const depositTotal = s.depositCompleted;
     const subscriptionTotal = s.subscriptionCompleted;

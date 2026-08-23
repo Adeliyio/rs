@@ -13,7 +13,7 @@ import { checkRateLimit } from '@/lib/rate-limit';
 export async function checkAuthRateLimit(
   bucket: 'login' | 'signup' | 'reset',
 ): Promise<{ allowed: boolean }> {
-  const h = await headers();
+  const h = headers();
   const cf = h.get('cf-connecting-ip');
   const fwd = h.get('x-forwarded-for');
   const ip = cf ?? (fwd ? fwd.split(',')[0]!.trim() : h.get('x-real-ip') ?? 'unknown');
