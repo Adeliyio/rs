@@ -39,6 +39,24 @@ const PUBLIC_PREFIXES = [
   '/api/keep-alive',
 ];
 
+/**
+ * Public metadata / well-known files that MUST be crawlable and never gated
+ * behind auth. These are Next.js metadata routes (app/sitemap.ts, robots.ts,
+ * llms.txt, manifest, OG/social images) — redirecting them to /login makes the
+ * site invisible to search engines and breaks social previews.
+ */
+const PUBLIC_METADATA_FILES = [
+  '/sitemap.xml',
+  '/robots.txt',
+  '/llms.txt',
+  '/manifest.json',
+  '/manifest.webmanifest',
+  '/opengraph-image',
+  '/twitter-image',
+  '/apple-icon',
+  '/icon.svg',
+];
+
 /** Pages that should only be served on the app subdomain. */
 const APP_ONLY_PREFIXES = [
   '/case',
@@ -59,6 +77,7 @@ const ROOT_HOSTNAME = process.env.ROOT_HOSTNAME ?? 'resolvaio.com';
 function isPublicPath(pathname: string): boolean {
   return (
     PUBLIC_ROUTES.includes(pathname) ||
+    PUBLIC_METADATA_FILES.includes(pathname) ||
     PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
     pathname === '/api/health'
   );

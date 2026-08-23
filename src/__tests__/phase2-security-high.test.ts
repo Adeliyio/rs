@@ -620,9 +620,23 @@ describe('SEC-25: Marketing SEO pages — public access', () => {
       '/api/waitlist',
     ];
 
+    // Public metadata / well-known files — must be crawlable, never auth-gated.
+    const PUBLIC_METADATA_FILES = [
+      '/sitemap.xml',
+      '/robots.txt',
+      '/llms.txt',
+      '/manifest.json',
+      '/manifest.webmanifest',
+      '/opengraph-image',
+      '/twitter-image',
+      '/apple-icon',
+      '/icon.svg',
+    ];
+
     function isPublicPath(pathname: string): boolean {
       return (
         PUBLIC_ROUTES.includes(pathname) ||
+        PUBLIC_METADATA_FILES.includes(pathname) ||
         PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
         pathname === '/api/health'
       );
@@ -662,6 +676,31 @@ describe('SEC-25: Marketing SEO pages — public access', () => {
 
     test('/api/waitlist is public', () => {
       expect(isPublicPath('/api/waitlist')).toBe(true);
+    });
+
+    // Regression: these metadata routes were being redirected to /login by the
+    // catch-all protected matcher, which would make the site uncrawlable and
+    // break social previews in production. They must be public.
+    test('/sitemap.xml is public (crawlable)', () => {
+      expect(isPublicPath('/sitemap.xml')).toBe(true);
+    });
+
+    test('/robots.txt is public (crawlable)', () => {
+      expect(isPublicPath('/robots.txt')).toBe(true);
+    });
+
+    test('/llms.txt is public (crawlable)', () => {
+      expect(isPublicPath('/llms.txt')).toBe(true);
+    });
+
+    test('/manifest.json is public', () => {
+      expect(isPublicPath('/manifest.json')).toBe(true);
+    });
+
+    test('middleware source declares PUBLIC_METADATA_FILES', () => {
+      expect(source).toContain('PUBLIC_METADATA_FILES');
+      expect(source).toContain("'/sitemap.xml'");
+      expect(source).toContain("'/robots.txt'");
     });
 
     test('/dashboard is NOT public', () => {
