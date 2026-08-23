@@ -158,3 +158,104 @@
     @apply py-16 sm:py-20 px-6;
   }
 }
+
+/* ==================================================================== */
+/*  Landing-page glass system (restrained glassmorphism)                */
+/*  Scoped tokens + utilities. Deep indigo accent over warm off-white.  */
+/*  Depth from light + soft shadow — NOT frost-everywhere.              */
+/* ==================================================================== */
+@layer utilities {
+  :root {
+    --glass-accent: #3b4cca;            /* deep indigo-blue — the one accent */
+    --glass-accent-ink: #2c3aa8;
+    --glass-accent-soft: #e9ebfb;
+    --glass-fill: rgba(255, 255, 255, 0.55);
+    --glass-fill-strong: rgba(255, 255, 255, 0.72);
+    --glass-stroke: rgba(255, 255, 255, 0.7);
+    --glass-shadow: 0 8px 32px rgba(17, 17, 17, 0.08), 0 2px 8px rgba(17, 17, 17, 0.04);
+    --aurora-sand: #ece7dc;
+    --aurora-indigo: #dfe2f6;
+  }
+
+  /* The ambient background — a quiet single-hue aurora behind the page.  */
+  /* Two soft blobs, slow drift; this is what the glass refracts.         */
+  .aurora {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--aurora-sand);
+  }
+  .aurora::before,
+  .aurora::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.7;
+    will-change: transform;
+  }
+  .aurora::before {
+    width: 55vw;
+    height: 55vw;
+    left: -10vw;
+    top: -12vw;
+    background: radial-gradient(circle at 30% 30%, var(--aurora-indigo), transparent 65%);
+    animation: aurora-drift-a 34s ease-in-out infinite alternate;
+  }
+  .aurora::after {
+    width: 48vw;
+    height: 48vw;
+    right: -8vw;
+    bottom: -14vw;
+    background: radial-gradient(circle at 70% 70%, #eee6d6, transparent 62%);
+    animation: aurora-drift-b 40s ease-in-out infinite alternate;
+  }
+  @keyframes aurora-drift-a {
+    from { transform: translate3d(0, 0, 0) scale(1); }
+    to   { transform: translate3d(6vw, 4vw, 0) scale(1.12); }
+  }
+  @keyframes aurora-drift-b {
+    from { transform: translate3d(0, 0, 0) scale(1.05); }
+    to   { transform: translate3d(-5vw, -3vw, 0) scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .aurora::before, .aurora::after { animation: none; }
+  }
+
+  /* The glass recipe — one class, used on ~2–3 focal surfaces only.      */
+  /* Top-lit inset edge is the detail that sells real glass.              */
+  .glass {
+    background: var(--glass-fill);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid var(--glass-stroke);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+  }
+  .glass-strong {
+    background: var(--glass-fill-strong);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    backdrop-filter: blur(20px) saturate(1.5);
+    border: 1px solid var(--glass-stroke);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    border-radius: 22px;
+  }
+  /* Fallback for browsers without backdrop-filter (older Firefox etc.):  */
+  /* keep the panes readable with a near-solid fill.                      */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass { background: rgba(255, 255, 255, 0.9); }
+    .glass-strong { background: rgba(255, 255, 255, 0.95); }
+  }
+
+  /* A faint accent glow to sit behind a focal glass card. */
+  .accent-glow {
+    position: absolute;
+    inset: -12% -8%;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(59, 76, 202, 0.16), transparent 70%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+}

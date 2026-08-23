@@ -17,6 +17,13 @@ import {
 import { TrustSignals } from '@/components/trust-signals';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
 import { safeJsonLd } from '@/lib/safe-json-ld';
+import { Logo } from '@/components/logo';
+
+/** App subdomain base URL — prevents CORS errors from cross-origin RSC redirects.
+ *  In development (localhost), use empty string so links stay relative. */
+const APP_BASE = process.env.NEXT_PUBLIC_APP_URL
+  ? (process.env.NEXT_PUBLIC_APP_URL === 'http://localhost:3000' ? '' : process.env.NEXT_PUBLIC_APP_URL)
+  : 'https://app.resolvaio.com';
 
 export const metadata: Metadata = {
   title: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation | US Consumer Protection',
@@ -173,80 +180,146 @@ const STATES = [
 
 export default function HomePage(): React.JSX.Element {
   return (
-    <main className="min-h-screen bg-[#F7F7F5]">
+    <main className="relative min-h-screen">
+      {/* Ambient background — quiet single-hue aurora behind everything. */}
+      <div className="aurora" aria-hidden="true" />
+
+      {/* Content sits above the aurora. */}
+      <div className="relative z-10">
       {/* ============================================================ */}
-      {/*  NAV                                                         */}
+      {/*  NAV — glass                                                 */}
       {/* ============================================================ */}
-      <nav className="sticky top-0 z-40 border-b border-[#E8E8E5] bg-[#F7F7F5]/95 px-6 py-4 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <span className="text-lg font-semibold text-[#111]">Resolvaio</span>
+      <nav className="sticky top-0 z-40 px-4 pt-3 sm:px-6">
+        <div className="glass mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
+          <Logo />
           <div className="hidden items-center gap-8 text-[13px] sm:flex">
             <a href="#how-it-works" className="text-[#5F5F5F] transition-colors hover:text-[#111]">How It Works</a>
             <a href="#pricing" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Pricing</a>
             <ToolsDropdown />
             <a href="#faq" className="text-[#5F5F5F] transition-colors hover:text-[#111]">FAQ</a>
             <Link href="/login" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Sign In</Link>
-            <Link
-              href="/new"
-              className="rounded-lg bg-[#111] px-4 py-2 font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98]"
+            <a
+              href={`${APP_BASE}/new`}
+              className="rounded-lg bg-[#3B4CCA] px-4 py-2 font-medium text-white shadow-[0_2px_10px_rgba(59,76,202,0.35)] transition-all hover:bg-[#2C3AA8] active:scale-[0.98]"
             >
               Start Free Diagnostic
-            </Link>
+            </a>
           </div>
-          <Link
-            href="/new"
-            className="rounded-lg bg-[#111] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98] sm:hidden"
+          <a
+            href={`${APP_BASE}/new`}
+            className="rounded-lg bg-[#3B4CCA] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#2C3AA8] active:scale-[0.98] sm:hidden"
           >
             Start Free Diagnostic
-          </Link>
+          </a>
         </div>
       </nav>
 
       {/* ============================================================ */}
       {/*  HERO                                                        */}
       {/* ============================================================ */}
-      <section className="px-6 py-24 text-center sm:py-32">
-        <div className="mx-auto max-w-2xl">
-          <p className="mb-5 text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
-            Built for renters, subscribers, and anyone tired of getting ripped off
-          </p>
-          <h1 className="text-[42px] font-semibold leading-[1.1] tracking-tight text-[#111] sm:text-[56px]">
-            Demand your deposit back.
-            <br />
-            Cancel the subscription.
-            <br />
-            <span className="text-[#5F5F5F]">Cite the actual law.</span>
-          </h1>
-          <p className="mt-8 text-[16px] leading-[1.7] text-[#5F5F5F]">
-            Resolvaio writes demand letters and cancellation emails grounded in
-            verified state-specific statutes &mdash; not generic templates your
-            landlord has seen a hundred times, and not AI tools inventing case
-            numbers that don&apos;t exist.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#111] px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-[#222] active:scale-[0.98]"
-            >
-              Start Free Diagnostic <ChevronRight className="h-4 w-4" />
-            </Link>
-            <a
-              href="#the-difference"
-              className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#5F5F5F] transition-colors hover:text-[#111]"
-            >
-              See a sample letter <ChevronRight className="h-4 w-4" />
-            </a>
+      <section className="px-6 py-20 sm:py-28">
+        <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
+          {/* Left — copy */}
+          <div className="text-center lg:text-left">
+            <p className="mb-5 text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+              Built for renters, subscribers, and anyone tired of getting ripped off
+            </p>
+            <h1 className="text-[38px] font-semibold leading-[1.1] tracking-tight text-[#111] sm:text-[50px]">
+              Demand your deposit back.
+              <br />
+              Cancel the subscription.
+              <br />
+              <span className="text-[#3B4CCA]">Cite the actual law.</span>
+            </h1>
+            <p className="mt-8 text-[16px] leading-[1.7] text-[#5F5F5F]">
+              Resolvaio writes demand letters and cancellation emails grounded in
+              verified state-specific statutes &mdash; not generic templates your
+              landlord has seen a hundred times, and not AI tools inventing case
+              numbers that don&apos;t exist.
+            </p>
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+              <a
+                href={`${APP_BASE}/new`}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] hover:shadow-[0_6px_20px_rgba(59,76,202,0.5)] active:scale-[0.98]"
+              >
+                Start Free Diagnostic <ChevronRight className="h-4 w-4" />
+              </a>
+              <a
+                href="#the-difference"
+                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#5F5F5F] transition-colors hover:text-[#111]"
+              >
+                See a sample letter <ChevronRight className="h-4 w-4" />
+              </a>
+            </div>
+            <p className="mt-6 text-[12px] text-[#8A8A8A]">
+              Writing assistance grounded in verified law. Not legal advice. Not a law firm.
+            </p>
           </div>
-          <p className="mt-6 text-[12px] text-[#8A8A8A]">
-            Writing assistance grounded in verified law. Not legal advice. Not a law firm.
-          </p>
+
+          {/* Right — sample demand-letter mockup (the credibility proof) */}
+          <div className="relative hidden items-center justify-center lg:flex">
+            <div className="accent-glow" aria-hidden="true" />
+            {/* Floating glass frame around a realistic letter preview */}
+            <div className="glass-strong w-full max-w-[380px] rotate-[-1.2deg] p-3 shadow-[0_20px_60px_rgba(17,17,17,0.14)]">
+              {/* Window chrome */}
+              <div className="flex items-center gap-1.5 px-2 pb-2.5 pt-1">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#E4E4E1]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#E4E4E1]" />
+                <span className="h-2.5 w-2.5 rounded-full bg-[#E4E4E1]" />
+                <span className="ml-2 text-[10px] font-medium tracking-wide text-[#9A9A96]">
+                  demand-letter.pdf
+                </span>
+              </div>
+              {/* The "paper" */}
+              <div className="rounded-xl bg-white px-6 py-6 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
+                <p className="text-[10px] font-medium uppercase tracking-widest text-[#9A9A96]">
+                  Via Certified Mail
+                </p>
+                <p className="mt-3 text-[12px] font-semibold text-[#111]">
+                  Re: Return of Security Deposit
+                </p>
+                <div className="mt-3 space-y-1.5" aria-hidden="true">
+                  <div className="h-2 w-full rounded bg-[#EFEFEC]" />
+                  <div className="h-2 w-[92%] rounded bg-[#EFEFEC]" />
+                  <div className="h-2 w-[78%] rounded bg-[#EFEFEC]" />
+                </div>
+                {/* The highlighted real statute — the whole point */}
+                <div className="mt-4 rounded-lg border border-[#D9DDF6] bg-[#EEF0FB] px-3 py-2.5">
+                  <p className="text-[11px] leading-[1.6] text-[#2C3AA8]">
+                    Under <span className="font-semibold">Cal. Civ. Code &sect; 1950.5(g)</span>,
+                    a landlord must return the deposit within{' '}
+                    <span className="font-semibold">21 days</span> of move-out, itemized in
+                    writing.
+                  </p>
+                </div>
+                <div className="mt-4 space-y-1.5" aria-hidden="true">
+                  <div className="h-2 w-full rounded bg-[#EFEFEC]" />
+                  <div className="h-2 w-[85%] rounded bg-[#EFEFEC]" />
+                </div>
+                {/* Amount demanded */}
+                <div className="mt-4 flex items-center justify-between border-t border-[#F0F0ED] pt-3">
+                  <span className="text-[11px] text-[#5F5F5F]">Amount demanded</span>
+                  <span className="text-[15px] font-semibold text-[#111]">$2,400.00</span>
+                </div>
+              </div>
+              {/* Verified-citation stamp */}
+              <div className="mt-3 flex items-center gap-2 px-2 pb-1">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#3B4CCA]">
+                  <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                </span>
+                <span className="text-[11px] font-medium text-[#5F5F5F]">
+                  Citation verified against the current statute
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ============================================================ */}
       {/*  THE DIFFERENCE (before / after)                             */}
       {/* ============================================================ */}
-      <section id="the-difference" className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section id="the-difference" className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             See the Difference
@@ -308,7 +381,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  THE PROBLEM                                                 */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             The Problem
@@ -362,7 +435,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       <section
         id="how-it-works"
-        className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24"
+        className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24"
       >
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
@@ -394,7 +467,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  CITATION ENGINE                                             */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             The Citation Engine
@@ -463,7 +536,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  CANCELLATION SEQUENCE                                       */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             The Cancellation Sequence
@@ -530,7 +603,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  TRUST STACK                                                 */}
       {/* ============================================================ */}
-      <section id="trust" className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section id="trust" className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             The Trust Stack
@@ -596,7 +669,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  STATE COVERAGE                                              */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             Where We Operate
@@ -634,7 +707,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  PRICING                                                     */}
       {/* ============================================================ */}
-      <section id="pricing" className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section id="pricing" className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             Pricing
@@ -665,16 +738,19 @@ export default function HomePage(): React.JSX.Element {
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Deadline timeline</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> All 50 states</li>
               </ul>
-              <Link
-                href="/new?wedge=subscription"
+              <a
+                href={`${APP_BASE}/new?wedge=subscription`}
                 className="mt-8 block rounded-lg border border-[#E8E8E5] py-3 text-center text-[14px] font-semibold text-[#111] transition-all hover:border-[#111]/20 hover:bg-[#F7F7F5] active:scale-[0.98]"
               >
                 Start Free Diagnostic
-              </Link>
+              </a>
             </div>
 
-            {/* $49 — highlighted */}
-            <div className="rounded-2xl border-2 border-primary bg-white p-8 shadow-premium">
+            {/* $49 — highlighted focal glass card */}
+            <div className="glass-strong relative border-[#C7CDF3] bg-[rgba(238,240,251,0.72)] p-8 shadow-[0_16px_48px_rgba(59,76,202,0.16)]">
+              <span className="absolute -top-3 left-6 rounded-full bg-[#3B4CCA] px-3 py-1 text-[11px] font-semibold tracking-wide text-white shadow-[0_2px_8px_rgba(59,76,202,0.4)]">
+                MOST CHOSEN
+              </span>
               <h3 className="text-[16px] font-semibold text-[#111]">
                 Single Deposit Case
               </h3>
@@ -694,12 +770,12 @@ export default function HomePage(): React.JSX.Element {
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Outcome tracking at T+14, T+30, T+60</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Refund for defective outputs</li>
               </ul>
-              <Link
-                href="/new?wedge=deposit"
-                className="mt-8 block rounded-lg bg-[#111] py-3 text-center text-[14px] font-semibold text-white transition-all hover:bg-[#222] active:scale-[0.98]"
+              <a
+                href={`${APP_BASE}/new?wedge=deposit`}
+                className="mt-8 block rounded-lg bg-[#3B4CCA] py-3 text-center text-[14px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] active:scale-[0.98]"
               >
                 Start Deposit Case
-              </Link>
+              </a>
             </div>
 
             {/* Unlimited */}
@@ -723,12 +799,12 @@ export default function HomePage(): React.JSX.Element {
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Priority generation</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> All cases in one dashboard</li>
               </ul>
-              <Link
-                href="/new?plan=unlimited"
+              <a
+                href={`${APP_BASE}/new?plan=unlimited`}
                 className="mt-8 block rounded-lg border border-[#E8E8E5] py-3 text-center text-[14px] font-semibold text-[#111] transition-all hover:border-[#111]/20 hover:bg-[#F7F7F5] active:scale-[0.98]"
               >
                 Go Unlimited
-              </Link>
+              </a>
             </div>
           </div>
 
@@ -748,7 +824,7 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FAQ                                                         */}
       {/* ============================================================ */}
-      <section id="faq" className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section id="faq" className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl">
           <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
             FAQ
@@ -776,8 +852,9 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FINAL CTA                                                   */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] px-6 py-24 text-center sm:py-32">
-        <div className="mx-auto max-w-xl">
+      <section className="px-6 py-24 sm:py-32">
+        <div className="glass-strong relative mx-auto max-w-2xl overflow-hidden px-8 py-14 text-center sm:px-14">
+          <div className="accent-glow" aria-hidden="true" />
           <h2 className="text-[32px] font-semibold tracking-tight text-[#111] sm:text-[40px]">
             Most disputes stall before anything is sent.
           </h2>
@@ -786,12 +863,12 @@ export default function HomePage(): React.JSX.Element {
             The statutes are verified. The letter is yours to review before you
             send.
           </p>
-          <Link
-            href="/new"
-            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-[#111] px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-[#222] active:scale-[0.98]"
+          <a
+            href={`${APP_BASE}/new`}
+            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] hover:shadow-[0_6px_20px_rgba(59,76,202,0.5)] active:scale-[0.98]"
           >
             Start Free Diagnostic <ChevronRight className="h-4 w-4" />
-          </Link>
+          </a>
           <p className="mt-6 text-[12px] text-[#8A8A8A]">
             No card required. See your statutes before you pay. See our refund
             policy.
@@ -806,8 +883,8 @@ export default function HomePage(): React.JSX.Element {
         <div className="mx-auto max-w-4xl">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-[15px] font-semibold text-[#111]">Resolvaio</p>
-              <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-[#8A8A8A]">
+              <Logo />
+              <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-[#8A8A8A]">
                 Demand letters and cancellation emails grounded in verified
                 consumer protection law. Writing assistance, not legal advice.
               </p>
@@ -821,7 +898,7 @@ export default function HomePage(): React.JSX.Element {
               </div>
               <div className="space-y-2.5">
                 <p className="font-semibold text-[#5F5F5F]">Account</p>
-                <Link href="/new" className="block transition-colors hover:text-[#111]">Start Diagnostic</Link>
+                <a href={`${APP_BASE}/new`} className="block transition-colors hover:text-[#111]">Start Diagnostic</a>
                 <Link href="/login" className="block transition-colors hover:text-[#111]">Sign In</Link>
                 <Link href="/about" className="block transition-colors hover:text-[#111]">About</Link>
               </div>
@@ -853,6 +930,7 @@ export default function HomePage(): React.JSX.Element {
           </div>
         </div>
       </footer>
+      </div>{/* /content wrapper */}
 
       {/* JSON-LD: Organization */}
       <script
