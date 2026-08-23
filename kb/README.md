@@ -45,9 +45,13 @@ kb/
 
 2. **Every entry carries `last_verified` and `verified_by`.** Entries marked `NEEDS_SECOND_PASS_REVIEW` have been initially researched but NOT verified against primary sources by the named KB owner.
 
-3. **Quarterly review cycle.** Automated staleness alert past 180 days.
+3. **Quarterly review cycle.** Each entry sets `next_review_due`. Two automated safeguards enforce this:
+   - **Runtime review-due alert** — the weekly law-monitor worker (`src/workers/law-monitor.worker.ts`) scans every entry and emails admins a digest (`ADMIN_EMAILS`) when `next_review_due` has passed, or, if that field is missing, when `last_verified` is older than 180 days. This realizes the cadence on a schedule, independent of whether a content change was detected.
+   - **Build-time staleness gate** — `scripts/validate-kb.ts` (CI) warns when `last_verified` is past 180 days and hard-fails the build past 365.
 
 4. **Reported-error workflow:** Triage within 72 hours; affected artifact corrected or temporarily withdrawn within 7 days.
+
+5. **SEO pages track the KB.** The marketing pages (`/deposit/{state}` and county pages) restate a few KB facts (return deadline, small-claims limit, statute citation). `scripts/validate-kb.ts` cross-checks `src/lib/seo/config.ts` against each `kb-entry.json` and hard-fails on any drift — so a KB update forces the SEO page to be corrected in the same change. The KB is the authority; the SEO config may not contradict it.
 
 ### Verification Process
 

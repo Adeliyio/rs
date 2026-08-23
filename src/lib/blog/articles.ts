@@ -407,7 +407,7 @@ export const ARTICLES: BlogArticle[] = [
       },
       {
         heading: 'Small Claims Court Limits',
-        body: '\u2022 Texas: $20,000 (Justice Court \u2014 highest of the four)\n\u2022 California: $10,000 (individuals) / $5,000 (businesses)\n\u2022 Florida: $10,000 (raised from $8,000 in 2024)\n\u2022 New York: $10,000 (NYC) / $5,000 (outside NYC)\n\nFiling fees range from $30\u2013$100 across all four states. None require a lawyer.',
+        body: '\u2022 Texas: $20,000 (Justice Court \u2014 highest of the four)\n\u2022 California: $12,500 (individuals) / $6,250 (businesses)\n\u2022 Florida: $10,000 (raised from $8,000 in 2024)\n\u2022 New York: $10,000 (NYC) / $5,000 (outside NYC)\n\nFiling fees range from $30\u2013$100 across all four states. None require a lawyer.',
       },
       {
         heading: 'Unique Features by State',

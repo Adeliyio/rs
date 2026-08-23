@@ -185,7 +185,7 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
     statuteCitation: 'Fla. Stat. § 83.49',
     statuteUrl: 'http://www.leg.state.fl.us/statutes/index.cfm?App_mode=Display_Statute&URL=0000-0099/0083/Sections/0083.49.html',
     returnDeadlineDays: 15,
-    smallClaimsLimit: '$8,000',
+    smallClaimsLimit: '$10,000',
     page: {
       path: '/deposit/florida',
       title: 'Get your security deposit back in Florida',

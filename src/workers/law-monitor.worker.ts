@@ -20,6 +20,7 @@ import { AI_CONFIG } from '@/config/ai.config';
 import { searchTavily } from '@/lib/ai/tavily-client';
 import { loadKbEntry } from '@/lib/kb/loader';
 import { enqueueEmailDelivery } from '@/lib/queue/enqueue';
+import { findEntriesDueForReview } from './lib/review-due';
 import {
   lawMonitorJobSchema,
   type LawMonitorJobPayload,
@@ -36,6 +37,17 @@ const CONFIDENCE_THRESHOLD = 0.7;
 
 /** Don't re-alert on the same statute within this many days. */
 const DEDUP_WINDOW_DAYS = 7;
+
+/**
+ * Parse the ADMIN_EMAILS env into a clean list. Returns [] when unset — callers
+ * MUST log loudly in that case so alerts are never silently dropped.
+ */
+function getAdminEmails(): string[] {
+  return (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+}
 
 /* ------------------------------------------------------------------ */
 /*  LLM analysis types                                                */
@@ -293,10 +305,17 @@ async function processLawMonitor(job: Job<LawMonitorJobPayload>): Promise<void> 
           }
 
           // Enqueue admin notification email
-          const adminEmails = (process.env.ADMIN_EMAILS ?? '')
-            .split(',')
-            .map((e) => e.trim().toLowerCase())
-            .filter(Boolean);
+          const adminEmails = getAdminEmails();
+
+          if (adminEmails.length === 0) {
+            // Fix #3: never let a detected change be silent. The alert is still
+            // persisted (visible in the dashboard), but flag the missing config.
+            // eslint-disable-next-line no-console
+            console.error(
+              `[LawMonitor] ADMIN_EMAILS is not set — change detected for ${statute.citation} ` +
+                'but NO email will be sent. Set ADMIN_EMAILS to receive alerts.',
+            );
+          }
 
           for (const adminEmail of adminEmails) {
             await enqueueEmailDelivery(
@@ -332,6 +351,44 @@ async function processLawMonitor(job: Job<LawMonitorJobPayload>): Promise<void> 
 
         // Rate-limit between statute checks to be a good API citizen
         await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
+
+    // Fix #2: after change-detection, flag entries overdue for human review and
+    // send admins a single digest. Only on scheduled runs (a manual/targeted run
+    // shouldn't spam the review digest).
+    if (payload.run_type === 'scheduled') {
+      const dueRows = findEntriesDueForReview(kbEntries);
+      if (dueRows.length > 0) {
+        const adminEmails = getAdminEmails();
+        if (adminEmails.length === 0) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `[LawMonitor] ${dueRows.length} KB entries are due for review but ADMIN_EMAILS ` +
+              'is not set — no review-due digest will be sent. Set ADMIN_EMAILS.',
+          );
+        }
+        for (const adminEmail of adminEmails) {
+          await enqueueEmailDelivery(
+            {
+              to: adminEmail,
+              subject: `[Review Due] ${dueRows.length} KB entr${dueRows.length === 1 ? 'y' : 'ies'} past review date`,
+              template_id: 'kb_review_due',
+              template_data: {
+                count: String(dueRows.length),
+                entries: dueRows.join('\n'),
+                dashboard_url: `${process.env.APP_URL ?? 'http://localhost:3000'}/admin`,
+              },
+            },
+            // One digest per admin per run (runId makes it idempotent).
+            `kb-review-due-${runId}-${adminEmail}`,
+          );
+        }
+        // eslint-disable-next-line no-console
+        console.log(`[LawMonitor] ${dueRows.length} KB entries due for review — digest enqueued`);
+      } else {
+        // eslint-disable-next-line no-console
+        console.log('[LawMonitor] No KB entries past their review date');
       }
     }
 

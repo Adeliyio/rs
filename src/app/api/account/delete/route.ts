@@ -67,6 +67,21 @@ export async function POST(request: Request) {
       }
     }
 
+    /* ---- Waitlist erasure (GDPR right to erasure) ----
+     * Waitlist rows are keyed by email, not userId, so they are outside the
+     * per-user cascade above. The old Supabase flow deleted them by email; this
+     * restores that so a deleted user leaves no waitlist record behind. */
+    if (user.email) {
+      try {
+        await convex.mutation(api.service.deleteWaitlistByEmail, {
+          secret,
+          email: user.email,
+        });
+      } catch {
+        // best-effort — do not block account deletion
+      }
+    }
+
     /* ---- Delete the auth user (signs them out) ---- */
     await convex.mutation(api.service.deleteUser, {
       secret,

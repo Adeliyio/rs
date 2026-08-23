@@ -46,16 +46,20 @@ yarn-error.log*
 !README.md
 !kb/**/*.md
 
-# Scripts (testing/deploy utilities — keep deploy script)
+# Scripts — ignore scratch/ops utilities by default, but TRACK the ones CI and
+# the pre-commit hook invoke (otherwise those gates fail on a clean checkout).
 scripts/*
 !scripts/deploy-vps.sh
+!scripts/validate-kb.ts
+!scripts/validate-claims.ts
+!scripts/scan-secrets.ts
+!scripts/scan-prohibited-phrases.ts
+!scripts/load-test.ts
 
-# Test files
+# Test files — the suite + config must be tracked so CI `pnpm test` runs.
+# (e2e/playwright stay ignored until that suite is committed.)
 e2e/
-vitest.config.ts
 playwright.config.ts
-src/**/__tests__/
-src/__tests__/
 
 # Images / screenshots
 *.png

@@ -44,6 +44,16 @@ if (!process.env.REDIS_URL) {
   );
 }
 
+if (!process.env.ADMIN_EMAILS) {
+  // eslint-disable-next-line no-console
+  console.error(
+    '[Workers] WARNING: ADMIN_EMAILS is not set. The law monitor will detect ' +
+    'statute changes and overdue KB reviews but send NO email — alerts will ' +
+    'only appear in the admin dashboard. Set ADMIN_EMAILS (comma-separated) ' +
+    'to receive them (e.g. legal@resolvaio.com,ops@resolvaio.com).',
+  );
+}
+
 // eslint-disable-next-line no-console
 console.log('[Workers] Starting all workers...');
 
