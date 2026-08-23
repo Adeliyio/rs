@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
 
+import { siteUrl } from '@/lib/seo/site';
 import { CookieConsent } from '@/components/cookie-consent';
 import { PlausibleAnalytics } from '@/components/analytics';
 import { ConvexClientProvider } from '@/components/convex-provider';
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   },
   description:
     'Demand letters and cancellation emails grounded in verified US consumer protection statutes. Security deposit recovery in California, Texas, New York, and Florida. Subscription cancellation in all 50 states.',
-  metadataBase: new URL('https://resolvaio.com'),
+  metadataBase: new URL(siteUrl()),
   icons: {
     icon: [
       { url: '/icon.svg', type: 'image/svg+xml' },
@@ -46,7 +47,7 @@ export const metadata: Metadata = {
       'Demand letters grounded in verified statutes. Security deposit recovery in CA, TX, NY, FL. Subscription cancellation in all 50 US states.',
   },
   alternates: {
-    canonical: 'https://resolvaio.com',
+    canonical: siteUrl(),
   },
   other: {
     'geo.region': 'US',

@@ -148,6 +148,16 @@ export default convexAuthNextjsMiddleware(async (request: NextRequest, { convexA
     }
   }
 
+  /* ---- Belt-and-braces noindex on the private app surface ---- */
+  // These paths are also left out of the sitemap and disallowed in robots.txt.
+  // The X-Robots-Tag header is the layer crawlers honour even without rendering
+  // HTML — so a private page can never leak into the index (three layers total).
+  if (isAppOnlyPath(pathname)) {
+    const res = NextResponse.next({ request });
+    res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    return res;
+  }
+
   return;
 });
 

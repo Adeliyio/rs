@@ -1,19 +1,14 @@
 import type { Metadata } from 'next';
 import { DepositStatePage } from '@/features/seo/deposit-state-page';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { JURISDICTIONS } from '@/lib/seo/config';
 
-export const metadata: Metadata = {
-  title: 'New York Security Deposit Recovery',
-  description:
-    'Recover your security deposit in New York. Demand letter grounded in N.Y. Gen. Oblig. Law §7-108 — 14-day return deadline. Writing assistance, not legal advice.',
-  openGraph: {
-    title: 'New York Security Deposit Recovery | Resolvaio',
-    description:
-      'Draft a demand letter citing N.Y. Gen. Oblig. Law §7-108. 14-day deadline to return your deposit.',
-  },
-  alternates: {
-    canonical: 'https://resolvaio.com/deposit/new-york',
-  },
-};
+const J = JURISDICTIONS.find((j) => j.code === 'NY')!;
+export const metadata: Metadata = buildMetadata({
+  title: J.page.title,
+  description: J.page.description,
+  path: J.page.path,
+});
 
 export default function NewYorkDepositPage() {
   return (

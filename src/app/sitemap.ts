@@ -1,55 +1,92 @@
 import type { MetadataRoute } from 'next';
 
 import { getAllSlugs } from '@/lib/blog/articles';
+import { absoluteUrl } from '@/lib/seo/site';
+import {
+  STATIC_PAGES,
+  VERTICALS,
+  JURISDICTIONS,
+  LEGAL_PAGES,
+  shippableCounties,
+  assertLocationGate,
+} from '@/lib/seo/config';
 
-const BASE_URL = 'https://resolvaio.com';
+/**
+ * Sitemap — the guest list of everything we want indexed, derived entirely from
+ * seo/config + siteUrl(). It deliberately EXCLUDES the private app surface
+ * (/app, /case, /new, /admin, /settings) — their absence is intentional.
+ *
+ * lastmod is the BUILD time: a rebuild is the moment content could have changed,
+ * so it's accurate, not guessed. County pages are nested BELOW their state
+ * (priority 0.7 vs 0.9) so a county slug can never shadow the state term, and
+ * only VERIFIED counties ship.
+ */
+
+const BUILD_TIME = new Date();
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  // Enforce the doorway-page gate at build time.
+  assertLocationGate();
 
-  /* ---- Static pages ---- */
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: BASE_URL, lastModified: now, changeFrequency: 'weekly', priority: 1.0 },
-    { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    { url: `${BASE_URL}/blog`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+  const entries: MetadataRoute.Sitemap = [];
 
-    // Deposit marketing pages
-    { url: `${BASE_URL}/deposit`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${BASE_URL}/deposit/california`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${BASE_URL}/deposit/texas`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${BASE_URL}/deposit/new-york`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
-    { url: `${BASE_URL}/deposit/florida`, lastModified: now, changeFrequency: 'monthly', priority: 0.9 },
+  /* ---- Static + tool + marketing pages ---- */
+  for (const p of STATIC_PAGES) {
+    entries.push({
+      url: absoluteUrl(p.path),
+      lastModified: BUILD_TIME,
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    });
+  }
 
-    // Subscription marketing
-    { url: `${BASE_URL}/subscription`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+  /* ---- Subscription verticals ---- */
+  for (const p of VERTICALS) {
+    entries.push({
+      url: absoluteUrl(p.path),
+      lastModified: BUILD_TIME,
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    });
+  }
 
-    // Tools
-    { url: `${BASE_URL}/tools/cancel-subscription`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${BASE_URL}/tools/deposit-deadline`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+  /* ---- Deposit jurisdictions + their verified county pages ---- */
+  for (const j of JURISDICTIONS) {
+    entries.push({
+      url: absoluteUrl(j.page.path),
+      lastModified: BUILD_TIME,
+      changeFrequency: j.page.changeFrequency,
+      priority: j.page.priority, // 0.9 — the parent term
+    });
+    for (const c of shippableCounties(j)) {
+      entries.push({
+        url: absoluteUrl(`${j.page.path}/${c.slug}`),
+        lastModified: BUILD_TIME,
+        changeFrequency: 'monthly',
+        priority: 0.7, // nested below the state so it never shadows it
+      });
+    }
+  }
 
-    // Cancel verticals
-    { url: `${BASE_URL}/cancel/gym`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/cancel/telecom`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/cancel/saas`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/cancel/streaming`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE_URL}/cancel/mobile-app`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
-
-    // Legal pages
-    { url: `${BASE_URL}/legal/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${BASE_URL}/legal/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${BASE_URL}/legal/cookies`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${BASE_URL}/legal/acceptable-use`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${BASE_URL}/legal/ai-disclosure`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${BASE_URL}/legal/accessibility`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
-  ];
+  /* ---- Legal pages ---- */
+  for (const path of LEGAL_PAGES) {
+    entries.push({
+      url: absoluteUrl(path),
+      lastModified: BUILD_TIME,
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    });
+  }
 
   /* ---- Blog articles ---- */
-  const blogPages: MetadataRoute.Sitemap = getAllSlugs().map((slug) => ({
-    url: `${BASE_URL}/blog/${slug}`,
-    lastModified: now,
-    changeFrequency: 'monthly' as const,
-    priority: 0.7,
-  }));
+  for (const slug of getAllSlugs()) {
+    entries.push({
+      url: absoluteUrl(`/blog/${slug}`),
+      lastModified: BUILD_TIME,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    });
+  }
 
-  return [...staticPages, ...blogPages];
+  return entries;
 }

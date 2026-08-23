@@ -1,19 +1,14 @@
 import type { Metadata } from 'next';
 import { DepositStatePage } from '@/features/seo/deposit-state-page';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { JURISDICTIONS } from '@/lib/seo/config';
 
-export const metadata: Metadata = {
-  title: 'Florida Security Deposit Recovery',
-  description:
-    'Recover your security deposit in Florida. Demand letter grounded in Fla. Stat. §83.49 — 15 to 30-day return deadline. Writing assistance, not legal advice.',
-  openGraph: {
-    title: 'Florida Security Deposit Recovery | Resolvaio',
-    description:
-      'Draft a demand letter citing Fla. Stat. §83.49. 15-30 day deadline to return your deposit.',
-  },
-  alternates: {
-    canonical: 'https://resolvaio.com/deposit/florida',
-  },
-};
+const J = JURISDICTIONS.find((j) => j.code === 'FL')!;
+export const metadata: Metadata = buildMetadata({
+  title: J.page.title,
+  description: J.page.description,
+  path: J.page.path,
+});
 
 export default function FloridaDepositPage() {
   return (

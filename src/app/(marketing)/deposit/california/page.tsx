@@ -1,19 +1,14 @@
 import type { Metadata } from 'next';
 import { DepositStatePage } from '@/features/seo/deposit-state-page';
+import { buildMetadata } from '@/lib/seo/metadata';
+import { JURISDICTIONS } from '@/lib/seo/config';
 
-export const metadata: Metadata = {
-  title: 'California Security Deposit Recovery',
-  description:
-    'Recover your security deposit in California. Demand letter grounded in Cal. Civ. Code §1950.5 — 21-day return deadline. Writing assistance, not legal advice.',
-  openGraph: {
-    title: 'California Security Deposit Recovery | Resolvaio',
-    description:
-      'Draft a demand letter citing Cal. Civ. Code §1950.5. 21-day deadline to return your deposit.',
-  },
-  alternates: {
-    canonical: 'https://resolvaio.com/deposit/california',
-  },
-};
+const J = JURISDICTIONS.find((j) => j.code === 'CA')!;
+export const metadata: Metadata = buildMetadata({
+  title: J.page.title,
+  description: J.page.description,
+  path: J.page.path,
+});
 
 export default function CaliforniaDepositPage() {
   return (
