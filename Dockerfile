@@ -27,7 +27,6 @@ RUN npx esbuild src/workers/index.ts \
       --external:bullmq \
       --external:ioredis \
       --external:openai \
-      --external:@supabase/supabase-js \
       --external:resend \
       --packages=external
 
