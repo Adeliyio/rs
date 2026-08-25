@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const webhookProcessingJobSchema = z.object({
   event_id: z.string().min(1),
-  provider: z.enum(['paddle', 'supabase', 'resend']),
+  provider: z.enum(['paddle', 'resend']),
   raw_payload: z.string().min(1),
   received_at: z.string().min(1),
 });

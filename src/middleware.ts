@@ -6,7 +6,7 @@ import {
 } from '@convex-dev/auth/nextjs/server';
 
 /**
- * Middleware — replaces the Supabase session-refresh middleware.
+ * Middleware — resolves the Convex Auth session.
  *
  * Uses convexAuthNextjsMiddleware to resolve the Convex Auth session, then keeps
  * the app's existing subdomain routing (resolvaio.com marketing vs
@@ -20,8 +20,6 @@ const PUBLIC_ROUTES = [
   '/pricing',
   '/login',
   '/register',
-  '/auth/callback',
-  '/auth/confirm',
   '/forgot-password',
   '/update-password',
 ];
@@ -125,8 +123,6 @@ export default convexAuthNextjsMiddleware(async (request: NextRequest, { convexA
       isPublicPath(pathname) &&
       pathname !== '/login' &&
       pathname !== '/register' &&
-      pathname !== '/auth/callback' &&
-      pathname !== '/auth/confirm' &&
       pathname !== '/forgot-password' &&
       pathname !== '/update-password' &&
       !pathname.startsWith('/api/')

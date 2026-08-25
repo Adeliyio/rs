@@ -112,7 +112,6 @@ npx esbuild src/workers/index.ts \
   --external:bullmq \
   --external:ioredis \
   --external:openai \
-  --external:@supabase/supabase-js \
   --external:resend \
   --packages=external
 
@@ -203,18 +202,6 @@ if nginx -t 2>/dev/null; then
 else
   echo "  WARNING: Nginx config test failed. Check with: nginx -t"
 fi
-
-# ------------------------------------------------------------------
-# 8. Set up Supabase keep-alive cron (twice weekly: Tue & Sat at 6 AM UTC)
-# ------------------------------------------------------------------
-echo "[8/8] Setting up Supabase keep-alive cron..."
-
-KEEP_ALIVE_URL="http://127.0.0.1:$PORT/api/keep-alive"
-CRON_JOB="0 6 * * 2,6 curl -s -o /dev/null -w '' $KEEP_ALIVE_URL # resolvaio-keep-alive"
-
-# Remove any existing keep-alive cron entry, then add the new one
-(crontab -l 2>/dev/null | grep -v 'resolvaio-keep-alive' ; echo "$CRON_JOB") | crontab -
-echo "  Cron job added: Supabase keep-alive on Tue & Sat at 06:00 UTC"
 
 # ------------------------------------------------------------------
 # Done

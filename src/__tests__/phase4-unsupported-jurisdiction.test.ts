@@ -91,31 +91,25 @@ describe('4a: Waitlist API route', () => {
 });
 
 /* ================================================================== */
-/*  2. Waitlist table exists in migrations                            */
+/*  2. Waitlist table exists in the Convex schema                     */
 /* ================================================================== */
 
-describe('4a (risk): Waitlist table exists in migrations', () => {
-  const migrationsDir = path.resolve(
-    __dirname,
-    '../../supabase/migrations',
-  );
+describe('4a (risk): Waitlist table exists in the Convex schema', () => {
+  const schemaPath = path.resolve(__dirname, '../../convex/schema.ts');
+  const schema = fs.readFileSync(schemaPath, 'utf-8');
 
-  it('waitlist_entries table is defined in create_tables migration', () => {
-    const createTablesPath = path.join(migrationsDir, '00002_create_tables.sql');
-    const sql = fs.readFileSync(createTablesPath, 'utf-8');
-    expect(sql).toContain('waitlist_entries');
+  it('waitlistEntries table is defined in the Convex schema', () => {
+    expect(schema).toContain('waitlistEntries: defineTable(');
   });
 
-  it('waitlist_entries has index on (state, wedge)', () => {
-    const indexesPath = path.join(migrationsDir, '00003_create_indexes.sql');
-    const sql = fs.readFileSync(indexesPath, 'utf-8');
-    expect(sql).toContain('idx_waitlist_state_wedge');
+  it('waitlistEntries has an index on (state, wedge)', () => {
+    expect(schema).toContain("by_state_wedge', ['state', 'wedge']");
   });
 
-  it('waitlist_entries has unique constraint on (email, state, wedge)', () => {
-    const constraintsPath = path.join(migrationsDir, '00004_create_unique_constraints.sql');
-    const sql = fs.readFileSync(constraintsPath, 'utf-8');
-    expect(sql).toContain('uq_waitlist_email_state_wedge');
+  it('waitlistEntries enforces uniqueness on (email, state, wedge)', () => {
+    // Convex has no unique constraints; the uq_waitlist_email_state_wedge
+    // constraint is replaced by this index + an in-mutation uniqueness check.
+    expect(schema).toContain("by_email_state_wedge', ['email', 'state', 'wedge']");
   });
 });
 
@@ -551,59 +545,52 @@ describe('4c (cont): Auto-refund function', () => {
 });
 
 /* ================================================================== */
-/*  10. Database types — manual types are consistent                  */
+/*  10. Convex schema — core tables are defined                       */
 /* ================================================================== */
 
-describe('4d: Database types — manual types', () => {
-  const typesPath = path.resolve(
-    __dirname,
-    '../types/database.types.ts',
-  );
-  const typesSource = fs.readFileSync(typesPath, 'utf-8');
+describe('4d: Convex schema — core tables', () => {
+  const schemaPath = path.resolve(__dirname, '../../convex/schema.ts');
+  const schema = fs.readFileSync(schemaPath, 'utf-8');
 
-  it('has waitlist_entries table type', () => {
-    expect(typesSource).toContain('waitlist_entries');
+  it('has the waitlistEntries table', () => {
+    expect(schema).toContain('waitlistEntries: defineTable(');
   });
 
-  it('waitlist_entries Row has correct fields', () => {
-    // Find the waitlist_entries block
-    expect(typesSource).toContain('email: string');
-    expect(typesSource).toContain('state: string');
+  it('waitlistEntries has email and state fields', () => {
+    // The table block runs from its defineTable( to the next top-level table.
+    const block = schema.slice(schema.indexOf('waitlistEntries: defineTable('));
+    expect(block).toContain('email: v.string()');
+    expect(block).toContain('state: v.string()');
   });
 
-  it('has cases table type', () => {
-    expect(typesSource).toContain('cases:');
+  it('has the cases table', () => {
+    expect(schema).toContain('cases: defineTable(');
   });
 
-  it('has all 14 tables defined', () => {
+  it('has all core tables defined', () => {
+    // Convex camelCase table names (former snake_case Supabase tables).
     const expectedTables = [
       'cases',
       'letters',
       'sequences',
       'documents',
       'packets',
-      'deadline_events',
+      'deadlineEvents',
       'outcomes',
-      'case_status_history',
+      'caseStatusHistory',
       'subscriptions',
-      'waitlist_entries',
-      'webhook_events',
-      'audit_log',
+      'waitlistEntries',
+      'webhookEvents',
+      'auditLog',
     ];
     for (const table of expectedTables) {
-      expect(typesSource).toContain(`${table}:`);
+      expect(schema).toContain(`${table}: defineTable(`);
     }
   });
 
-  it('each table has Row, Insert, and Update types', () => {
-    // Count occurrences of Row:, Insert:, Update:
-    const rowCount = (typesSource.match(/Row:\s*\{/g) ?? []).length;
-    const insertCount = (typesSource.match(/Insert:\s*\{/g) ?? []).length;
-    const updateCount = (typesSource.match(/Update:\s*\{/g) ?? []).length;
-    // Each should have at least 12+ (one per table)
-    expect(rowCount).toBeGreaterThanOrEqual(12);
-    expect(insertCount).toBeGreaterThanOrEqual(12);
-    expect(updateCount).toBeGreaterThanOrEqual(12);
+  it('pulls in Convex Auth tables (users, sessions, etc.)', () => {
+    // authTables provides the users table that replaced Supabase auth.users.
+    expect(schema).toContain('...authTables');
   });
 });
 
@@ -611,30 +598,36 @@ describe('4d: Database types — manual types', () => {
 /*  11. @ts-expect-error audit                                        */
 /* ================================================================== */
 
-describe('4d (cont): @ts-expect-error audit', () => {
-  it('all @ts-expect-error annotations are Supabase SSR type issues', () => {
-    // Read files with @ts-expect-error and verify each has the standard comment
-    const filesToCheck = [
-      '../app/api/cases/[id]/generate/route.ts',
-      '../app/api/cases/[id]/status/route.ts',
-      '../app/api/sequences/[id]/advance/route.ts',
-      '../lib/payments/webhook-processor.ts',
-      '../lib/payments/auto-refund.ts',
-    ];
+describe('4d (cont): no residual Supabase type workarounds', () => {
+  // The Supabase migration removed the SSR-typed client that forced TS
+  // suppression directives in these hot-path files. This guards against a
+  // regression that reintroduces either.
+  const filesToCheck = [
+    '../app/api/cases/[id]/generate/route.ts',
+    '../app/api/cases/[id]/status/route.ts',
+    '../app/api/sequences/[id]/advance/route.ts',
+    '../lib/payments/webhook-processor.ts',
+    '../lib/payments/auto-refund.ts',
+  ];
 
+  it('these hot-path files carry no TS suppression directives', () => {
+    const directive = ['@ts', 'expect-error'].join('-');
     for (const filePath of filesToCheck) {
       const source = fs.readFileSync(
         path.resolve(__dirname, filePath),
         'utf-8',
       );
-      const lines = source.split('\n');
-      const tsExpectLines = lines.filter((l) =>
-        l.includes('@ts-expect-error'),
+      expect(source).not.toContain(directive);
+    }
+  });
+
+  it('these hot-path files no longer import a Supabase client', () => {
+    for (const filePath of filesToCheck) {
+      const source = fs.readFileSync(
+        path.resolve(__dirname, filePath),
+        'utf-8',
       );
-      for (const line of tsExpectLines) {
-        // Each should have a comment explaining it's a Supabase issue
-        expect(line).toMatch(/supabase|SSR|generic|service.role/i);
-      }
+      expect(source.toLowerCase()).not.toContain('supabase');
     }
   });
 });
@@ -671,18 +664,13 @@ describe('4 (cross-cutting): Enums for jurisdiction', () => {
 /* ================================================================== */
 
 describe('4 (risk mitigation): Safety nets', () => {
-  it('R2: Waitlist table and constraints exist in migrations', () => {
-    const migrationsDir = path.resolve(__dirname, '../../supabase/migrations');
-    const createTables = fs.readFileSync(
-      path.join(migrationsDir, '00002_create_tables.sql'),
+  it('R2: Waitlist table and uniqueness index exist in the Convex schema', () => {
+    const schema = fs.readFileSync(
+      path.resolve(__dirname, '../../convex/schema.ts'),
       'utf-8',
     );
-    const constraints = fs.readFileSync(
-      path.join(migrationsDir, '00004_create_unique_constraints.sql'),
-      'utf-8',
-    );
-    expect(createTables).toContain('waitlist_entries');
-    expect(constraints).toContain('uq_waitlist_email_state_wedge');
+    expect(schema).toContain('waitlistEntries: defineTable(');
+    expect(schema).toContain("by_email_state_wedge', ['email', 'state', 'wedge']");
   });
 
   it('R3: Generic demand letter has zero statute citations', () => {

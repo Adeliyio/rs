@@ -4,7 +4,7 @@
  * Cookie consent banner — GDPR compliance.
  *
  * Note: Plausible analytics is cookie-free and doesn't require
- * consent. This banner is for Supabase auth session cookies
+ * consent. This banner is for Convex Auth session cookies
  * (strictly necessary) and any future tracking cookies.
  *
  * Since we only use strictly necessary cookies, the banner is

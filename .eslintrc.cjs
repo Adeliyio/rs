@@ -16,8 +16,9 @@ module.exports = {
   rules: {
     // TypeScript strict rules (from rules/typescriptrules.md)
     '@typescript-eslint/no-explicit-any': 'error',
-    // TODO: Restore to 'error' after pnpm db:gen-types generates proper types.
-    // Manual Database types cause `any` to leak through Supabase .from() chains.
+    // TODO: Consider restoring these to 'error'. They were relaxed to 'warn'
+    // while the app used manually-maintained DB types; Convex now provides
+    // generated types, so tightening these is a follow-up quality pass.
     '@typescript-eslint/no-unsafe-argument': 'warn',
     '@typescript-eslint/no-unsafe-assignment': 'warn',
     '@typescript-eslint/no-unsafe-call': 'warn',
@@ -60,7 +61,6 @@ module.exports = {
     '.next/',
     'out/',
     'scripts/',
-    'supabase/',
     'kb/',
     'tiers/',
     'rules/',

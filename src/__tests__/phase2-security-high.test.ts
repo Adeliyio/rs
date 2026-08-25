@@ -608,8 +608,6 @@ describe('SEC-25: Marketing SEO pages — public access', () => {
       '/pricing',
       '/login',
       '/register',
-      '/auth/callback',
-      '/auth/confirm',
     ];
 
     const PUBLIC_PREFIXES = [

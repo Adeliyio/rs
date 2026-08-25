@@ -2,8 +2,8 @@
  * Paddle webhook event processor — server-only.
  *
  * Processes verified, idempotency-stored Paddle events. Uses the service Convex
- * client (workerConvex) — replacing the Supabase service-role client — since
- * webhooks run outside a user session.
+ * client (workerConvex) — which bypasses per-user authz — since webhooks run
+ * outside a user session.
  */
 
 import { workerConvex, api } from '@/lib/convex/worker-client';

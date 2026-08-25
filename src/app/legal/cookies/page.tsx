@@ -57,11 +57,11 @@ export default function CookiePolicyPage() {
                 <tbody className="text-[#5F5F5F]">
                   <tr className="border-b border-[#E8E8E5]">
                     <td className="py-2.5 pr-4 font-mono text-[13px]">
-                      sb-*-auth-token
+                      __convexAuth*
                     </td>
                     <td className="py-2.5 pr-4">Strictly necessary</td>
                     <td className="py-2.5 pr-4">
-                      Supabase authentication session. Required to keep you
+                      Convex Auth authentication session. Required to keep you
                       logged in.
                     </td>
                     <td className="py-2.5">Session</td>

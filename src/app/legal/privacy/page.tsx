@@ -207,9 +207,14 @@ export default function PrivacyPolicyPage() {
                 </thead>
                 <tbody className="text-[#5F5F5F]">
                   <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Supabase</td>
-                    <td className="py-2.5 pr-4">Database, authentication, file storage</td>
+                    <td className="py-2.5 pr-4 font-medium text-[#111]">Convex</td>
+                    <td className="py-2.5 pr-4">Database and authentication</td>
                     <td className="py-2.5">All account and case data</td>
+                  </tr>
+                  <tr className="border-b border-[#E8E8E5]">
+                    <td className="py-2.5 pr-4 font-medium text-[#111]">Cloudflare R2</td>
+                    <td className="py-2.5 pr-4">Uploaded document and file storage</td>
+                    <td className="py-2.5">Documents you upload (leases, statements, photos)</td>
                   </tr>
                   <tr className="border-b border-[#E8E8E5]">
                     <td className="py-2.5 pr-4 font-medium text-[#111]">OpenAI</td>
@@ -262,7 +267,7 @@ export default function PrivacyPolicyPage() {
             </h2>
             <p>
               We use <strong className="text-[#111]">strictly necessary cookies only</strong>{' '}
-              for authentication (Supabase session cookies). We do not use
+              for authentication (Convex Auth session cookies). We do not use
               advertising cookies, marketing pixels, or third-party tracking
               cookies. Our analytics provider (Plausible) is entirely
               cookie-free. See our full{' '}

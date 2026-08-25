@@ -157,40 +157,28 @@ describe('6a: Deadline scheduler module', () => {
   });
 });
 
-describe('6a: deadline_events table in migrations', () => {
-  const migrationDir = path.resolve(__dirname, '../../supabase/migrations');
-  const files = fs.readdirSync(migrationDir);
-  const createTablesFile = files.find((f) => f.includes('create_tables'));
+describe('6a: deadlineEvents table in the Convex schema', () => {
+  const schemaPath = path.resolve(__dirname, '../../convex/schema.ts');
+  const schema = fs.readFileSync(schemaPath, 'utf-8');
+  const idx = schema.indexOf('deadlineEvents: defineTable(');
+  const tableSection = schema.slice(idx, schema.indexOf('.index', idx));
 
-  it('migration file exists', () => {
-    expect(createTablesFile).toBeDefined();
+  it('schema file exists', () => {
+    expect(idx).toBeGreaterThanOrEqual(0);
   });
 
-  it('defines deadline_events table', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    expect(content).toContain('CREATE TABLE deadline_events');
+  it('defines the deadlineEvents table', () => {
+    expect(schema).toContain('deadlineEvents: defineTable(');
   });
 
-  it('has deadline_date column', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    expect(content).toContain('deadline_date');
+  it('has a deadlineDate field', () => {
+    expect(tableSection).toContain('deadlineDate: v.number()');
   });
 
-  it('has cascade delete on case_id', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    // Find the deadline_events section
-    const idx = content.indexOf('CREATE TABLE deadline_events');
-    const tableSection = content.slice(idx, content.indexOf(';', idx));
-    expect(tableSection).toContain('ON DELETE CASCADE');
+  it('references the parent case (was ON DELETE CASCADE on case_id)', () => {
+    // Convex has no ON DELETE CASCADE; the case relationship is a typed
+    // reference and cascade behavior is enforced in delete mutations.
+    expect(tableSection).toContain("caseId: v.id('cases')");
   });
 });
 
@@ -857,58 +845,31 @@ describe('6f: Subscription SKUs defined', () => {
   });
 });
 
-describe('6f: subscriptions table in database schema', () => {
-  const migrationDir = path.resolve(__dirname, '../../supabase/migrations');
-  const files = fs.readdirSync(migrationDir);
-  const createTablesFile = files.find((f) => f.includes('create_tables'));
+describe('6f: subscriptions table in the Convex schema', () => {
+  const schemaPath = path.resolve(__dirname, '../../convex/schema.ts');
+  const schema = fs.readFileSync(schemaPath, 'utf-8');
+  const subIdx = schema.indexOf('subscriptions: defineTable(');
+  const subSection = schema.slice(subIdx, schema.indexOf('.index', subIdx));
 
   it('subscriptions table exists', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    expect(content).toContain('CREATE TABLE subscriptions');
+    expect(schema).toContain('subscriptions: defineTable(');
   });
 
-  it('has plan column', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    const subIdx = content.indexOf('CREATE TABLE subscriptions');
-    const subSection = content.slice(subIdx, content.indexOf(';', subIdx));
-    expect(subSection).toContain('plan');
+  it('has a plan field', () => {
+    expect(subSection).toContain('plan: v.string()');
   });
 
-  it('has paddle_subscription_id column', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    const subIdx = content.indexOf('CREATE TABLE subscriptions');
-    const subSection = content.slice(subIdx, content.indexOf(';', subIdx));
-    expect(subSection).toContain('paddle_subscription_id');
+  it('has a paddleSubscriptionId field', () => {
+    expect(subSection).toContain('paddleSubscriptionId: v.string()');
   });
 
-  it('has current_period_start and current_period_end', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    const subIdx = content.indexOf('CREATE TABLE subscriptions');
-    const subSection = content.slice(subIdx, content.indexOf(';', subIdx));
-    expect(subSection).toContain('current_period_start');
-    expect(subSection).toContain('current_period_end');
+  it('has currentPeriodStart and currentPeriodEnd', () => {
+    expect(subSection).toContain('currentPeriodStart: v.optional(v.number())');
+    expect(subSection).toContain('currentPeriodEnd: v.optional(v.number())');
   });
 
-  it('has cancel_at_period_end flag', () => {
-    const content = fs.readFileSync(
-      path.join(migrationDir, createTablesFile!),
-      'utf-8',
-    );
-    const subIdx = content.indexOf('CREATE TABLE subscriptions');
-    const subSection = content.slice(subIdx, content.indexOf(';', subIdx));
-    expect(subSection).toContain('cancel_at_period_end');
+  it('has cancelAtPeriodEnd flag', () => {
+    expect(subSection).toContain('cancelAtPeriodEnd: v.boolean()');
   });
 });
 
