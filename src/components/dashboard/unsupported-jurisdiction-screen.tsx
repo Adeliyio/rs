@@ -46,6 +46,7 @@ export function UnsupportedJurisdictionScreen({
   genericLetterUrl,
   onBack,
 }: UnsupportedJurisdictionScreenProps): React.JSX.Element {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [waitlistStatus, setWaitlistStatus] = useState<
     'idle' | 'loading' | 'success' | 'error'
@@ -62,7 +63,7 @@ export function UnsupportedJurisdictionScreen({
         const response = await fetch('/api/waitlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, state, wedge: 'deposit' }),
+          body: JSON.stringify({ name: name.trim() || undefined, email, state, wedge: 'deposit' }),
         });
 
         const data = (await response.json()) as { ok?: boolean; message?: string; error?: string };
@@ -188,18 +189,28 @@ export function UnsupportedJurisdictionScreen({
               {waitlistMessage}
             </div>
           ) : (
-            <form onSubmit={handleWaitlistSubmit} className="mt-4 flex gap-2">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="flex-1 rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
+            <form onSubmit={handleWaitlistSubmit} className="mt-4 space-y-3">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="flex-1 rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  className="flex-1 rounded-md border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+              </div>
               <Button
                 type="submit"
                 size="sm"
+                className="w-full"
                 disabled={waitlistStatus === 'loading'}
               >
                 {waitlistStatus === 'loading' ? (
@@ -208,7 +219,7 @@ export function UnsupportedJurisdictionScreen({
                     Joining...
                   </>
                 ) : (
-                  'Join Waitlist'
+                  'Join the Waitlist'
                 )}
               </Button>
             </form>

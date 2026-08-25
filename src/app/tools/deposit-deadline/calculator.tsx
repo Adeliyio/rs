@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ArrowRight, AlertTriangle, Check, Clock } from 'lucide-react';
+import { ArrowRight, AlertTriangle, Check, CheckCircle2, Clock, Loader2 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
 /*  State deadline data — from KB                                     */
@@ -242,6 +242,49 @@ export function DeadlineCalculator() {
     daysOverdue: number;
   } | null>(null);
 
+  /* Waitlist form state */
+  const [waitlistName, setWaitlistName] = useState('');
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [waitlistStatus, setWaitlistStatus] = useState<
+    'idle' | 'loading' | 'success' | 'error'
+  >('idle');
+  const [waitlistMessage, setWaitlistMessage] = useState('');
+
+  const handleWaitlistSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!waitlistEmail.trim() || !result) return;
+
+      setWaitlistStatus('loading');
+      try {
+        const response = await fetch('/api/waitlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: waitlistName.trim() || undefined,
+            email: waitlistEmail,
+            state: result.state.code,
+            wedge: 'deposit',
+          }),
+        });
+
+        const data = (await response.json()) as { ok?: boolean; message?: string; error?: string };
+
+        if (response.ok && data.ok) {
+          setWaitlistStatus('success');
+          setWaitlistMessage(data.message ?? 'You have been added to the waitlist.');
+        } else {
+          setWaitlistStatus('error');
+          setWaitlistMessage(data.error ?? 'Something went wrong. Please try again.');
+        }
+      } catch {
+        setWaitlistStatus('error');
+        setWaitlistMessage('Network error. Please try again.');
+      }
+    },
+    [waitlistName, waitlistEmail, result],
+  );
+
   const handleCalculate = useCallback(() => {
     if (!selectedState || !moveOutDate) return;
 
@@ -414,12 +457,52 @@ export function DeadlineCalculator() {
                 We currently generate demand letters for California, Texas, New York,
                 and Florida. We are expanding to additional states based on demand.
               </p>
-              <Link
-                href="/new?wedge=deposit"
-                className="mt-4 inline-flex items-center gap-1.5 text-[14px] font-medium text-primary transition-colors hover:text-primary/80"
-              >
-                Join the waitlist <ArrowRight className="h-4 w-4" />
-              </Link>
+
+              {waitlistStatus === 'success' ? (
+                <div className="mt-4 flex items-center justify-center gap-2 text-[14px] font-medium text-emerald-600">
+                  <CheckCircle2 className="h-4 w-4" />
+                  {waitlistMessage}
+                </div>
+              ) : (
+                <form onSubmit={handleWaitlistSubmit} className="mx-auto mt-5 max-w-md space-y-3">
+                  <p className="text-[13px] font-medium text-[#111]">Join the waitlist</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={waitlistName}
+                      onChange={(e) => setWaitlistName(e.target.value)}
+                      placeholder="Your name"
+                      className="flex-1 rounded-lg border border-[#E8E8E5] bg-[#F7F7F5] px-3 py-2.5 text-[14px] text-[#111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                    <input
+                      type="email"
+                      value={waitlistEmail}
+                      onChange={(e) => setWaitlistEmail(e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                      className="flex-1 rounded-lg border border-[#E8E8E5] bg-[#F7F7F5] px-3 py-2.5 text-[14px] text-[#111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={waitlistStatus === 'loading'}
+                    className="w-full rounded-lg bg-[#111] py-2.5 text-[14px] font-semibold text-white transition-all hover:bg-[#222] active:scale-[0.98] disabled:opacity-70"
+                  >
+                    {waitlistStatus === 'loading' ? (
+                      <span className="inline-flex items-center gap-1.5">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Joining...
+                      </span>
+                    ) : (
+                      'Join the Waitlist'
+                    )}
+                  </button>
+                </form>
+              )}
+
+              {waitlistStatus === 'error' && (
+                <p className="mt-2 text-[13px] text-red-600">{waitlistMessage}</p>
+              )}
             </div>
           )}
 

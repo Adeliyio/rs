@@ -364,6 +364,7 @@ export interface Database {
       waitlist_entries: {
         Row: {
           id: string;
+          name: string | null;
           email: string;
           state: string;
           wedge: Database['public']['Enums']['wedge_type'];
@@ -371,6 +372,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
+          name?: string | null;
           email: string;
           state: string;
           wedge: Database['public']['Enums']['wedge_type'];
@@ -378,6 +380,7 @@ export interface Database {
         };
         Update: {
           id?: string;
+          name?: string | null;
           email?: string;
           state?: string;
           wedge?: Database['public']['Enums']['wedge_type'];

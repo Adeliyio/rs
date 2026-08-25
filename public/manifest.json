@@ -1,0 +1,16 @@
+{
+  "name": "Resolvaio",
+  "short_name": "Resolvaio",
+  "description": "Demand letters and cancellation emails grounded in verified US consumer protection statutes.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F7F5",
+  "theme_color": "#111111",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
