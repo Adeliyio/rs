@@ -1,14 +1,19 @@
 # Stage 1: Install dependencies
 FROM node:20-alpine AS deps
-RUN corepack enable pnpm
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+# node:20-alpine ships an old bundled corepack that crashes fetching modern pnpm
+# (ERR_UNKNOWN_BUILTIN_MODULE). Install a current corepack first, then activate
+# the exact pnpm version pinned in package.json's `packageManager` field (copied
+# above so corepack can read it).
+RUN npm install -g corepack@latest && corepack enable && corepack prepare --activate
 RUN pnpm install --frozen-lockfile
 
 # Stage 2: Build the application
 FROM node:20-alpine AS builder
-RUN corepack enable pnpm
 WORKDIR /app
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN npm install -g corepack@latest && corepack enable && corepack prepare --activate
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
