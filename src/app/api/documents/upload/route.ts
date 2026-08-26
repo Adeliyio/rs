@@ -30,6 +30,10 @@ function sanitiseFilename(name: string): string {
   return name.replace(/[/\\:*?"<>|]/g, '_').replace(/\s+/g, '_').slice(0, 200);
 }
 
+// This route calls Convex at request time; force-dynamic so Next does not
+// evaluate it during build-time page-data collection (fails without runtime env).
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const user = await currentUser();

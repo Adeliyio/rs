@@ -22,6 +22,10 @@ import { generatePacketBundle } from '@/lib/packets/bundle-generator';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import type { Id } from '@convex/dataModel';
 
+// This route calls Convex at request time; force-dynamic so Next does not
+// evaluate it during build-time page-data collection (fails without runtime env).
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },

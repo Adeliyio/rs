@@ -38,6 +38,10 @@ const waitlistSchema = z.object({
 /*  POST handler                                                      */
 /* ------------------------------------------------------------------ */
 
+// This route calls Convex at request time; force-dynamic so Next does not
+// evaluate it during build-time page-data collection (fails without runtime env).
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     /* ---- Rate limit by IP ---- */

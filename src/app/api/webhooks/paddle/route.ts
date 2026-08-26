@@ -43,6 +43,10 @@ function getWebhookClientIp(request: Request): string {
   return request.headers.get('cf-connecting-ip') ?? request.headers.get('x-real-ip') ?? 'unknown';
 }
 
+// This route calls Convex at request time; force-dynamic so Next does not
+// evaluate it during build-time page-data collection (fails without runtime env).
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     /* ---- SEC-16: Rate limit + optional IP allowlist ---- */

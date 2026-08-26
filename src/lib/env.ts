@@ -92,19 +92,34 @@ function validateClientEnv(): ClientEnv {
 /**
  * `serverEnv` contains all server-side environment variables.
  * Only import this in server code (API routes, server components, etc.).
- * Crashes on boot if any required variable is missing.
+ *
+ * Validation is LAZY: it runs on first property access, not at import. This is
+ * deliberate — `next build` imports server modules to collect page data, but the
+ * runtime server env (OPENAI_API_KEY, ENCRYPTION_KEY, …) isn't present during the
+ * build. Eager validation at import broke `pnpm build` ("Invalid server
+ * environment variables"). Deferring to first access preserves the fail-fast
+ * guarantee at runtime (the first request that reads env still throws if it's
+ * missing) without failing the build.
  */
-export const serverEnv: ServerEnv =
-  typeof window === 'undefined'
-    ? validateServerEnv()
-    : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Proxy requires type assertion for the target object
-      (new Proxy({} as ServerEnv, {
-        get(): never {
-          throw new Error(
-            'serverEnv must not be accessed on the client. Use clientEnv instead.',
-          );
-        },
-      }));
+let _serverEnv: ServerEnv | null = null;
+function getServerEnv(): ServerEnv {
+  if (typeof window !== 'undefined') {
+    throw new Error(
+      'serverEnv must not be accessed on the client. Use clientEnv instead.',
+    );
+  }
+  if (_serverEnv === null) {
+    _serverEnv = validateServerEnv();
+  }
+  return _serverEnv;
+}
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-assertions -- Proxy requires a type assertion for the target object
+export const serverEnv: ServerEnv = new Proxy({} as ServerEnv, {
+  get(_target, prop: string | symbol): unknown {
+    return getServerEnv()[prop as keyof ServerEnv];
+  },
+});
 
 /**
  * `clientEnv` contains only NEXT_PUBLIC_ variables safe for the browser.
