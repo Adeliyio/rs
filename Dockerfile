@@ -21,9 +21,11 @@ ENV DOCKER_BUILD=1
 RUN pnpm build
 
 # Bundle the worker entrypoint for production (tsx is dev-only).
-# Uses esbuild (already a pnpm dep via tsx) to produce a single CJS file
-# that can run with plain `node worker.js` inside the standalone output.
-RUN npx esbuild src/workers/index.ts \
+# Uses esbuild (a direct devDependency) to produce a single CJS file that can
+# run with plain `node worker.js` inside the standalone output. Invoke via
+# `pnpm exec` so it resolves the local node_modules/.bin/esbuild — `npx esbuild`
+# fails here with "esbuild: not found" (exit 127).
+RUN pnpm exec esbuild src/workers/index.ts \
       --bundle \
       --platform=node \
       --target=node20 \
