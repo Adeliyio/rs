@@ -18,6 +18,8 @@ import {
   createSequenceGenerationWorker,
 } from './generation.worker';
 import { createLawMonitorWorker } from './law-monitor.worker';
+import { createReprocessWebhooksWorker } from './reprocess-webhooks.worker';
+import { createCleanupWorker } from './cleanup.worker';
 import { closeRedis } from '@/lib/redis';
 import { closeAllQueues } from '@/lib/queue/queues';
 
@@ -64,6 +66,8 @@ const webhookWorker = createWebhookProcessWorker();
 const letterGenWorker = createLetterGenerationWorker();
 const sequenceGenWorker = createSequenceGenerationWorker();
 const lawMonitorWorker = createLawMonitorWorker();
+const reprocessWebhooksWorker = createReprocessWebhooksWorker();
+const cleanupWorker = createCleanupWorker();
 
 /* ---- Schedule repeatable deadline check (every 5 minutes) ---- */
 async function scheduleDeadlineCheck() {
@@ -113,10 +117,61 @@ scheduleLawMonitor().catch((err: unknown) => {
   console.error('[Workers] Failed to schedule law monitor:', err);
 });
 
+/* ---- Schedule repeatable webhook reprocessing (every 3 minutes) ---- */
+// Rel-M1: replays stored-but-unprocessed Polar webhooks so a transient blip
+// during order.paid can't silently lose fulfillment.
+async function scheduleReprocessWebhooks() {
+  const queue = getQueue(QUEUE_NAMES.REPROCESS_WEBHOOKS);
+
+  await queue.add(
+    'reprocess-webhooks-repeatable',
+    {},
+    {
+      repeat: {
+        every: 3 * 60 * 1000, // 3 minutes
+      },
+      jobId: 'reprocess-webhooks-repeatable',
+    },
+  );
+
+  // eslint-disable-next-line no-console
+  console.log('[Workers] Webhook reprocessing scheduled every 3 minutes');
+}
+
+scheduleReprocessWebhooks().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error('[Workers] Failed to schedule webhook reprocessing:', err);
+});
+
+/* ---- Schedule daily retention cleanup (03:30 UTC) ---- */
+// Scale-H3: prune unbounded webhook_events (>90d) + loginAttempts (>30d).
+async function scheduleCleanup() {
+  const queue = getQueue(QUEUE_NAMES.CLEANUP);
+
+  await queue.add(
+    'cleanup-daily',
+    {},
+    {
+      repeat: {
+        pattern: '30 3 * * *', // Every day at 03:30 UTC
+      },
+      jobId: 'cleanup-daily',
+    },
+  );
+
+  // eslint-disable-next-line no-console
+  console.log('[Workers] Retention cleanup scheduled daily (03:30 UTC)');
+}
+
+scheduleCleanup().catch((err: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error('[Workers] Failed to schedule retention cleanup:', err);
+});
+
 // eslint-disable-next-line no-console
 console.log('[Workers] All workers started successfully');
 // eslint-disable-next-line no-console
-console.log('[Workers] Queues: email-delivery, deadline-check, webhook-process, letter-generate, sequence-generate, law-monitor');
+console.log('[Workers] Queues: email-delivery, deadline-check, webhook-process, letter-generate, sequence-generate, law-monitor, reprocess-webhooks, cleanup');
 
 /* ---- Graceful shutdown ---- */
 async function shutdown() {
@@ -130,6 +185,8 @@ async function shutdown() {
     letterGenWorker.close(),
     sequenceGenWorker.close(),
     lawMonitorWorker.close(),
+    reprocessWebhooksWorker.close(),
+    cleanupWorker.close(),
   ]);
 
   await closeAllQueues();

@@ -30,6 +30,8 @@ const nextConfig = {
   // On Windows dev, comment this out or run as Administrator.
   output: process.env.DOCKER_BUILD === '1' ? 'standalone' : undefined,
   experimental: {
+    // Runs instrumentation.ts at server boot — this is what initializes Sentry.
+    instrumentationHook: true,
     // archiver (and its dep readdir-glob) use a malformed exports field where
     // "default" is not the last condition, breaking webpack module resolution.
     // Since archiver is server-only (used in packet bundle generation), we

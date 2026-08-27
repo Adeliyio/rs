@@ -13,6 +13,7 @@ import { getQueue } from '@/lib/queue/queues';
 import { workerConvex, api } from '@/lib/convex/worker-client';
 import type { Id } from '@convex/dataModel';
 import type { EmailDeliveryJobPayload } from '@/types/jobs/email-delivery.job';
+import { Sentry } from '@/lib/sentry';
 
 async function processDeadlineCheck(_job: Job): Promise<void> {
   const dueDeadlines = await workerConvex.query(api.service.getDueDeadlines, {});
@@ -84,6 +85,7 @@ export function createDeadlineCheckWorker(): Worker {
   worker.on('failed', (job, err) => {
     // eslint-disable-next-line no-console
     console.error(`[DeadlineWorker] Check ${job?.id} failed:`, err.message);
+    Sentry.captureException(err, { tags: { area: 'deadline-check' } });
   });
 
   return worker;

@@ -15,6 +15,7 @@ import {
   type EmailDeliveryJobPayload,
 } from '@/types/jobs/email-delivery.job';
 import type { TemplateId } from '@/lib/email/templates';
+import { Sentry } from '@/lib/sentry';
 
 async function processEmailDelivery(
   job: Job<EmailDeliveryJobPayload>,
@@ -66,6 +67,7 @@ export function createEmailDeliveryWorker(): Worker {
   worker.on('failed', (job, err) => {
     // eslint-disable-next-line no-console
     console.error(`[EmailWorker] Job ${job?.id} failed:`, err.message);
+    Sentry.captureException(err, { tags: { area: 'email-delivery' } });
   });
 
   return worker;

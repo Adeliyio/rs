@@ -34,6 +34,7 @@ import type { DepositJurisdiction } from '@/types/enums';
 import type { GenerationJobPayload } from '@/types/jobs/generation.job';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import type { Deduction, ItemizationStatus } from '@/lib/ai/deposit-generation';
+import { Sentry } from '@/lib/sentry';
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                           */
@@ -342,6 +343,7 @@ export function createLetterGenerationWorker(): Worker {
   worker.on('failed', (job, err) => {
     // eslint-disable-next-line no-console
     console.error(`[GenerationWorker] Job ${job?.id} failed:`, err.message);
+    Sentry.captureException(err, { tags: { area: 'letter-generation' } });
   });
 
   return worker;
@@ -367,6 +369,7 @@ export function createSequenceGenerationWorker(): Worker {
   worker.on('failed', (job, err) => {
     // eslint-disable-next-line no-console
     console.error(`[GenerationWorker] Sequence job ${job?.id} failed:`, err.message);
+    Sentry.captureException(err, { tags: { area: 'sequence-generation' } });
   });
 
   return worker;

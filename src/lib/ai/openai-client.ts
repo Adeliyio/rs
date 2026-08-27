@@ -19,6 +19,14 @@ export function getOpenAIClient(): OpenAI {
     );
   }
 
-  client = new OpenAI({ apiKey });
+  client = new OpenAI({
+    apiKey,
+    // Bound every request so a slow/hung OpenAI can't tie up a Next.js request
+    // (or a worker job) indefinitely — the SDK default is a 10-minute timeout.
+    // 90s comfortably covers GPT-4o vision + letter generation; on timeout or a
+    // transient network error the SDK retries with backoff.
+    timeout: 90_000,
+    maxRetries: 2,
+  });
   return client;
 }

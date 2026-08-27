@@ -23,23 +23,25 @@ import {
   readCaseIdFromMetadata,
   derivePlan,
 } from '@/types/external/polar.types';
-import type { Webhooks } from '@polar-sh/nextjs';
+import type { validateEvent } from '@polar-sh/sdk/webhooks';
 
 /**
- * Handler payload types, derived from the `@polar-sh/nextjs` `Webhooks()` config
- * so they ALWAYS match the exact `@polar-sh/sdk` version the adapter resolves
- * (the adapter pins ^0.47; the app's top-level SDK is a newer minor). Importing
- * the payload types from a fixed SDK path would bind to the wrong copy and fail
- * to assign. We Zod-parse `payload.data` anyway (CLAUDE.md §2.1), so we only need
- * the outer payload shape here.
+ * Handler payload types, derived from the `validateEvent` return union (the same
+ * `@polar-sh/sdk` copy the webhook route verifies with) and narrowed by `type`.
+ * Deriving from `validateEvent` — rather than the `@polar-sh/nextjs` adapter —
+ * keeps both sides on ONE SDK version (the app pins 0.49; the adapter's own copy
+ * is 0.47, and mixing them fails to assign). We Zod-parse `payload.data` inside
+ * each handler anyway (CLAUDE.md §2.1), so we only need the outer shape here.
  */
-type WebhooksConfig = Parameters<typeof Webhooks>[0];
-type WebhookOrderPaidPayload = Parameters<NonNullable<WebhooksConfig['onOrderPaid']>>[0];
-type WebhookOrderRefundedPayload = Parameters<NonNullable<WebhooksConfig['onOrderRefunded']>>[0];
-type WebhookSubscriptionActivePayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionActive']>>[0];
-type WebhookSubscriptionCanceledPayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionCanceled']>>[0];
-type WebhookSubscriptionUpdatedPayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionUpdated']>>[0];
-type WebhookSubscriptionRevokedPayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionRevoked']>>[0];
+type PolarEvent = ReturnType<typeof validateEvent>;
+type EventOfType<T extends PolarEvent['type']> = Extract<PolarEvent, { type: T }>;
+
+type WebhookOrderPaidPayload = EventOfType<'order.paid'>;
+type WebhookOrderRefundedPayload = EventOfType<'order.refunded'>;
+type WebhookSubscriptionActivePayload = EventOfType<'subscription.active'>;
+type WebhookSubscriptionCanceledPayload = EventOfType<'subscription.canceled'>;
+type WebhookSubscriptionUpdatedPayload = EventOfType<'subscription.updated'>;
+type WebhookSubscriptionRevokedPayload = EventOfType<'subscription.revoked'>;
 
 export interface WebhookProcessResult {
   ok: boolean;
@@ -140,11 +142,17 @@ export async function handleOrderPaid(
     isDeposit &&
     DEPOSIT_JURISDICTION.includes(caseRow.jurisdiction as DepositJurisdiction);
   if (isDeposit && !supported) {
-    try {
-      await processAutoRefundIfNeeded(caseRow.id, order.id);
-    } catch (refundErr) {
-      // eslint-disable-next-line no-console
-      console.error('[Webhook] Auto-refund for unsupported jurisdiction failed:', refundErr);
+    // Rel-M3: if the refund does not go through, we must NOT mark this event
+    // processed — otherwise the customer is left charged with no fulfillment and
+    // nothing retries. Throwing here leaves the event unprocessed so the
+    // reprocessing worker (Rel-M1) replays it and re-attempts the refund. The
+    // handler is idempotent: on replay, the case is already paid (short-circuit
+    // above) and the refund lookup finds nothing refundable once it succeeds.
+    const refundResult = await processAutoRefundIfNeeded(caseRow.id, order.id);
+    if (!refundResult.refunded) {
+      throw new Error(
+        `Auto-refund for unsupported jurisdiction failed for case ${caseRow.id}: ${refundResult.error ?? 'unknown error'}`,
+      );
     }
     // Do not send a "your letter is ready" confirmation for a refunded case.
     return { ok: true, event_type: eventType };

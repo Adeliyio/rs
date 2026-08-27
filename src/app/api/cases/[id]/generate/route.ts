@@ -34,6 +34,7 @@ import {
   getGenerationQueueDepth,
 } from '@/lib/queue/enqueue';
 import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund';
+import { Sentry } from '@/lib/sentry';
 import { computeDeadlines } from '@/lib/deadlines/calculator';
 import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
 import { loadKbEntry } from '@/lib/kb/loader';
@@ -263,6 +264,59 @@ async function handleSubscriptionGeneration(
 /*  Deposit generation handler                                        */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Rel-H3: a PAID deposit case whose synchronous generation fails must never be
+ * left as a bare 500 — the customer paid and got nothing. On the first failure
+ * we hand the job to the background letter-generation queue (its own retries +
+ * delivery email), and tell the user it's being prepared. The queued job is
+ * idempotent (jobId `gen-${caseId}`, and the worker only generates a paid case
+ * still in `intake`), so this is safe even if a later attempt also lands.
+ *
+ * Returns a NextResponse when it took over (enqueued or reported), or null when
+ * the case is NOT a paid deposit (caller keeps its original error response).
+ */
+async function recoverPaidDepositFailure(
+  caseId: string,
+  caseRow: CaseRow,
+  userId: string,
+  reason: string,
+): Promise<NextResponse | null> {
+  if (caseRow.wedge !== 'deposit' || caseRow.payment_status !== 'paid') {
+    return null;
+  }
+
+  // eslint-disable-next-line no-console
+  console.error(`[generate] Paid deposit case ${caseId} failed synchronously: ${reason}`);
+  Sentry.captureException(new Error(`Paid deposit generation failed: ${reason}`), {
+    tags: { area: 'generate', caseId },
+  });
+
+  try {
+    await enqueueLetterGeneration(caseId, userId, 'deposit', caseRow.jurisdiction);
+    return NextResponse.json({
+      queued: true,
+      message:
+        "We're preparing your letter. This is taking a little longer than usual — " +
+        "we'll email you as soon as it's ready. Your payment is safe.",
+    });
+  } catch (enqueueErr) {
+    // Redis unreachable — we can't retry in the background. Surface a clear,
+    // non-500 message; the case stays paid+intake and support/ops can recover it.
+    // eslint-disable-next-line no-console
+    console.error(`[generate] Failed to enqueue recovery for paid case ${caseId}:`, enqueueErr);
+    Sentry.captureException(enqueueErr, { tags: { area: 'generate-recovery', caseId } });
+    return NextResponse.json(
+      {
+        error:
+          "We hit a problem preparing your letter. Your payment is safe — please " +
+          'try again in a few minutes, and contact support if it persists.',
+        retry: true,
+      },
+      { status: 503, headers: { 'Retry-After': '30' } },
+    );
+  }
+}
+
 async function handleDepositGeneration(
   convex: ServiceConvex,
   caseId: string,
@@ -302,6 +356,15 @@ async function handleDepositGeneration(
   const result = await generateLetter(caseId, diagnosticAnswers);
 
   if (!result.ok) {
+    // Rel-H3: for a PAID deposit case, hand off to the background retry instead
+    // of stranding the paying customer with a 500.
+    const recovered = await recoverPaidDepositFailure(
+      caseId,
+      caseRow,
+      userId,
+      `generateLetter failed: ${result.error.code} ${result.error.message}`,
+    );
+    if (recovered) return recovered;
     return NextResponse.json(
       { error: result.error.message, code: result.error.code },
       { status: 500 },
@@ -323,7 +386,15 @@ async function handleDepositGeneration(
         pass: generatedLetter.citation_validation.pass,
       },
     });
-  } catch {
+  } catch (saveErr) {
+    // Rel-H3: same recovery for a paid deposit whose letter save failed.
+    const recovered = await recoverPaidDepositFailure(
+      caseId,
+      caseRow,
+      userId,
+      `createLetter failed: ${saveErr instanceof Error ? saveErr.message : String(saveErr)}`,
+    );
+    if (recovered) return recovered;
     return NextResponse.json(
       { error: 'Failed to save generated letter. Please try again.' },
       { status: 500 },
@@ -584,6 +655,11 @@ export async function POST(
     const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console
     console.error('POST /api/cases/[id]/generate error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    Sentry.captureException(err, { tags: { area: 'generate' } });
+    // Generic body — never echo internal error detail to the client (Rel-H4).
+    return NextResponse.json(
+      { error: 'Something went wrong. Please try again.' },
+      { status: 500 },
+    );
   }
 }

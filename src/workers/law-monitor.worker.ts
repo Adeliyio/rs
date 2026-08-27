@@ -18,6 +18,7 @@ import type { Id } from '@convex/dataModel';
 import { getOpenAIClient } from '@/lib/ai/openai-client';
 import { AI_CONFIG } from '@/config/ai.config';
 import { searchTavily } from '@/lib/ai/tavily-client';
+import { Sentry } from '@/lib/sentry';
 import { loadKbEntry } from '@/lib/kb/loader';
 import { enqueueEmailDelivery } from '@/lib/queue/enqueue';
 import { findEntriesDueForReview } from './lib/review-due';
@@ -444,6 +445,7 @@ export function createLawMonitorWorker(): Worker {
   worker.on('failed', (job, err) => {
     // eslint-disable-next-line no-console
     console.error(`[LawMonitor] Job ${job?.id} failed:`, err.message);
+    Sentry.captureException(err, { tags: { area: 'law-monitor' } });
   });
 
   return worker;

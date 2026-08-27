@@ -11,11 +11,12 @@ import { NextResponse } from 'next/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { api } from '@convex/api';
 
-// This route calls an external Convex deployment — never cache it (Next 14
-// caches GET route handlers + fetch() by default, which would freeze the
-// response, including a transient error, forever).
-export const dynamic = 'force-dynamic';
-export const fetchCache = 'force-no-store';
+// Scale-H4: this public endpoint aggregates ALL cases + ALL outcomes (two full
+// table scans) on every hit — a crawler would hammer it. The result is coarse
+// marketing data where 5-minute staleness is fine, so we cache it: `revalidate`
+// makes Next serve a cached response for 5 minutes, and the Cache-Control header
+// lets any CDN/edge in front do the same (with a stale-while-revalidate grace).
+export const revalidate = 300;
 
 const MIN_CASES_FOR_DISPLAY = 50;
 
@@ -45,27 +46,38 @@ export async function GET(): Promise<NextResponse> {
     const recoveryCount = s.recoveryCount;
     const totalRecovered = s.totalRecovered;
 
-    return NextResponse.json({
-      total_cases_completed: totalCompleted,
-      deposit: {
-        cases_completed: depositTotal,
-        stats_available: depositTotal >= MIN_CASES_FOR_DISPLAY,
+    return NextResponse.json(
+      {
+        total_cases_completed: totalCompleted,
+        deposit: {
+          cases_completed: depositTotal,
+          stats_available: depositTotal >= MIN_CASES_FOR_DISPLAY,
+        },
+        subscription: {
+          cases_completed: subscriptionTotal,
+          stats_available: subscriptionTotal >= MIN_CASES_FOR_DISPLAY,
+        },
+        recovery: {
+          available: recoveryCount >= 10,
+          cases_with_recovery: recoveryCount,
+          total_recovered: recoveryCount >= 10 ? totalRecovered : null,
+          average_recovered: recoveryCount >= 10 ? Math.round(totalRecovered / recoveryCount) : null,
+        },
+        jurisdictions_covered: s.jurisdictionsCovered,
+        min_threshold: MIN_CASES_FOR_DISPLAY,
       },
-      subscription: {
-        cases_completed: subscriptionTotal,
-        stats_available: subscriptionTotal >= MIN_CASES_FOR_DISPLAY,
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
       },
-      recovery: {
-        available: recoveryCount >= 10,
-        cases_with_recovery: recoveryCount,
-        total_recovered: recoveryCount >= 10 ? totalRecovered : null,
-        average_recovered: recoveryCount >= 10 ? Math.round(totalRecovered / recoveryCount) : null,
-      },
-      jurisdictions_covered: s.jurisdictionsCovered,
-      min_threshold: MIN_CASES_FOR_DISPLAY,
-    });
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // Do not let a transient error get cached in place of real stats.
+    return NextResponse.json(
+      { error: message },
+      { status: 500, headers: { 'Cache-Control': 'no-store' } },
+    );
   }
 }

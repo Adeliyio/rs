@@ -293,7 +293,10 @@ export default defineSchema({
     userAgent: v.optional(v.string()),
     success: v.boolean(),
     attemptedAt: v.number(),
-  }).index('by_ip', ['ipAddress']),
+  })
+    .index('by_ip', ['ipAddress'])
+    // Supports the retention-cleanup cron (delete attempts older than 30 days).
+    .index('by_attempted_at', ['attemptedAt']),
 
   /* ---------------------------------------------------------------- */
   /*  statute_monitor_runs                                            */

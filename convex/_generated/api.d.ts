@@ -21,6 +21,7 @@ import type * as lawMonitor from "../lawMonitor.js";
 import type * as letters from "../letters.js";
 import type * as lib_authz from "../lib/authz.js";
 import type * as lib_serialize from "../lib/serialize.js";
+import type * as loginAttempts from "../loginAttempts.js";
 import type * as otp_ResendOTP from "../otp/ResendOTP.js";
 import type * as otp_ResendOTPPasswordReset from "../otp/ResendOTPPasswordReset.js";
 import type * as outcomes from "../outcomes.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   letters: typeof letters;
   "lib/authz": typeof lib_authz;
   "lib/serialize": typeof lib_serialize;
+  loginAttempts: typeof loginAttempts;
   "otp/ResendOTP": typeof otp_ResendOTP;
   "otp/ResendOTPPasswordReset": typeof otp_ResendOTPPasswordReset;
   outcomes: typeof outcomes;

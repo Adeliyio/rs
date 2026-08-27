@@ -64,3 +64,43 @@ export const countAllInternal = internalQuery({
     return rows.length;
   },
 });
+
+/**
+ * Events that were stored (recordWebhook) but never marked processed — a handler
+ * failed, or a transient Convex/Redis blip dropped the follow-up markProcessed.
+ * The reprocessing worker replays these. We only return events older than
+ * `olderThanMs` (default ~2 min) so we never race an in-flight webhook request
+ * that is about to mark its own event processed. Oldest first, capped at `limit`.
+ */
+export const listUnprocessedInternal = internalQuery({
+  args: { olderThanMs: v.optional(v.number()), limit: v.optional(v.number()) },
+  handler: async (ctx, { olderThanMs, limit }) => {
+    const cutoff = Date.now() - (olderThanMs ?? 2 * 60 * 1000);
+    const rows = await ctx.db
+      .query('webhookEvents')
+      .withIndex('by_created_at', (q) => q.lte('createdAt', cutoff))
+      .order('asc')
+      .collect();
+    return rows
+      .filter((r) => r.processedAt === undefined || r.processedAt === null)
+      .slice(0, limit ?? 50);
+  },
+});
+
+/** Delete webhook events older than `olderThanMs`. Batched (default 100/run) to
+ * keep each mutation transaction short. Returns the number deleted this run. */
+export const deleteOldInternal = internalMutation({
+  args: { olderThanMs: v.number(), limit: v.optional(v.number()) },
+  handler: async (ctx, { olderThanMs, limit }) => {
+    const cutoff = Date.now() - olderThanMs;
+    const rows = await ctx.db
+      .query('webhookEvents')
+      .withIndex('by_created_at', (q) => q.lte('createdAt', cutoff))
+      .order('asc')
+      .take(limit ?? 100);
+    for (const row of rows) {
+      await ctx.db.delete(row._id);
+    }
+    return rows.length;
+  },
+});

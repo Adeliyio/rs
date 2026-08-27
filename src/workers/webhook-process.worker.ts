@@ -15,6 +15,7 @@ import {
   webhookProcessingJobSchema,
   type WebhookProcessingJobPayload,
 } from '@/types/jobs/webhook-processing.job';
+import { Sentry } from '@/lib/sentry';
 
 async function processWebhook(
   job: Job<WebhookProcessingJobPayload>,
@@ -49,6 +50,7 @@ export function createWebhookProcessWorker(): Worker {
   worker.on('failed', (job, err) => {
     // eslint-disable-next-line no-console
     console.error(`[WebhookWorker] Job ${job?.id} failed:`, err.message);
+    Sentry.captureException(err, { tags: { area: 'webhook-process' } });
   });
 
   return worker;

@@ -20,6 +20,7 @@ import { z } from 'zod';
 import { m, currentUser, api } from '@/lib/convex/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import type { Id } from '@convex/dataModel';
+import { Sentry } from '@/lib/sentry';
 
 const CONFIRMATION_PHRASE = 'DELETE MY ACCOUNT';
 
@@ -97,7 +98,12 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console
     console.error('POST /api/account/delete error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    Sentry.captureException(err, { tags: { area: 'account-delete' } });
+    // Generic body — never echo internal error detail to the client (Rel-H4).
+    return NextResponse.json(
+      { error: 'Something went wrong. Please try again.' },
+      { status: 500 },
+    );
   }
 }
 

@@ -13,6 +13,7 @@ import { NextResponse } from 'next/server';
 import { q, currentUser, api } from '@/lib/convex/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { extractFromDocument } from '@/lib/ai/extraction';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import type { Id } from '@convex/dataModel';
 
 const VALID_SCHEMAS = new Set(['lease_agreement', 'billing_statement', 'itemization']);
@@ -37,6 +38,17 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    /* ---- Rate limit: GPT-4o Vision is the priciest per-call path. Cap it per
+       user on the fail-closed 'generation' bucket so a single account can't loop
+       parse and run up the OpenAI bill (audit Scale-H1). ---- */
+    const rateResult = await checkRateLimit('generation', `parse:${user.id}`);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many document scans. Please try again shortly.' },
+        { status: 429, headers: rateLimitHeaders(rateResult) },
+      );
+    }
+
     const url = new URL(request.url);
     const schemaParam = url.searchParams.get('schema');
     if (schemaParam && !VALID_SCHEMAS.has(schemaParam)) {
@@ -51,6 +63,17 @@ export async function POST(
     const doc = await q(api.documents.getMine, { documentId: documentId as Id<'documents'> });
     if (!doc) {
       return NextResponse.json({ error: 'Document not found' }, { status: 404 });
+    }
+
+    /* ---- Idempotency: a document that's already been parsed/confirmed does not
+       need another (expensive) vision pass — return the existing result instead
+       of re-running GPT-4o (audit Scale-H1). ---- */
+    if (doc.parse_status === 'parsed' || doc.parse_status === 'confirmed') {
+      return NextResponse.json({
+        parse_status: doc.parse_status,
+        parsed_json: doc.parsed_json ?? doc.confirmed_json ?? null,
+        already_parsed: true,
+      });
     }
 
     /* ---- Fetch the case for its wedge (owned) ---- */

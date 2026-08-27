@@ -14,7 +14,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { Webhooks } from '@polar-sh/nextjs';
+import { validateEvent, WebhookVerificationError } from '@polar-sh/sdk/webhooks';
+import * as Sentry from '@sentry/nextjs';
 
 import {
   handleOrderPaid,
@@ -32,41 +33,51 @@ import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 // evaluate it during build-time page-data collection (fails without runtime env).
 export const dynamic = 'force-dynamic';
 
-/** Extract client IP from request headers (for rate limiting). */
+/** Extract client IP from request headers (for rate limiting). Prefer the
+ * Cloudflare-set header, which the client cannot spoof, over X-Forwarded-For. */
 function getWebhookClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) return forwarded.split(',')[0]!.trim();
-  return request.headers.get('cf-connecting-ip') ?? request.headers.get('x-real-ip') ?? 'unknown';
+  return (
+    request.headers.get('cf-connecting-ip') ??
+    request.headers.get('x-real-ip') ??
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    'unknown'
+  );
 }
 
-// The adapter verifies the signature and dispatches to the typed handlers.
-// Handler errors surface as a thrown error from the adapter, which we treat as
-// "stored but not processed" (200, reprocessable) below.
-const handlePolarWebhook = Webhooks({
-  webhookSecret: process.env.POLAR_WEBHOOK_SECRET ?? '',
-  onOrderPaid: async (payload) => {
-    await handleOrderPaid(payload);
-  },
-  onOrderRefunded: async (payload) => {
-    await handleOrderRefunded(payload);
-  },
-  onSubscriptionActive: async (payload) => {
-    await handleSubscriptionActive(payload);
-  },
-  onSubscriptionCanceled: async (payload) => {
-    await handleSubscriptionCanceled(payload);
-  },
-  onSubscriptionUpdated: async (payload) => {
-    await handleSubscriptionUpdated(payload);
-  },
-  onSubscriptionRevoked: async (payload) => {
-    await handleSubscriptionRevoked(payload);
-  },
-});
+/**
+ * Dispatch a signature-verified Polar event to the matching processor handler.
+ * `event` is the discriminated union returned by validateEvent; we only act on
+ * the types we care about and ignore the rest.
+ */
+async function dispatch(event: ReturnType<typeof validateEvent>): Promise<void> {
+  switch (event.type) {
+    case 'order.paid':
+      await handleOrderPaid(event);
+      return;
+    case 'order.refunded':
+      await handleOrderRefunded(event);
+      return;
+    case 'subscription.active':
+      await handleSubscriptionActive(event);
+      return;
+    case 'subscription.canceled':
+      await handleSubscriptionCanceled(event);
+      return;
+    case 'subscription.updated':
+      await handleSubscriptionUpdated(event);
+      return;
+    case 'subscription.revoked':
+      await handleSubscriptionRevoked(event);
+      return;
+    default:
+      // Unhandled event type (checkout.*, benefit.*, etc.) — acknowledged, no-op.
+      return;
+  }
+}
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
-    /* ---- Rate limit ---- */
+    /* ---- Rate limit (fail-closed 'general' bucket, keyed on unspoofable IP) ---- */
     const webhookIp = getWebhookClientIp(request);
     const rateResult = await checkRateLimit('general', `webhook:${webhookIp}`);
     if (!rateResult.allowed) {
@@ -76,26 +87,44 @@ export async function POST(request: Request) {
       );
     }
 
-    /* ---- Read raw body once (needed for idempotency payload + adapter) ---- */
+    /* ---- The signing secret MUST be configured. Refusing an unverifiable
+       webhook is correct: without a secret, any forged request would otherwise
+       be trusted. Fail closed rather than accept-all. ---- */
+    const webhookSecret = process.env.POLAR_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      // eslint-disable-next-line no-console
+      console.error('[Polar Webhook] POLAR_WEBHOOK_SECRET is not set — refusing.');
+      Sentry.captureMessage('Polar webhook received but POLAR_WEBHOOK_SECRET is unset', 'error');
+      return NextResponse.json({ error: 'Webhook not configured' }, { status: 500 });
+    }
+
     const rawBody = await request.text();
     if (!rawBody) {
       return NextResponse.json({ error: 'Empty request body' }, { status: 400 });
     }
 
-    // Standard Webhooks delivery id — the stable idempotency key across retries.
     const webhookId = request.headers.get('webhook-id') ?? '';
     if (!webhookId) {
       return NextResponse.json({ error: 'Missing webhook-id header' }, { status: 400 });
     }
 
-    let payload: Record<string, unknown>;
+    /* ---- 1. VERIFY THE SIGNATURE FIRST — before any DB write. A forged or
+       tampered event never reaches storage or the handlers. ---- */
+    let event: ReturnType<typeof validateEvent>;
     try {
-      payload = JSON.parse(rawBody) as Record<string, unknown>;
-    } catch {
-      return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+      const headers: Record<string, string> = {};
+      request.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      event = validateEvent(rawBody, headers, webhookSecret);
+    } catch (verifyErr) {
+      if (verifyErr instanceof WebhookVerificationError) {
+        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 403 });
+      }
+      throw verifyErr;
     }
 
-    /* ---- Idempotency + store (single service call) ---- */
+    /* ---- 2. Idempotency + store (only after the event is proven authentic) ---- */
     const convex = createServiceConvexClient();
     const svcSecret = serviceSecret();
 
@@ -103,37 +132,24 @@ export async function POST(request: Request) {
       secret: svcSecret,
       eventId: webhookId,
       provider: 'polar',
-      payload,
+      payload: JSON.parse(rawBody) as Record<string, unknown>,
     });
 
     if (record.duplicate) {
-      // Already processed — return 200 to stop Polar retries.
+      // Already processed — 200 stops Polar retries.
       return NextResponse.json({ ok: true, duplicate: true });
     }
 
-    /* ---- Verify signature + dispatch via the adapter ---- */
-    // The adapter re-reads the request body, so hand it a fresh Request with the
-    // same body + headers. A 403 from the adapter means signature verification
-    // failed — surface it directly.
-    const adapterRequest = new Request(request.url, {
-      method: 'POST',
-      headers: request.headers,
-      body: rawBody,
-    });
-
+    /* ---- 3. Dispatch. On handler failure we do NOT mark processed, so the
+       reprocessing worker (reprocess-webhooks) can replay it later. ---- */
     let dispatchOk = true;
     try {
-      const adapterResponse = await handlePolarWebhook(
-        adapterRequest as unknown as Parameters<typeof handlePolarWebhook>[0],
-      );
-      if (adapterResponse.status === 403) {
-        return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
-      }
+      await dispatch(event);
     } catch (dispatchErr) {
       dispatchOk = false;
       // eslint-disable-next-line no-console
       console.error('[Polar Webhook] Handler failed:', dispatchErr);
-      // Still 200 — the event is stored and can be reprocessed.
+      Sentry.captureException(dispatchErr, { tags: { area: 'polar-webhook', eventType: event.type } });
     }
 
     if (dispatchOk) {
@@ -143,12 +159,14 @@ export async function POST(request: Request) {
       });
     }
 
+    // 200 either way so Polar stops retrying; unprocessed events are replayed
+    // by the reprocessing worker, not by Polar.
     return NextResponse.json({ ok: dispatchOk });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console
-    console.error('[Polar Webhook] Unhandled error:', message);
-    // Return 200 to prevent infinite Polar retries.
-    return NextResponse.json({ ok: false, error: message });
+    console.error('[Polar Webhook] Unhandled error:', err);
+    Sentry.captureException(err, { tags: { area: 'polar-webhook' } });
+    // Generic body (no internal detail); 200 to prevent infinite Polar retries.
+    return NextResponse.json({ ok: false });
   }
 }

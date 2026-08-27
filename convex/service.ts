@@ -461,6 +461,30 @@ export const countAllWebhooks = query({
   },
 });
 
+export const listUnprocessedWebhooks = query({
+  args: { ...secretArg, olderThanMs: v.optional(v.number()), limit: v.optional(v.number()) },
+  handler: async (ctx, { secret, olderThanMs, limit }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.webhooks.listUnprocessedInternal, { olderThanMs, limit });
+  },
+});
+
+export const deleteOldWebhooks = mutation({
+  args: { ...secretArg, olderThanMs: v.number(), limit: v.optional(v.number()) },
+  handler: async (ctx, { secret, olderThanMs, limit }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runMutation(internal.webhooks.deleteOldInternal, { olderThanMs, limit });
+  },
+});
+
+export const deleteOldLoginAttempts = mutation({
+  args: { ...secretArg, olderThanMs: v.number(), limit: v.optional(v.number()) },
+  handler: async (ctx, { secret, olderThanMs, limit }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runMutation(internal.loginAttempts.deleteOldInternal, { olderThanMs, limit });
+  },
+});
+
 /* ------------------------------------------------------------------ */
 /*  tavily                                                            */
 /* ------------------------------------------------------------------ */
