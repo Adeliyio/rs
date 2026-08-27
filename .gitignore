@@ -73,3 +73,7 @@ tiers/
 infrastructure/
 
 # Docker — tracked (required for VPS deployment)
+
+# Skills tooling (taste-skill etc.) — not part of the app
+skills-lock.json
+.agents/
