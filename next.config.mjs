@@ -36,7 +36,18 @@ const nextConfig = {
     // "default" is not the last condition, breaking webpack module resolution.
     // Since archiver is server-only (used in packet bundle generation), we
     // exclude it from webpack bundling entirely.
-    serverComponentsExternalPackages: ['archiver'],
+    //
+    // The Sentry/OpenTelemetry server packages must ALSO be external: they use
+    // dynamic require (require-in-the-middle) that webpack can't statically
+    // analyze, producing "Critical dependency" warnings and breaking the build
+    // when Sentry's server SDK gets pulled into API-route bundles. Keeping them
+    // external lets Node load them at runtime instead.
+    serverComponentsExternalPackages: [
+      'archiver',
+      '@sentry/nextjs',
+      '@sentry/node',
+      'require-in-the-middle',
+    ],
     // Prevents barrel-export packages from overwhelming webpack chunking in dev.
     // lucide-react alone has 1000+ exports; without this, webpack can fail with
     // "Cannot read properties of undefined (reading 'call')".

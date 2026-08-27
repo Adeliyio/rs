@@ -101,7 +101,10 @@ async function processReprocessWebhooks(_job: Job): Promise<void> {
       // A handler that returns ok:false (e.g. no case found yet) should NOT be
       // marked processed — leave it for a later run. null = unhandled type, safe
       // to mark processed so we stop re-fetching it.
-      if (result && result.ok === false) {
+      // Distinguish a handler that returned {ok:false} (leave unprocessed) from a
+      // null result / unhandled type (safe to mark processed). Written without a
+      // `=== false` literal compare per lint.
+      if (result != null && !result.ok) {
         // eslint-disable-next-line no-console
         console.warn(
           `[ReprocessWebhooks] Handler for ${eventId} (${parsed.type}) returned not-ok: ${result.error ?? 'unknown'} — leaving unprocessed`,
