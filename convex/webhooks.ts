@@ -2,7 +2,7 @@ import { v } from 'convex/values';
 import { internalQuery, internalMutation } from './_generated/server';
 
 /**
- * Webhook events (Paddle). Stored for idempotency + audit. Service-role-only
+ * Webhook events (Polar). Stored for idempotency + audit. Service-role-only
  * under Supabase → all internal here. `eventId` UNIQUE enforced via index.
  */
 

@@ -48,7 +48,7 @@
     },
     "checkout": {
       "id": "disclaimer-checkout",
-      "placement": "Inline on Paddle checkout screen, above payment button",
+      "placement": "Inline on Polar checkout screen, above payment button",
       "text": "You are purchasing access to a writing tool that helps draft dispute letters and filing paperwork. This is not legal advice and does not guarantee any outcome. See our refund policy for details.",
       "style": "checkout_notice"
     },

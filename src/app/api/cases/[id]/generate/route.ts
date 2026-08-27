@@ -489,7 +489,7 @@ export async function POST(
 
     /* ---- Deposit-specific gates (must run before enqueue) ---- */
     if (wedge === 'deposit') {
-      // A case is payable either by a per-case Paddle payment OR by an active
+      // A case is payable either by a per-case Polar payment OR by an active
       // subscription (the "Unlimited" plan waives the per-case $49). Without the
       // subscription branch, a paying Unlimited subscriber would still be charged
       // per case. `currentMine` is scoped to the requesting user and returns a
@@ -508,10 +508,10 @@ export async function POST(
       );
       if (!isSupported) {
         try {
-          const txnId = (caseRow as unknown as { paddle_transaction_id?: string | null })
-            .paddle_transaction_id;
-          if (txnId) {
-            await processAutoRefundIfNeeded(caseId, txnId);
+          const orderId = (caseRow as unknown as { polar_order_id?: string | null })
+            .polar_order_id;
+          if (orderId) {
+            await processAutoRefundIfNeeded(caseId, orderId);
           }
         } catch (refundErr) {
           // eslint-disable-next-line no-console

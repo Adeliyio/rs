@@ -36,7 +36,7 @@ describe('Phase 1: Graph traversal — preview/payment node handling', () => {
     const paymentNode = {
       id: 'paywall',
       type: 'payment' as const,
-      payment_type: 'paddle_inline',
+      payment_type: 'polar_checkout',
       next: 'generation',
     };
 
@@ -123,7 +123,7 @@ describe('Phase 1: Graph traversal — preview/payment node handling', () => {
 
     const afterPayment = getNextNodeId(paymentNode!, {
       payment_complete: true,
-      transaction_id: 'txn_test',
+      order_id: 'order_test',
     });
     expect(afterPayment).toBe('generation');
   });

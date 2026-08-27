@@ -5,7 +5,7 @@ import { serializeSubscription } from './lib/serialize';
 
 /**
  * Subscriptions. User-facing read is scoped to the current user. Writes happen
- * only in the Paddle webhook processor (internal), keyed by paddleSubscriptionId.
+ * only in the Polar webhook processor (internal), keyed by polarSubscriptionId.
  */
 
 /** The current user's most-recent active/past_due subscription (or null). */
@@ -26,13 +26,13 @@ export const currentMine = query({
 
 /* ---- internal (webhook processor) ---- */
 
-export const getByPaddleIdInternal = internalQuery({
-  args: { paddleSubscriptionId: v.string() },
-  handler: async (ctx, { paddleSubscriptionId }) => {
+export const getByPolarIdInternal = internalQuery({
+  args: { polarSubscriptionId: v.string() },
+  handler: async (ctx, { polarSubscriptionId }) => {
     const doc = await ctx.db
       .query('subscriptions')
-      .withIndex('by_paddle_subscription_id', (q) =>
-        q.eq('paddleSubscriptionId', paddleSubscriptionId),
+      .withIndex('by_polar_subscription_id', (q) =>
+        q.eq('polarSubscriptionId', polarSubscriptionId),
       )
       .unique();
     return doc ? serializeSubscription(doc) : null;
@@ -41,8 +41,8 @@ export const getByPaddleIdInternal = internalQuery({
 
 export const createInternal = internalMutation({
   args: {
-    paddleCustomerId: v.optional(v.string()),
-    paddleSubscriptionId: v.string(),
+    polarCustomerId: v.optional(v.string()),
+    polarSubscriptionId: v.string(),
     plan: v.string(),
     status: v.string(),
     currentPeriodStart: v.optional(v.number()),
@@ -52,16 +52,16 @@ export const createInternal = internalMutation({
     // Idempotency: skip if it already exists.
     const existing = await ctx.db
       .query('subscriptions')
-      .withIndex('by_paddle_subscription_id', (q) =>
-        q.eq('paddleSubscriptionId', args.paddleSubscriptionId),
+      .withIndex('by_polar_subscription_id', (q) =>
+        q.eq('polarSubscriptionId', args.polarSubscriptionId),
       )
       .unique();
     if (existing) return serializeSubscription(existing);
 
     const now = Date.now();
     const id = await ctx.db.insert('subscriptions', {
-      paddleCustomerId: args.paddleCustomerId,
-      paddleSubscriptionId: args.paddleSubscriptionId,
+      polarCustomerId: args.polarCustomerId,
+      polarSubscriptionId: args.polarSubscriptionId,
       plan: args.plan,
       status: args.status,
       currentPeriodStart: args.currentPeriodStart,
@@ -75,13 +75,13 @@ export const createInternal = internalMutation({
   },
 });
 
-export const patchByPaddleIdInternal = internalMutation({
-  args: { paddleSubscriptionId: v.string(), patch: v.any() },
-  handler: async (ctx, { paddleSubscriptionId, patch }) => {
+export const patchByPolarIdInternal = internalMutation({
+  args: { polarSubscriptionId: v.string(), patch: v.any() },
+  handler: async (ctx, { polarSubscriptionId, patch }) => {
     const doc = await ctx.db
       .query('subscriptions')
-      .withIndex('by_paddle_subscription_id', (q) =>
-        q.eq('paddleSubscriptionId', paddleSubscriptionId),
+      .withIndex('by_polar_subscription_id', (q) =>
+        q.eq('polarSubscriptionId', polarSubscriptionId),
       )
       .unique();
     if (!doc) return null;

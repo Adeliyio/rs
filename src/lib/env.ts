@@ -19,8 +19,16 @@ const serverEnvSchema = z.object({
 
   // Feature-specific — required when feature is used
   TAVILY_API_KEY: z.string().optional().default(''),
-  PADDLE_API_KEY: z.string().optional().default(''),
-  PADDLE_WEBHOOK_SECRET: z.string().optional().default(''),
+  // Polar payments (replaced Paddle). Optional so the app boots without payments
+  // configured (e.g. the free cancellation wedge needs none); the checkout/refund
+  // code throws a clear error if invoked without them.
+  POLAR_ACCESS_TOKEN: z.string().optional().default(''),
+  POLAR_WEBHOOK_SECRET: z.string().optional().default(''),
+  POLAR_SERVER: z.enum(['sandbox', 'production']).optional().default('sandbox'),
+  POLAR_SUCCESS_URL: z.string().optional().default(''),
+  POLAR_PRODUCT_LETTER: z.string().optional().default(''),
+  POLAR_PRODUCT_MONTHLY: z.string().optional().default(''),
+  POLAR_PRODUCT_YEARLY: z.string().optional().default(''),
   RESEND_API_KEY: z.string().optional().default(''),
   REDIS_URL: z.string().optional().default(''),
   SENTRY_DSN: z.string().optional().default(''),
@@ -39,11 +47,12 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_CONVEX_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_URL is required'),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
-  NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: z.string().optional().default(''),
-  NEXT_PUBLIC_PADDLE_ENVIRONMENT: z
-    .enum(['sandbox', 'production'])
-    .optional()
-    .default('sandbox'),
+  // Polar product ids the client uses to build checkout links to the server
+  // /api/checkout route. Polar's redirect checkout needs no public client token
+  // (unlike Paddle.js), so there is no NEXT_PUBLIC token here.
+  NEXT_PUBLIC_POLAR_PRODUCT_LETTER: z.string().optional().default(''),
+  NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY: z.string().optional().default(''),
+  NEXT_PUBLIC_POLAR_PRODUCT_YEARLY: z.string().optional().default(''),
 });
 
 export type ClientEnv = z.infer<typeof clientEnvSchema>;
@@ -70,8 +79,9 @@ function validateClientEnv(): ClientEnv {
   const parsed = clientEnvSchema.safeParse({
     NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
-    NEXT_PUBLIC_PADDLE_CLIENT_TOKEN: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN,
-    NEXT_PUBLIC_PADDLE_ENVIRONMENT: process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT,
+    NEXT_PUBLIC_POLAR_PRODUCT_LETTER: process.env.NEXT_PUBLIC_POLAR_PRODUCT_LETTER,
+    NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY: process.env.NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY,
+    NEXT_PUBLIC_POLAR_PRODUCT_YEARLY: process.env.NEXT_PUBLIC_POLAR_PRODUCT_YEARLY,
   });
   if (!parsed.success) {
     const formatted = parsed.error.format();

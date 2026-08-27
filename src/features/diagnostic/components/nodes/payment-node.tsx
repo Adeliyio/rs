@@ -1,21 +1,23 @@
 'use client';
 
 /**
- * Payment node — renders DisclaimerAcknowledgment then PaddleCheckout.
+ * Payment node — renders DisclaimerAcknowledgment then PolarCheckout.
  *
- * Two-step flow:
+ * Flow:
  * 1. User acknowledges the disclaimer (checkbox + "Generate" button)
- * 2. Paddle overlay checkout opens
- * 3. On success: advances the diagnostic to the next node
+ * 2. PolarCheckout redirects the browser to Polar's hosted checkout
+ * 3. Polar redirects back to POLAR_SUCCESS_URL after payment; payment_status
+ *    transitions to 'paid' asynchronously via the order.paid webhook, which the
+ *    intake-client polls for before generating.
  *
- * The checkout route links the Paddle transaction to the case.
- * payment_status transitions to 'paid' asynchronously via webhook.
+ * There is no in-page success callback under the redirect flow — the case is
+ * linked to the order via checkout metadata ({caseId}) on the webhook.
  */
 
 import { useState, useCallback, useEffect } from 'react';
 
 import { DisclaimerAcknowledgment } from '@/components/disclaimer-acknowledgment';
-import { PaddleCheckout } from '@/features/checkout/components/paddle-checkout';
+import { PolarCheckout } from '@/features/checkout/components/polar-checkout';
 import { assignPriceVariant } from '@/lib/pricing/ab-pricing';
 import type { DiagnosticNode } from '@/types/diagnostic.types';
 
@@ -61,20 +63,6 @@ export default function PaymentNodeComponent({
     setStep('checkout');
   }, []);
 
-  const handlePaymentSuccess = useCallback(
-    (transactionId: string) => {
-      setStep('processing');
-      // Advance the diagnostic — the intake-client will handle
-      // waiting for payment_status=paid before triggering generation
-      onAnswer({ payment_complete: true, transaction_id: transactionId });
-    },
-    [onAnswer],
-  );
-
-  const handlePaymentCancel = useCallback(() => {
-    // Stay on checkout step — user can retry
-  }, []);
-
   // Active subscriber: render a brief covered-by-plan state while the effect
   // above advances the diagnostic. Never show the checkout to them.
   if (hasActiveSubscription) {
@@ -115,13 +103,10 @@ export default function PaymentNodeComponent({
   const priceVariant = assignPriceVariant(caseId);
 
   return (
-    <PaddleCheckout
+    <PolarCheckout
+      productId={priceVariant.productId}
       caseId={caseId}
-      priceId={priceVariant.priceId}
-      userEmail="" // Paddle will use the authenticated user's email
       productName={`Security Deposit Demand Letter (${priceVariant.label})`}
-      onSuccess={handlePaymentSuccess}
-      onCancel={handlePaymentCancel}
     />
   );
 }

@@ -291,30 +291,30 @@ describe('5c: Admin payments API', () => {
     expect(paymentsSource).toContain('api.service.listRecentWebhooks');
   });
 
-  it('filters for transaction events', () => {
-    expect(paymentsSource).toContain("transaction.");
+  it('filters for order events', () => {
+    expect(paymentsSource).toContain("order.");
   });
 
-  it('extracts amount and status from raw_payload', () => {
-    // Convex migration: the Supabase raw_payload jsonb column is the `payload`
-    // field on the webhook row; amount/status are read from payload.data.
+  it('extracts amount and status from the stored payload', () => {
+    // The webhook row's `payload` holds the Polar event; amount/status are read
+    // from payload.data (totalAmount is integer cents).
     expect(paymentsSource).toContain('payload');
-    expect(paymentsSource).toContain('total');
+    expect(paymentsSource).toContain('totalAmount');
     expect(paymentsSource).toContain('status');
   });
 
-  it('POST validates transaction_id', () => {
-    expect(paymentsSource).toContain('Missing transaction_id');
+  it('POST validates order_id', () => {
+    expect(paymentsSource).toContain('Missing order_id');
   });
 
-  it('POST checks for Paddle API key', () => {
-    expect(paymentsSource).toContain('PADDLE_API_KEY');
-    expect(paymentsSource).toContain('Paddle API key not configured');
+  it('POST checks for the Polar access token', () => {
+    expect(paymentsSource).toContain('POLAR_ACCESS_TOKEN');
+    expect(paymentsSource).toContain('Polar access token not configured');
   });
 
-  it('POST calls Paddle refund endpoint', () => {
-    expect(paymentsSource).toContain('/transactions/');
-    expect(paymentsSource).toContain('/refund');
+  it('POST calls the Polar refund API by order id', () => {
+    expect(paymentsSource).toContain('polar.refunds.create');
+    expect(paymentsSource).toContain('orderId');
   });
 
   it('POST logs admin action to audit_log (R3 mitigation)', () => {
@@ -346,7 +346,7 @@ describe('5c (cont): Admin dashboard payments tab', () => {
 
   it('renders payment transaction table', () => {
     expect(dashboardSource).toContain('Payment Transactions');
-    expect(dashboardSource).toContain('transaction_id');
+    expect(dashboardSource).toContain('order_id');
   });
 
   it('has refund button for completed transactions', () => {

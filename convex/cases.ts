@@ -103,7 +103,7 @@ export const updateMine = mutation({
       diagnosticState: v.optional(v.any()),
       previewShownAt: v.optional(v.number()),
       refusalTrigger: v.optional(v.string()),
-      paddleTransactionId: v.optional(v.string()),
+      polarOrderId: v.optional(v.string()),
     }),
   },
   handler: async (ctx, { caseId, patch }) => {

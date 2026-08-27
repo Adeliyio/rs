@@ -46,7 +46,7 @@ interface CaseRow {
   jurisdiction: string;
   diagnostic_state: Record<string, unknown> | null;
   payment_status: string;
-  paddle_transaction_id: string | null;
+  polar_order_id: string | null;
   refusal_trigger: string | null;
   created_at: string | null;
   updated_at: string | null;

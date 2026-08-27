@@ -8,6 +8,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
+import { isPolarConfigured } from '@/lib/payments/polar-client';
+import { derivePlan, readCaseIdFromMetadata } from '@/types/external/polar.types';
 
 /* ================================================================== */
 /*  PATH 1: Deposit case — CA — full happy path                      */
@@ -245,28 +247,28 @@ describe('User Path: Unsupported Jurisdiction', () => {
 /* ================================================================== */
 
 describe('User Path: Payment Flow', () => {
-  it('webhook signature verification works', async () => {
-    const { verifyPaddleWebhookSignature } = await import('@/lib/payments/paddle-client');
-    const { createHmac } = await import('node:crypto');
+  it('Polar client reports configured state from the access token', () => {
+    const prev = process.env.POLAR_ACCESS_TOKEN;
 
-    const secret = 'test-secret';
-    const body = '{"event_id":"evt_123"}';
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    const hmac = createHmac('sha256', secret)
-      .update(`${timestamp}:${body}`)
-      .digest('hex');
-    const signature = `ts=${timestamp};h1=${hmac}`;
+    process.env.POLAR_ACCESS_TOKEN = '';
+    expect(isPolarConfigured()).toBe(false);
 
-    expect(verifyPaddleWebhookSignature(body, signature, secret)).toBe(true);
-    expect(verifyPaddleWebhookSignature(body, 'invalid', secret)).toBe(false);
+    process.env.POLAR_ACCESS_TOKEN = 'polar_oat_test';
+    expect(isPolarConfigured()).toBe(true);
+
+    process.env.POLAR_ACCESS_TOKEN = prev;
   });
 
-  it('SKU prices are correct', async () => {
-    const { SKU_PRICES } = await import('@/lib/payments/paddle-client');
+  it('derivePlan maps product name / interval to the internal plan id', () => {
+    expect(derivePlan('Unlimited Annual', 'year')).toBe('annual_unlimited');
+    expect(derivePlan('Unlimited Monthly', 'month')).toBe('monthly_unlimited');
+    // Interval alone drives it when the name is unhelpful.
+    expect(derivePlan('Unlimited', 'year')).toBe('annual_unlimited');
+    expect(derivePlan('Unlimited', 'month')).toBe('monthly_unlimited');
 
-    expect(SKU_PRICES.deposit_single.amount).toBe(4900); // $49
-    expect(SKU_PRICES.monthly_unlimited.amount).toBe(1500); // $15
-    expect(SKU_PRICES.annual_unlimited.amount).toBe(12900); // $129
+    // metadata.caseId is read only when a non-empty string.
+    expect(readCaseIdFromMetadata({ caseId: 'case_123' })).toBe('case_123');
+    expect(readCaseIdFromMetadata({})).toBeUndefined();
   });
 });
 

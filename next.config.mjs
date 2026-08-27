@@ -99,32 +99,35 @@ const nextConfig = {
             //   Next.js App Router does not yet support nonce-based CSP natively.
             //   Tracked: https://github.com/vercel/next.js/discussions/54907
             //
-            // 'unsafe-eval' is deliberately EXCLUDED in production. It was only
-            //   needed for Paddle.js v1 (now removed) and webpack hot-reload (dev only).
-            //   Paddle.js v2 (CDN script) works without eval.
+            // 'unsafe-eval' is deliberately EXCLUDED in production. It is only
+            //   needed for webpack hot-reload (dev only). Polar checkout is a
+            //   full redirect to its hosted page — no in-page SDK/eval.
             //
             // 'unsafe-inline' (styles): Required by Radix UI and Next.js
             //   style injection. Cannot be replaced with nonces without
             //   a full migration to a nonce-aware style system.
             //
-            // External domains: Paddle CDN (payment overlay), Plausible (analytics),
-            //   Convex (self-hosted REST + WebSocket, on *.resolvaio.com),
-            //   OpenAI (generation), Tavily (search).
+            // External domains: Polar (checkout redirect + API), Plausible
+            //   (analytics), Convex (self-hosted REST + WebSocket, on
+            //   *.resolvaio.com), OpenAI (generation), Tavily (search).
+            //   Polar checkout navigates the top-level document (redirect), so it
+            //   needs form-action/connect-src, not frame-src.
             //
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
               // 'unsafe-eval' is only included in dev (React Refresh / HMR needs it).
               // In production it is deliberately excluded (SEC-12).
-              `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://cdn.paddle.com https://plausible.io`,
+              `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ''} https://plausible.io`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
-              `connect-src 'self' ${convexConnectSrc} ${devConnect} https://*.resolvaio.com wss://*.resolvaio.com https://api.openai.com https://api.tavily.com https://api.paddle.com https://sandbox-api.paddle.com https://plausible.io`,
-              "frame-src https://cdn.paddle.com https://sandbox-buy.paddle.com https://buy.paddle.com",
+              `connect-src 'self' ${convexConnectSrc} ${devConnect} https://*.resolvaio.com wss://*.resolvaio.com https://api.openai.com https://api.tavily.com https://api.polar.sh https://sandbox-api.polar.sh https://plausible.io`,
               "object-src 'none'",
               "base-uri 'self'",
-              "form-action 'self'",
+              // Polar checkout starts by navigating the browser to checkout.polar.sh
+              // (via our /api/checkout redirect), so allow it as a form/navigation target.
+              "form-action 'self' https://checkout.polar.sh https://sandbox.polar.sh",
             ].join('; '),
           },
         ],

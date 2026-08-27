@@ -157,8 +157,8 @@ describe('SEC-14: Admin audit logging', () => {
  *  SEC-16: Webhook Rate Limiting
  * ==================================================================== */
 
-describe('SEC-16: Webhook rate limiting + IP allowlist', () => {
-  const source = readSrc('src/app/api/webhooks/paddle/route.ts');
+describe('SEC-16: Webhook rate limiting + signature verification', () => {
+  const source = readSrc('src/app/api/webhooks/polar/route.ts');
 
   test('imports checkRateLimit', () => {
     expect(source).toContain('checkRateLimit');
@@ -177,27 +177,22 @@ describe('SEC-16: Webhook rate limiting + IP allowlist', () => {
     expect(source).toContain('Webhook rate limit exceeded');
   });
 
-  test('has optional IP allowlist via PADDLE_WEBHOOK_IPS', () => {
-    expect(source).toContain('PADDLE_WEBHOOK_IPS');
-    expect(source).toContain('process.env.PADDLE_WEBHOOK_IPS');
+  test('verifies the Standard Webhooks signature via the Polar adapter', () => {
+    // The @polar-sh/nextjs Webhooks() adapter verifies the HMAC signature; a
+    // failed verification surfaces as a 403 the route maps to 401.
+    expect(source).toContain('Webhooks({');
+    expect(source).toContain('POLAR_WEBHOOK_SECRET');
+    expect(source).toContain('Invalid webhook signature');
   });
 
-  test('returns 403 for IPs not in allowlist when enabled', () => {
-    expect(source).toContain('IP not in webhook allowlist');
-    expect(source).toContain('403');
-  });
-
-  test('IP check only enforced when env var is set', () => {
-    expect(source).toContain('WEBHOOK_IP_CHECK_ENABLED');
+  test('rejects deliveries missing the webhook-id idempotency key', () => {
+    expect(source).toContain("request.headers.get('webhook-id')");
+    expect(source).toContain('Missing webhook-id header');
   });
 
   test('extracts client IP from headers', () => {
     expect(source).toContain('getWebhookClientIp');
     expect(source).toContain('x-forwarded-for');
-  });
-
-  test('SEC-16 comment present', () => {
-    expect(source).toContain('SEC-16');
   });
 });
 
@@ -231,7 +226,7 @@ describe('Phase 3 — End-to-end risk mitigation summary', () => {
   });
 
   test('SEC-16 MITIGATED: Webhook endpoint has rate limiting', () => {
-    const source = readSrc('src/app/api/webhooks/paddle/route.ts');
+    const source = readSrc('src/app/api/webhooks/polar/route.ts');
     expect(source).toContain('checkRateLimit');
     expect(source).toContain('429');
   });

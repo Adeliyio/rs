@@ -1,9 +1,14 @@
 /**
- * Paddle webhook event processor — server-only.
+ * Polar webhook event processor — server-only.
  *
- * Processes verified, idempotency-stored Paddle events. Uses the service Convex
- * client (workerConvex) — which bypasses per-user authz — since webhooks run
- * outside a user session.
+ * The `@polar-sh/nextjs` `Webhooks()` adapter verifies the Standard Webhooks
+ * HMAC signature and dispatches to the exported handlers below with typed SDK
+ * payloads. Each handler Zod-parses the fields it reads (CLAUDE.md §2.1), then
+ * writes through the service Convex client (workerConvex) — which bypasses
+ * per-user authz — since webhooks run outside a user session.
+ *
+ * Idempotency: the route records the event id in `webhook_events` before
+ * dispatching (recordWebhook → skip on duplicate), and marks it processed after.
  */
 
 import { workerConvex, api } from '@/lib/convex/worker-client';
@@ -12,14 +17,29 @@ import { enqueuePaymentConfirmationEmail } from '@/lib/queue/enqueue';
 import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund';
 import { cancelOutcomeEmails } from '@/lib/outcomes/outcome-scheduler';
 import { DEPOSIT_JURISDICTION, type DepositJurisdiction } from '@/types/enums';
-import type {
-  PaddleWebhookEvent,
-  TransactionCompletedEvent,
-  TransactionRefundedEvent,
-  SubscriptionCreatedEvent,
-  SubscriptionCanceledEvent,
-  SubscriptionUpdatedEvent,
-} from '@/types/external/paddle.types';
+import {
+  polarOrderSchema,
+  polarSubscriptionSchema,
+  readCaseIdFromMetadata,
+  derivePlan,
+} from '@/types/external/polar.types';
+import type { Webhooks } from '@polar-sh/nextjs';
+
+/**
+ * Handler payload types, derived from the `@polar-sh/nextjs` `Webhooks()` config
+ * so they ALWAYS match the exact `@polar-sh/sdk` version the adapter resolves
+ * (the adapter pins ^0.47; the app's top-level SDK is a newer minor). Importing
+ * the payload types from a fixed SDK path would bind to the wrong copy and fail
+ * to assign. We Zod-parse `payload.data` anyway (CLAUDE.md §2.1), so we only need
+ * the outer payload shape here.
+ */
+type WebhooksConfig = Parameters<typeof Webhooks>[0];
+type WebhookOrderPaidPayload = Parameters<NonNullable<WebhooksConfig['onOrderPaid']>>[0];
+type WebhookOrderRefundedPayload = Parameters<NonNullable<WebhooksConfig['onOrderRefunded']>>[0];
+type WebhookSubscriptionActivePayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionActive']>>[0];
+type WebhookSubscriptionCanceledPayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionCanceled']>>[0];
+type WebhookSubscriptionUpdatedPayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionUpdated']>>[0];
+type WebhookSubscriptionRevokedPayload = Parameters<NonNullable<WebhooksConfig['onSubscriptionRevoked']>>[0];
 
 export interface WebhookProcessResult {
   ok: boolean;
@@ -27,29 +47,82 @@ export interface WebhookProcessResult {
   error?: string;
 }
 
-function toMs(iso: string | null | undefined): number | undefined {
-  return iso ? new Date(iso).getTime() : undefined;
+/** Formats integer cents (Polar amounts) as a `$x.xx` dollar string. */
+function formatCents(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
 }
 
-/* ---- transaction.completed ---- */
+function dateToMs(d: Date | null | undefined): number | undefined {
+  return d ? d.getTime() : undefined;
+}
 
-async function handleTransactionCompleted(
-  event: TransactionCompletedEvent,
+/* ------------------------------------------------------------------ */
+/*  order.paid                                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * `order.paid` fires for BOTH one-time letter purchases AND every subscription
+ * renewal cycle. We branch on `order.subscriptionId`:
+ *   - present  → a subscription cycle; entitlement is handled by the
+ *     subscription.* events, so we do NOT run one-time-letter fulfillment here.
+ *   - absent   → a one-time deposit-letter order; run the letter fulfillment
+ *     (mark the case paid + defense-in-depth refund/confirmation email).
+ *
+ * The case is located via `order.metadata.caseId` (echoed from checkout) and,
+ * as a fallback, via the stored `polar_order_id`.
+ */
+export async function handleOrderPaid(
+  payload: WebhookOrderPaidPayload,
 ): Promise<WebhookProcessResult> {
-  const txn = event.data;
+  const eventType = 'order.paid';
+  const order = polarOrderSchema.parse(payload.data);
 
-  const caseRow = await workerConvex.query(api.service.caseByPaddleTxn, {
-    paddleTransactionId: txn.id,
-  });
+  // Subscription-cycle order (renewal): entitlement flows through subscription.*.
+  if (order.subscriptionId) {
+    return { ok: true, event_type: eventType };
+  }
+
+  // One-time deposit-letter order. Locate the case by metadata.caseId, then
+  // by the stored polar_order_id.
+  const caseIdFromMeta = readCaseIdFromMetadata(order.metadata);
+
+  let caseRow = caseIdFromMeta
+    ? await workerConvex.query(api.service.getCase, {
+        caseId: caseIdFromMeta as Id<'cases'>,
+      })
+    : null;
 
   if (!caseRow) {
-    if (txn.subscription_id) return { ok: true, event_type: event.event_type };
-    return { ok: false, event_type: event.event_type, error: `No case found for transaction ${txn.id}` };
+    caseRow = await workerConvex.query(api.service.caseByPolarOrder, {
+      polarOrderId: order.id,
+    });
+  }
+
+  if (!caseRow) {
+    return {
+      ok: false,
+      event_type: eventType,
+      error: `No case found for order ${order.id}`,
+    };
+  }
+
+  // Persist the order id on the case if the metadata path found it first (so
+  // refunds and lookups by order id resolve later).
+  if (!caseRow.polar_order_id) {
+    try {
+      await workerConvex.mutation(api.service.patchCase, {
+        caseId: caseRow.id as Id<'cases'>,
+        patch: { polarOrderId: order.id },
+      });
+    } catch (patchErr) {
+      // eslint-disable-next-line no-console
+      console.error('[Webhook] Failed to link polar_order_id to case:', patchErr);
+    }
   }
 
   // Idempotent — already paid.
   if (caseRow.payment_status === 'paid') {
-    return { ok: true, event_type: event.event_type };
+    return { ok: true, event_type: eventType };
   }
 
   await workerConvex.mutation(api.service.setPaymentStatus, {
@@ -60,22 +133,21 @@ async function handleTransactionCompleted(
   /* ---- R-1: defense-in-depth auto-refund ---- */
   // The create-case + checkout routes already block unsupported deposit
   // jurisdictions before payment, so this should be unreachable via the UI.
-  // But a Paddle-initiated or out-of-band charge could still land here — so if
-  // a paid deposit case is in an unsupported state, refund it now rather than
-  // waiting for the user to hit /generate.
+  // But an out-of-band charge could still land here — so if a paid deposit case
+  // is in an unsupported state, refund it now rather than waiting for /generate.
   const isDeposit = caseRow.wedge === 'deposit';
   const supported =
     isDeposit &&
     DEPOSIT_JURISDICTION.includes(caseRow.jurisdiction as DepositJurisdiction);
   if (isDeposit && !supported) {
     try {
-      await processAutoRefundIfNeeded(caseRow.id, txn.id);
+      await processAutoRefundIfNeeded(caseRow.id, order.id);
     } catch (refundErr) {
       // eslint-disable-next-line no-console
       console.error('[Webhook] Auto-refund for unsupported jurisdiction failed:', refundErr);
     }
     // Do not send a "your letter is ready" confirmation for a refunded case.
-    return { ok: true, event_type: event.event_type };
+    return { ok: true, event_type: eventType };
   }
 
   /* ---- payment confirmation email (best-effort) ---- */
@@ -85,7 +157,8 @@ async function handleTransactionCompleted(
     });
     if (userEmail) {
       const appUrl = process.env.APP_URL ?? 'http://localhost:3000';
-      const amount = txn.total ? `$${(Number(txn.total) / 100).toFixed(2)}` : '$49.00';
+      // Polar amounts are integer cents already — format directly, no /100 of a string.
+      const amount = order.totalAmount ? formatCents(order.totalAmount) : '$49.00';
       await enqueuePaymentConfirmationEmail(
         userEmail,
         amount,
@@ -99,21 +172,36 @@ async function handleTransactionCompleted(
     console.error('Failed to enqueue payment confirmation email:', emailErr);
   }
 
-  return { ok: true, event_type: event.event_type };
+  return { ok: true, event_type: eventType };
 }
 
-/* ---- transaction.refunded ---- */
+/* ------------------------------------------------------------------ */
+/*  order.refunded                                                    */
+/* ------------------------------------------------------------------ */
 
-async function handleTransactionRefunded(
-  event: TransactionRefundedEvent,
+export async function handleOrderRefunded(
+  payload: WebhookOrderRefundedPayload,
 ): Promise<WebhookProcessResult> {
-  const txn = event.data;
+  const eventType = 'order.refunded';
+  const order = polarOrderSchema.parse(payload.data);
 
-  const caseRow = await workerConvex.query(api.service.caseByPaddleTxn, {
-    paddleTransactionId: txn.id,
-  });
+  const caseIdFromMeta = readCaseIdFromMetadata(order.metadata);
+  let caseRow = caseIdFromMeta
+    ? await workerConvex.query(api.service.getCase, {
+        caseId: caseIdFromMeta as Id<'cases'>,
+      })
+    : null;
   if (!caseRow) {
-    return { ok: false, event_type: event.event_type, error: `No case found for refunded transaction ${txn.id}` };
+    caseRow = await workerConvex.query(api.service.caseByPolarOrder, {
+      polarOrderId: order.id,
+    });
+  }
+  if (!caseRow) {
+    return {
+      ok: false,
+      event_type: eventType,
+      error: `No case found for refunded order ${order.id}`,
+    };
   }
 
   // Set refunded + close (records status history via setPaymentStatus).
@@ -124,8 +212,6 @@ async function handleTransactionRefunded(
   });
 
   // R-2: closing a case must also cancel any scheduled outcome-follow-up emails.
-  // This coupling used to live only in the /status route; a refund closes the
-  // case through a different path, so cancel here too. (Idempotent no-op if none.)
   try {
     await cancelOutcomeEmails(caseRow.id);
   } catch (cancelErr) {
@@ -133,99 +219,106 @@ async function handleTransactionRefunded(
     console.error('[Webhook] Failed to cancel outcome emails on refund:', cancelErr);
   }
 
-  return { ok: true, event_type: event.event_type };
+  return { ok: true, event_type: eventType };
 }
 
-/* ---- subscription.created ---- */
+/* ------------------------------------------------------------------ */
+/*  subscription.active (create/activate)                            */
+/* ------------------------------------------------------------------ */
 
-async function handleSubscriptionCreated(
-  event: SubscriptionCreatedEvent,
+export async function handleSubscriptionActive(
+  payload: WebhookSubscriptionActivePayload,
 ): Promise<WebhookProcessResult> {
-  const sub = event.data;
-  const productName = sub.items[0]?.product?.name ?? '';
-  const plan = productName.toLowerCase().includes('annual') ? 'annual_unlimited' : 'monthly_unlimited';
+  const eventType = 'subscription.active';
+  const sub = polarSubscriptionSchema.parse(payload.data);
+  const plan = derivePlan(sub.product?.name, sub.recurringInterval);
 
-  const existing = await workerConvex.query(api.service.getSubscriptionByPaddleId, {
-    paddleSubscriptionId: sub.id,
+  const existing = await workerConvex.query(api.service.getSubscriptionByPolarId, {
+    polarSubscriptionId: sub.id,
   });
-  if (existing) return { ok: true, event_type: event.event_type };
+  if (existing) return { ok: true, event_type: eventType };
 
   await workerConvex.mutation(api.service.createSubscription, {
-    paddleCustomerId: sub.customer_id,
-    paddleSubscriptionId: sub.id,
+    polarCustomerId: sub.customerId ?? undefined,
+    polarSubscriptionId: sub.id,
     plan,
     status: 'active',
-    currentPeriodStart: toMs(sub.current_billing_period.starts_at),
-    currentPeriodEnd: toMs(sub.current_billing_period.ends_at),
+    currentPeriodStart: dateToMs(sub.currentPeriodStart),
+    currentPeriodEnd: dateToMs(sub.currentPeriodEnd),
   });
 
-  return { ok: true, event_type: event.event_type };
+  return { ok: true, event_type: eventType };
 }
 
-/* ---- subscription.canceled ---- */
+/* ------------------------------------------------------------------ */
+/*  subscription.canceled (scheduled end — still active until period) */
+/* ------------------------------------------------------------------ */
 
-async function handleSubscriptionCanceled(
-  event: SubscriptionCanceledEvent,
+/**
+ * `subscription.canceled` only SCHEDULES the end of the subscription; the
+ * customer keeps access until the period end. So we mark it `canceled` +
+ * `cancelAtPeriodEnd`, but `currentMine` still treats it as entitled until the
+ * period expires. Entitlement is turned OFF by `subscription.revoked`, not here.
+ */
+export async function handleSubscriptionCanceled(
+  payload: WebhookSubscriptionCanceledPayload,
 ): Promise<WebhookProcessResult> {
-  const sub = event.data;
-  await workerConvex.mutation(api.service.patchSubscriptionByPaddleId, {
-    paddleSubscriptionId: sub.id,
+  const eventType = 'subscription.canceled';
+  const sub = polarSubscriptionSchema.parse(payload.data);
+  await workerConvex.mutation(api.service.patchSubscriptionByPolarId, {
+    polarSubscriptionId: sub.id,
     patch: { status: 'canceled', cancelAtPeriodEnd: true },
   });
-  return { ok: true, event_type: event.event_type };
+  return { ok: true, event_type: eventType };
 }
 
-/* ---- subscription.updated ---- */
+/* ------------------------------------------------------------------ */
+/*  subscription.revoked (entitlement OFF)                            */
+/* ------------------------------------------------------------------ */
 
-async function handleSubscriptionUpdated(
-  event: SubscriptionUpdatedEvent,
+/**
+ * `subscription.revoked` fires when access actually ends. We set the status to
+ * `revoked` — a value `subscriptions.currentMine` does NOT count as active — so
+ * the Unlimited entitlement (and the M1 $49 waiver) turns off immediately.
+ */
+export async function handleSubscriptionRevoked(
+  payload: WebhookSubscriptionRevokedPayload,
 ): Promise<WebhookProcessResult> {
-  const sub = event.data;
+  const eventType = 'subscription.revoked';
+  const sub = polarSubscriptionSchema.parse(payload.data);
+  await workerConvex.mutation(api.service.patchSubscriptionByPolarId, {
+    polarSubscriptionId: sub.id,
+    patch: { status: 'revoked', cancelAtPeriodEnd: true },
+  });
+  return { ok: true, event_type: eventType };
+}
+
+/* ------------------------------------------------------------------ */
+/*  subscription.updated (patch status + period + plan)              */
+/* ------------------------------------------------------------------ */
+
+export async function handleSubscriptionUpdated(
+  payload: WebhookSubscriptionUpdatedPayload,
+): Promise<WebhookProcessResult> {
+  const eventType = 'subscription.updated';
+  const sub = polarSubscriptionSchema.parse(payload.data);
+
   const patch: Record<string, unknown> = { status: sub.status };
 
-  if (sub.current_billing_period) {
-    patch.currentPeriodStart = toMs(sub.current_billing_period.starts_at);
-    patch.currentPeriodEnd = toMs(sub.current_billing_period.ends_at);
-  }
-  if (sub.items?.[0]?.product?.name) {
-    patch.plan = sub.items[0].product.name.toLowerCase().includes('annual')
-      ? 'annual_unlimited'
-      : 'monthly_unlimited';
-  }
-  if (sub.scheduled_change?.action === 'cancel') {
-    patch.cancelAtPeriodEnd = true;
+  const start = dateToMs(sub.currentPeriodStart);
+  const end = dateToMs(sub.currentPeriodEnd);
+  if (start !== undefined) patch.currentPeriodStart = start;
+  if (end !== undefined) patch.currentPeriodEnd = end;
+
+  if (sub.product?.name) {
+    patch.plan = derivePlan(sub.product.name, sub.recurringInterval);
   }
 
-  await workerConvex.mutation(api.service.patchSubscriptionByPaddleId, {
-    paddleSubscriptionId: sub.id,
+  patch.cancelAtPeriodEnd = sub.cancelAtPeriodEnd;
+
+  await workerConvex.mutation(api.service.patchSubscriptionByPolarId, {
+    polarSubscriptionId: sub.id,
     patch,
   });
-  return { ok: true, event_type: event.event_type };
-}
-
-/* ---- dispatcher ---- */
-
-export async function processWebhookEvent(
-  event: PaddleWebhookEvent,
-): Promise<WebhookProcessResult> {
-  switch (event.event_type) {
-    case 'transaction.completed':
-      return handleTransactionCompleted(event);
-    case 'transaction.refunded':
-      return handleTransactionRefunded(event);
-    case 'subscription.created':
-      return handleSubscriptionCreated(event);
-    case 'subscription.canceled':
-      return handleSubscriptionCanceled(event);
-    case 'subscription.updated':
-      return handleSubscriptionUpdated(event);
-    case 'transaction.disputed':
-      // eslint-disable-next-line no-console
-      console.error(
-        `[Paddle] Transaction disputed: ${event.data.id}, reason: ${event.data.dispute.reason}`,
-      );
-      return { ok: true, event_type: event.event_type };
-    default:
-      return { ok: false, event_type: 'unknown', error: `Unhandled event type` };
-  }
+  return { ok: true, event_type: eventType };
 }

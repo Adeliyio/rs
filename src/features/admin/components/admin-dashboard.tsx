@@ -165,16 +165,16 @@ export function AdminDashboard() {
     setTriggeringMonitorRun(false);
   }, []);
 
-  const handleRefund = useCallback(async (transactionId: string) => {
-    if (!confirm(`Are you sure you want to refund transaction ${transactionId}? This cannot be undone.`)) {
+  const handleRefund = useCallback(async (orderId: string) => {
+    if (!confirm(`Are you sure you want to refund order ${orderId}? This cannot be undone.`)) {
       return;
     }
-    setRefundingTxn(transactionId);
+    setRefundingTxn(orderId);
     try {
       const res = await fetch('/api/admin/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transaction_id: transactionId }),
+        body: JSON.stringify({ order_id: orderId }),
       });
       if (res.ok) {
         void fetchPayments();
@@ -429,27 +429,27 @@ export function AdminDashboard() {
                 <tbody>
                   {payments.map((p) => (
                     <tr key={p['id'] as string} className="border-b hover:bg-neutral-50">
-                      <td className="px-4 py-2 font-mono text-xs">{(p['transaction_id'] as string)?.slice(0, 16)}...</td>
+                      <td className="px-4 py-2 font-mono text-xs">{(p['order_id'] as string)?.slice(0, 16)}...</td>
                       <td className="px-4 py-2 text-xs">{p['event_type'] as string}</td>
-                      <td className="px-4 py-2">{p['currency'] as string} {p['amount'] as string}</td>
+                      <td className="px-4 py-2">{p['currency'] as string} {((p['amount'] as number) / 100).toFixed(2)}</td>
                       <td className="px-4 py-2">
                         <span className={`rounded-full px-2 py-0.5 text-xs ${
-                          p['status'] === 'completed' ? 'bg-green-100 text-green-700' :
+                          p['status'] === 'paid' ? 'bg-green-100 text-green-700' :
                           p['status'] === 'refunded' ? 'bg-red-100 text-red-700' :
                           'bg-neutral-100 text-neutral-700'
                         }`}>{p['status'] as string}</span>
                       </td>
                       <td className="px-4 py-2 text-xs text-neutral-500">{p['created_at'] as string}</td>
                       <td className="px-4 py-2">
-                        {p['status'] === 'completed' && (
+                        {p['status'] === 'paid' && (
                           <Button
                             size="sm"
                             variant="outline"
                             className="h-7 text-xs text-red-600 hover:bg-red-50"
-                            onClick={() => handleRefund(p['transaction_id'] as string)}
-                            disabled={refundingTxn === p['transaction_id']}
+                            onClick={() => handleRefund(p['order_id'] as string)}
+                            disabled={refundingTxn === p['order_id']}
                           >
-                            {refundingTxn === p['transaction_id'] ? 'Refunding...' : 'Refund'}
+                            {refundingTxn === p['order_id'] ? 'Refunding...' : 'Refund'}
                           </Button>
                         )}
                       </td>

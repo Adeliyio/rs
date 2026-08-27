@@ -85,20 +85,20 @@ export default function PrivacyPolicyPage() {
               1.4 Payment Information
             </h3>
             <p>
-              Payments are processed by Paddle. We store Paddle transaction IDs,
+              Payments are processed by Polar. We store Polar order IDs,
               subscription IDs, payment status, and billing period dates.{' '}
               <strong className="text-[#111]">
                 We do not store your credit card number, CVV, or bank account
                 details.
               </strong>{' '}
-              That information is handled entirely by Paddle. See{' '}
+              That information is handled entirely by Polar. See{' '}
               <a
-                href="https://www.paddle.com/legal/privacy"
+                href="https://polar.sh/legal/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#111] underline underline-offset-4"
               >
-                Paddle&rsquo;s Privacy Policy
+                Polar&rsquo;s Privacy Policy
               </a>
               .
             </p>
@@ -161,7 +161,7 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <strong className="text-[#111]">Process payments:</strong>{' '}
-                Facilitate transactions through Paddle and manage subscription
+                Facilitate transactions through Polar and manage subscription
                 status.
               </li>
               <li>
@@ -227,9 +227,9 @@ export default function PrivacyPolicyPage() {
                     <td className="py-2.5">Jurisdiction and statute queries (cached, no PII)</td>
                   </tr>
                   <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Paddle</td>
-                    <td className="py-2.5 pr-4">Payment processing</td>
-                    <td className="py-2.5">Email, transaction and subscription data</td>
+                    <td className="py-2.5 pr-4 font-medium text-[#111]">Polar</td>
+                    <td className="py-2.5 pr-4">Payment processing (merchant of record)</td>
+                    <td className="py-2.5">Email, order and subscription data</td>
                   </tr>
                   <tr className="border-b border-[#E8E8E5]">
                     <td className="py-2.5 pr-4 font-medium text-[#111]">Resend</td>

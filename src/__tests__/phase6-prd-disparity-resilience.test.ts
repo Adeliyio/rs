@@ -484,9 +484,9 @@ describe('6e: A/B pricing module', () => {
     expect(source).toContain('export interface PriceVariant');
   });
 
-  it('PriceVariant has amount, priceId, label fields', () => {
+  it('PriceVariant has amount, productId, label fields', () => {
     expect(source).toContain('amount: number');
-    expect(source).toContain('priceId: string');
+    expect(source).toContain('productId: string');
     expect(source).toContain('label: string');
   });
 
@@ -576,12 +576,10 @@ describe('6e: A/B pricing in payment node', () => {
     expect(source).toContain('assignPriceVariant');
   });
 
-  it('uses variant priceId instead of hardcoded env var', () => {
-    expect(source).toContain('priceVariant.priceId');
-    // Old pattern should be gone
-    expect(source).not.toContain(
-      "process.env.NEXT_PUBLIC_PADDLE_DEPOSIT_PRICE_ID ?? ''",
-    );
+  it('uses variant productId instead of hardcoded env var', () => {
+    expect(source).toContain('priceVariant.productId');
+    // Old Paddle env pattern should be gone
+    expect(source).not.toContain('NEXT_PUBLIC_PADDLE_DEPOSIT_PRICE_ID');
   });
 
   it('includes variant label in product name', () => {
@@ -639,16 +637,16 @@ describe('6f: Subscription upsell component', () => {
     expect(source).toContain('Save 28%');
   });
 
-  it('reads monthly price ID from env', () => {
-    expect(source).toContain('NEXT_PUBLIC_PADDLE_MONTHLY_PRICE_ID');
+  it('reads monthly product ID from env', () => {
+    expect(source).toContain('NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY');
   });
 
-  it('reads annual price ID from env', () => {
-    expect(source).toContain('NEXT_PUBLIC_PADDLE_ANNUAL_PRICE_ID');
+  it('reads annual product ID from env', () => {
+    expect(source).toContain('NEXT_PUBLIC_POLAR_PRODUCT_YEARLY');
   });
 
-  it('uses PaddleCheckout for payment', () => {
-    expect(source).toContain('PaddleCheckout');
+  it('uses PolarCheckout for payment', () => {
+    expect(source).toContain('PolarCheckout');
   });
 
   it('has dismiss option (no thanks)', () => {
@@ -701,13 +699,13 @@ describe('6f: Subscription management in settings', () => {
     expect(source).toContain('Cancels on');
   });
 
-  it('links to Paddle Customer Portal', () => {
-    expect(source).toContain('customer-portal.paddle.com');
+  it('links to the Polar customer portal', () => {
+    expect(source).toContain('polar.sh');
     expect(source).toContain('Manage subscription');
   });
 
-  it('handles sandbox vs production portal URL', () => {
-    expect(source).toContain('sandbox-customer-portal.paddle.com');
+  it('no longer references the Paddle customer portal', () => {
+    expect(source).not.toContain('paddle.com');
   });
 });
 
@@ -752,96 +750,101 @@ describe('6f: Subscription API endpoint', () => {
   });
 });
 
-describe('6f: Webhook processor handles subscription renewal', () => {
+describe('6f: Webhook processor handles Polar subscription events', () => {
   const source = readSource('lib/payments/webhook-processor.ts');
 
-  it('handleSubscriptionUpdated updates billing period on renewal', () => {
+  it('handleSubscriptionUpdated updates the billing period', () => {
     const fnIdx = source.indexOf('async function handleSubscriptionUpdated');
     const fnSource = source.slice(fnIdx);
-    // Reads the Paddle current_billing_period and writes the Convex patch fields
-    // currentPeriodStart / currentPeriodEnd (camelCase after migration).
-    expect(fnSource).toContain('current_billing_period');
+    // Reads the Polar currentPeriodStart/End (Date) and writes the Convex patch
+    // fields currentPeriodStart / currentPeriodEnd (epoch ms).
     expect(fnSource).toContain('currentPeriodStart');
     expect(fnSource).toContain('currentPeriodEnd');
   });
 
-  it('detects plan change via product name', () => {
+  it('detects plan change via product name (derivePlan)', () => {
     const fnIdx = source.indexOf('async function handleSubscriptionUpdated');
     const fnSource = source.slice(fnIdx);
-    expect(fnSource).toContain('product.name');
-    expect(fnSource).toContain("'annual_unlimited'");
-    expect(fnSource).toContain("'monthly_unlimited'");
+    expect(fnSource).toContain('sub.product');
+    expect(fnSource).toContain('derivePlan');
   });
 
-  it('detects cancellation scheduling', () => {
+  it('propagates cancelAtPeriodEnd', () => {
     const fnIdx = source.indexOf('async function handleSubscriptionUpdated');
     const fnSource = source.slice(fnIdx);
-    expect(fnSource).toContain('scheduled_change');
-    expect(fnSource).toContain("action === 'cancel'");
-    // Convex migration: cancel_at_period_end column -> cancelAtPeriodEnd patch field
     expect(fnSource).toContain('cancelAtPeriodEnd');
   });
 
-  it('handles subscription.created events', () => {
-    expect(source).toContain('handleSubscriptionCreated');
-    expect(source).toContain("'subscription.created'");
+  it('order.paid branches on subscriptionId (renewal gotcha)', () => {
+    const fnIdx = source.indexOf('export async function handleOrderPaid');
+    const fnSource = source.slice(fnIdx);
+    // A subscription-cycle order (renewal) must NOT re-run one-time fulfillment.
+    expect(fnSource).toContain('order.subscriptionId');
   });
 
-  it('handles subscription.canceled events', () => {
-    expect(source).toContain('handleSubscriptionCanceled');
-    expect(source).toContain("'subscription.canceled'");
-  });
-});
-
-describe('6f: Paddle types include subscription fields', () => {
-  const source = readSource('types/external/paddle.types.ts');
-
-  it('SubscriptionUpdatedEvent has current_billing_period', () => {
-    const updatedIdx = source.indexOf('SubscriptionUpdatedEvent');
-    const typeSection = source.slice(updatedIdx, source.indexOf('}', source.indexOf('}', updatedIdx) + 1) + 1);
-    expect(typeSection).toContain('current_billing_period');
+  it('handles subscription.active (create/activate)', () => {
+    expect(source).toContain('handleSubscriptionActive');
+    expect(source).toContain('createSubscription');
   });
 
-  it('SubscriptionUpdatedEvent has scheduled_change', () => {
-    const updatedIdx = source.indexOf('SubscriptionUpdatedEvent');
-    const typeSection = source.slice(updatedIdx, source.indexOf('}', source.indexOf('}', updatedIdx) + 1) + 1);
-    expect(typeSection).toContain('scheduled_change');
-  });
-
-  it('scheduled_change supports cancel, pause, resume actions', () => {
-    expect(source).toContain("'cancel'");
-    expect(source).toContain("'pause'");
-    expect(source).toContain("'resume'");
+  it('entitlement OFF uses subscription.revoked, not canceled', () => {
+    expect(source).toContain('handleSubscriptionRevoked');
+    // revoked sets a status currentMine does NOT treat as active.
+    const revIdx = source.indexOf('export async function handleSubscriptionRevoked');
+    const revSource = source.slice(revIdx);
+    expect(revSource).toContain("status: 'revoked'");
+    // canceled only schedules the end — stays active until period end.
+    const canIdx = source.indexOf('export async function handleSubscriptionCanceled');
+    const canSource = source.slice(canIdx, revIdx > canIdx ? revIdx : undefined);
+    expect(canSource).toContain("status: 'canceled'");
   });
 });
 
-describe('6f: Subscription SKUs defined', () => {
-  const source = readSource('lib/payments/paddle-client.ts');
+describe('6f: Polar boundary types (Zod at the boundary)', () => {
+  const source = readSource('types/external/polar.types.ts');
 
-  it('defines MONTHLY_UNLIMITED SKU', () => {
-    expect(source).toContain("MONTHLY_UNLIMITED: 'monthly_unlimited'");
+  it('defines a Polar order schema with subscriptionId + metadata', () => {
+    expect(source).toContain('polarOrderSchema');
+    expect(source).toContain('subscriptionId');
+    expect(source).toContain('metadata');
+    expect(source).toContain('totalAmount');
   });
 
-  it('defines ANNUAL_UNLIMITED SKU', () => {
-    expect(source).toContain("ANNUAL_UNLIMITED: 'annual_unlimited'");
+  it('defines a Polar subscription schema with period + status', () => {
+    expect(source).toContain('polarSubscriptionSchema');
+    expect(source).toContain('currentPeriodStart');
+    expect(source).toContain('currentPeriodEnd');
+    expect(source).toContain('cancelAtPeriodEnd');
   });
 
-  it('monthly price is $15 (1500 cents)', () => {
-    expect(source).toContain('amount: 1500');
+  it('derivePlan maps to annual_unlimited / monthly_unlimited', () => {
+    expect(source).toContain("'annual_unlimited'");
+    expect(source).toContain("'monthly_unlimited'");
+  });
+});
+
+describe('6f: Polar products defined in the client module', () => {
+  const source = readSource('lib/payments/polar-client.ts');
+
+  it('exposes the deposit-letter product', () => {
+    expect(source).toContain('depositLetter');
+    expect(source).toContain('POLAR_PRODUCT_LETTER');
   });
 
-  it('annual price is $129 (12900 cents)', () => {
-    expect(source).toContain('amount: 12900');
+  it('exposes the monthly Unlimited product', () => {
+    expect(source).toContain('monthlyUnlimited');
+    expect(source).toContain('POLAR_PRODUCT_MONTHLY');
   });
 
-  it('subscription SKUs are type recurring', () => {
-    // Check the recurring type appears for both subscription SKUs
-    const monthlyIdx = source.indexOf('monthly_unlimited:');
-    const annualIdx = source.indexOf('annual_unlimited:');
-    const monthlySection = source.slice(monthlyIdx, source.indexOf('}', monthlyIdx) + 1);
-    const annualSection = source.slice(annualIdx, source.indexOf('}', annualIdx) + 1);
-    expect(monthlySection).toContain("type: 'recurring'");
-    expect(annualSection).toContain("type: 'recurring'");
+  it('exposes the yearly Unlimited product', () => {
+    expect(source).toContain('yearlyUnlimited');
+    expect(source).toContain('POLAR_PRODUCT_YEARLY');
+  });
+
+  it('initializes a single Polar client keyed on POLAR_SERVER', () => {
+    expect(source).toContain('getPolar');
+    expect(source).toContain('POLAR_ACCESS_TOKEN');
+    expect(source).toContain('POLAR_SERVER');
   });
 });
 
@@ -859,8 +862,8 @@ describe('6f: subscriptions table in the Convex schema', () => {
     expect(subSection).toContain('plan: v.string()');
   });
 
-  it('has a paddleSubscriptionId field', () => {
-    expect(subSection).toContain('paddleSubscriptionId: v.string()');
+  it('has a polarSubscriptionId field', () => {
+    expect(subSection).toContain('polarSubscriptionId: v.string()');
   });
 
   it('has currentPeriodStart and currentPeriodEnd', () => {
@@ -1143,8 +1146,8 @@ describe('Risk: Circuit breaker message sets expectations', () => {
 describe('Risk: A/B pricing falls back when not configured', () => {
   const source = readSource('lib/pricing/ab-pricing.ts');
 
-  it('falls back to NEXT_PUBLIC_PADDLE_DEPOSIT_PRICE_ID', () => {
-    expect(source).toContain('NEXT_PUBLIC_PADDLE_DEPOSIT_PRICE_ID');
+  it('falls back to NEXT_PUBLIC_POLAR_PRODUCT_LETTER', () => {
+    expect(source).toContain('NEXT_PUBLIC_POLAR_PRODUCT_LETTER');
   });
 
   it('returns single variant when env var is empty', () => {

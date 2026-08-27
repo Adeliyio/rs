@@ -132,15 +132,15 @@ export default function TermsOfServicePage() {
               </li>
             </ul>
             <p className="mt-3">
-              All payments are processed by our third-party payment processor,
-              Paddle. By purchasing, you agree to{' '}
+              All payments are processed by our third-party payment processor and
+              merchant of record, Polar. By purchasing, you agree to{' '}
               <a
-                href="https://www.paddle.com/legal/terms"
+                href="https://polar.sh/legal/terms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#111] underline underline-offset-4"
               >
-                Paddle&rsquo;s Terms of Service
+                Polar&rsquo;s Terms of Service
               </a>
               . Prices are in USD and may be subject to applicable taxes.
               Resolvaio does not store your credit card information.

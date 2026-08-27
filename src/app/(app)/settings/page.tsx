@@ -18,7 +18,7 @@ interface SubscriptionData {
   id: string;
   plan: string;
   status: string;
-  paddle_subscription_id: string;
+  polar_subscription_id: string;
   current_period_start: string;
   current_period_end: string;
   cancel_at_period_end: boolean;
@@ -171,13 +171,18 @@ export default function SettingsPage(): React.JSX.Element {
                       </p>
                     )}
                   </div>
+                  {/* Polar customer portal. TODO(M4.5): generate a per-customer
+                      portal session server-side (polar.customerSessions.create /
+                      the @polar-sh/nextjs CustomerPortal adapter) for a
+                      deep-linked, authenticated portal. For now this links to
+                      Polar's hosted portal entry, which is not blocking. */}
                   <a
-                    href={`https://${process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production' ? 'customer-portal.paddle.com' : 'sandbox-customer-portal.paddle.com'}`}
+                    href="https://polar.sh/purchases/subscriptions"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-[14px] text-primary transition-colors hover:text-primary/80"
                   >
-                    Manage subscription on Paddle
+                    Manage subscription on Polar
                     <ExternalLink className="h-3 w-3" />
                   </a>
                 </div>

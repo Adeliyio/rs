@@ -2,7 +2,7 @@
  * Auto-refund for unsupported jurisdictions — server-only.
  *
  * When a user pays for a deposit case in an unsupported state,
- * automatically triggers a refund via the Paddle API and closes
+ * automatically triggers a refund via the Polar API and closes
  * the case.
  *
  * Per payment-billing-rules.md: unsupported-jurisdiction auto-refund
@@ -11,6 +11,7 @@
 
 import { workerConvex, api } from '@/lib/convex/worker-client';
 import type { Id } from '@convex/dataModel';
+import { getPolar } from '@/lib/payments/polar-client';
 import { cancelOutcomeEmails } from '@/lib/outcomes/outcome-scheduler';
 import { DEPOSIT_JURISDICTION, type DepositJurisdiction } from '@/types/enums';
 
@@ -25,45 +26,41 @@ export interface AutoRefundResult {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Paddle refund API                                                 */
+/*  Polar refund API                                                  */
 /* ------------------------------------------------------------------ */
 
-async function requestPaddleRefund(
-  transactionId: string,
-  reason: string,
+/**
+ * Issues a full Polar refund for an order. Polar's `refunds.create` requires an
+ * explicit `amount` (integer cents), so we look up the order first and refund
+ * its still-refundable amount. `comment` carries our human-readable reason;
+ * `reason` is the fixed enum value Polar expects.
+ */
+async function requestPolarRefund(
+  orderId: string,
+  comment: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  const apiKey = process.env.PADDLE_API_KEY;
-  if (!apiKey) {
-    return { ok: false, error: 'Paddle API key not configured' };
+  if (!process.env.POLAR_ACCESS_TOKEN) {
+    return { ok: false, error: 'Polar access token not configured' };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT === 'production'
-    ? 'https://api.paddle.com'
-    : 'https://sandbox-api.paddle.com';
-
   try {
-    const response = await fetch(
-      `${baseUrl}/transactions/${transactionId}/refund`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          reason,
-          type: 'full',
-        }),
-      },
-    );
+    const polar = getPolar();
 
-    if (!response.ok) {
-      const data = (await response.json()) as { error?: { message?: string } };
-      return {
-        ok: false,
-        error: data.error?.message ?? `Paddle API error: ${response.status}`,
-      };
+    // Look up the refundable amount (integer cents). `refundableAmount` accounts
+    // for prior refunds and applied balance; fall back to totalAmount.
+    const order = await polar.orders.get({ id: orderId });
+    const amount = order.refundableAmount || order.totalAmount;
+    if (!amount || amount <= 0) {
+      return { ok: false, error: `Order ${orderId} has no refundable amount` };
     }
+
+    await polar.refunds.create({
+      orderId,
+      amount,
+      reason: 'customer_request',
+      comment,
+      revokeBenefits: true,
+    });
 
     return { ok: true };
   } catch (err) {
@@ -80,11 +77,12 @@ async function requestPaddleRefund(
  * Checks if a case needs an auto-refund (unsupported jurisdiction)
  * and processes it if so.
  *
- * Call this after a transaction.completed webhook for deposit cases.
+ * Call this after an order.paid webhook for deposit cases. `orderId` is the
+ * Polar order id (stored on the case as polar_order_id).
  */
 export async function processAutoRefundIfNeeded(
   caseId: string,
-  transactionId: string,
+  orderId: string,
 ): Promise<AutoRefundResult> {
   // Load case (trusted service context)
   const caseRow = await workerConvex.query(api.service.getCase, {
@@ -112,12 +110,12 @@ export async function processAutoRefundIfNeeded(
   // Unsupported jurisdiction — trigger refund
   const reason = `Automatic refund: jurisdiction ${caseRow.jurisdiction} is not supported for deposit cases. Supported states: ${DEPOSIT_JURISDICTION.join(', ')}.`;
 
-  const refundResult = await requestPaddleRefund(transactionId, reason);
+  const refundResult = await requestPolarRefund(orderId, reason);
 
   if (!refundResult.ok) {
     // eslint-disable-next-line no-console
     console.error(
-      `[AutoRefund] Failed to refund transaction ${transactionId}:`,
+      `[AutoRefund] Failed to refund order ${orderId}:`,
       refundResult.error,
     );
     return { refunded: false, error: refundResult.error };
@@ -139,7 +137,7 @@ export async function processAutoRefundIfNeeded(
 
   // eslint-disable-next-line no-console
   console.log(
-    `[AutoRefund] Refunded transaction ${transactionId} for case ${caseId} (unsupported jurisdiction: ${caseRow.jurisdiction})`,
+    `[AutoRefund] Refunded order ${orderId} for case ${caseId} (unsupported jurisdiction: ${caseRow.jurisdiction})`,
   );
 
   return { refunded: true, reason };

@@ -1,43 +1,31 @@
 /**
  * Webhook processing worker — processes webhook-process queue jobs.
  *
- * Handles webhook events that were enqueued for async processing.
- * Currently handles Paddle webhook events.
+ * Under Polar, payment webhooks are verified and processed INLINE by the
+ * `@polar-sh/nextjs` adapter in `/api/webhooks/polar` (synchronous, no queue).
+ * This worker remains as the queue consumer for any residual async webhook jobs
+ * (e.g. Resend delivery events) — it validates the job and acknowledges it. It
+ * no longer dispatches Polar payment events; those never reach the queue.
  */
 
 import { Worker, type Job } from 'bullmq';
 import { getRedis } from '@/lib/redis';
 import { QUEUE_NAMES } from '@/lib/queue/config';
-import { processWebhookEvent } from '@/lib/payments/webhook-processor';
 import {
   webhookProcessingJobSchema,
   type WebhookProcessingJobPayload,
 } from '@/types/jobs/webhook-processing.job';
-import type { PaddleWebhookEvent } from '@/types/external/paddle.types';
 
 async function processWebhook(
   job: Job<WebhookProcessingJobPayload>,
 ): Promise<void> {
   const payload = webhookProcessingJobSchema.parse(job.data);
 
-  if (payload.provider !== 'paddle') {
-    // eslint-disable-next-line no-console
-    console.warn(`[WebhookWorker] Unknown provider: ${payload.provider}`);
-    return;
-  }
-
-  const event = JSON.parse(payload.raw_payload) as PaddleWebhookEvent;
-  const result = await processWebhookEvent(event);
-
-  if (!result.ok) {
-    throw new Error(
-      `Webhook processing failed for ${result.event_type}: ${result.error}`,
-    );
-  }
-
+  // Polar payment webhooks are handled inline at /api/webhooks/polar and are
+  // never enqueued. Any other provider job is acknowledged as a no-op here.
   // eslint-disable-next-line no-console
   console.log(
-    `[WebhookWorker] Processed ${result.event_type} (event: ${payload.event_id})`,
+    `[WebhookWorker] Acknowledged ${payload.provider} webhook job (event: ${payload.event_id}) — no async processing needed`,
   );
 }
 

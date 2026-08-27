@@ -2,16 +2,16 @@
   "version": "1.0.0",
   "last_reviewed": "2026-05-20",
   "reviewed_by": "NEEDS_LEGAL_REVIEW",
-  "description": "Expectation-setting copy shown at checkout, confirmation email, and delivery screen. Per PRD §9.5: the primary lever for keeping Paddle-monitored chargeback rates low.",
+  "description": "Expectation-setting copy shown at checkout, confirmation email, and delivery screen. Per PRD §9.5: the primary lever for keeping Polar-monitored chargeback rates low.",
   "copy_blocks": {
     "checkout_above_button": {
-      "placement": "Paddle inline checkout, directly above the pay button",
+      "placement": "Polar checkout, directly above the pay button",
       "heading": "What you're getting",
       "body": "A professionally drafted demand letter grounded in your state's security deposit statutes, an itemized rebuttal table for disputed deductions, and access to escalation filing packets if needed. This is a writing tool — it produces documents, not legal advice. The counterparty may or may not respond to your letter. We do not guarantee any specific outcome.",
       "refund_note": "Refunds available before generation or for defective outputs. See our refund policy."
     },
     "checkout_subscription": {
-      "placement": "Paddle inline checkout for monthly/annual plans",
+      "placement": "Polar checkout for monthly/annual plans",
       "heading": "What you're getting",
       "body": "Unlimited access to our dispute writing tool for the plan period. Generate demand letters, rebuttal tables, cancellation emails, and filing packets. Cancel anytime — no proration. This is a writing tool that produces documents, not legal advice.",
       "refund_note": "Cancel anytime. No proration on current billing period."

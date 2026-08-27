@@ -26,7 +26,7 @@ export async function GET() {
         id: sub.id,
         plan: sub.plan,
         status: sub.status,
-        paddle_subscription_id: sub.paddle_subscription_id,
+        polar_subscription_id: sub.polar_subscription_id,
         current_period_start: sub.current_period_start,
         current_period_end: sub.current_period_end,
         cancel_at_period_end: sub.cancel_at_period_end,

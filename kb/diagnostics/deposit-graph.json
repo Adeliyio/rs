@@ -281,7 +281,7 @@
     "paywall": {
       "id": "paywall",
       "type": "payment",
-      "payment_type": "paddle_inline",
+      "payment_type": "polar_checkout",
       "next": "generation"
     },
     "generation": {

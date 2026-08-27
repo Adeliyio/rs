@@ -111,9 +111,10 @@ describe('3b: Webhook processor — payment confirmation email', () => {
     expect(enqueueSource).toContain('`payment-confirmation-${caseId}`');
   });
 
-  it('extracts amount from txn.total', () => {
-    expect(webhookSource).toContain('txn.total');
-    expect(webhookSource).toContain('Number(txn.total) / 100');
+  it('formats amount from Polar integer cents (order.totalAmount)', () => {
+    // Polar amounts are integer cents already — format cents→dollars directly.
+    expect(webhookSource).toContain('order.totalAmount');
+    expect(webhookSource).toContain('formatCents');
   });
 
   it('fetches user email from auth.admin.getUserById', () => {
@@ -629,12 +630,13 @@ describe('3 (integration): Full email pipeline wiring', () => {
     expect(emailEnqueue).toBeGreaterThan(statusUpdate);
   });
 
-  it('payment webhook: transaction.completed → payment confirmation email', () => {
+  it('payment webhook: order.paid (one-time) → payment confirmation email', () => {
     const source = fs.readFileSync(
       path.resolve(__dirname, '../lib/payments/webhook-processor.ts'),
       'utf-8',
     );
-    expect(source).toContain("case 'transaction.completed':");
+    // Polar: the one-time order.paid handler enqueues the confirmation email.
+    expect(source).toContain('handleOrderPaid');
     expect(source).toContain('enqueuePaymentConfirmationEmail(');
   });
 

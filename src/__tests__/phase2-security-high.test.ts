@@ -477,68 +477,70 @@ describe('SEC-07: Email templates — HTML escaping', () => {
  *  SEC-09: Paddle Transaction ID Validation
  * ==================================================================== */
 
-describe('SEC-09: Paddle transaction ID format validation', () => {
+describe('SEC-09: Polar order ID format validation', () => {
   const source = readSrc('src/app/api/admin/payments/route.ts');
 
-  test('validates transaction_id format before API call', () => {
-    expect(source).toContain('txn_[a-zA-Z0-9]+');
+  test('validates order_id format before the API call', () => {
+    // Loose validation (Polar ids are UUID-like) via isPlausibleOrderId.
+    expect(source).toContain('isPlausibleOrderId');
   });
 
-  test('regex test applied to body.transaction_id', () => {
-    expect(source).toContain('.test(body.transaction_id)');
+  test('validation applied to body.order_id', () => {
+    expect(source).toContain('isPlausibleOrderId(body.order_id)');
   });
 
   test('returns 400 for invalid format', () => {
-    expect(source).toContain("Invalid transaction_id format");
+    expect(source).toContain('Invalid order_id format');
   });
 
   test('SEC-09 comment present', () => {
     expect(source).toContain('SEC-09');
   });
 
-  describe('Transaction ID format validation — unit-level', () => {
-    const regex = /^txn_[a-zA-Z0-9]+$/;
+  describe('Order ID loose validation — unit-level', () => {
+    // Mirrors isPlausibleOrderId: non-empty, reasonable length, URL-safe chars.
+    const ok = (id: string): boolean =>
+      typeof id === 'string' &&
+      id.length >= 8 &&
+      id.length <= 100 &&
+      /^[A-Za-z0-9_-]+$/.test(id);
 
-    test('accepts valid Paddle transaction ID', () => {
-      expect(regex.test('txn_abc123DEF')).toBe(true);
+    test('accepts a Polar UUID-like order id', () => {
+      expect(ok('4f6d2a1b-3c4d-5e6f-7a8b-9c0d1e2f3a4b')).toBe(true);
     });
 
-    test('accepts txn_ with long alphanumeric', () => {
-      expect(regex.test('txn_01hv3j8k2m4n5p6q7r8s9t0uab')).toBe(true);
+    test('accepts a long alphanumeric id', () => {
+      expect(ok('01hv3j8k2m4n5p6q7r8s9t0uab')).toBe(true);
     });
 
     test('rejects empty string', () => {
-      expect(regex.test('')).toBe(false);
+      expect(ok('')).toBe(false);
     });
 
-    test('rejects missing txn_ prefix', () => {
-      expect(regex.test('abc123')).toBe(false);
+    test('rejects too-short ids', () => {
+      expect(ok('abc123')).toBe(false);
     });
 
     test('rejects SQL injection attempt', () => {
-      expect(regex.test("txn_abc'; DROP TABLE transactions; --")).toBe(false);
+      expect(ok("order'; DROP TABLE orders; --")).toBe(false);
     });
 
     test('rejects path traversal', () => {
-      expect(regex.test('txn_../../etc/passwd')).toBe(false);
+      expect(ok('../../etc/passwd')).toBe(false);
     });
 
     test('rejects spaces', () => {
-      expect(regex.test('txn_abc 123')).toBe(false);
+      expect(ok('order abc 123')).toBe(false);
     });
 
     test('rejects special characters', () => {
-      expect(regex.test('txn_abc!@#$')).toBe(false);
+      expect(ok('order_abc!@#$')).toBe(false);
     });
 
-    test('rejects txn_ alone (no alphanumeric after prefix)', () => {
-      expect(regex.test('txn_')).toBe(false);
-    });
-
-    test('validation happens before Paddle API call', () => {
-      const validationIdx = source.indexOf('txn_[a-zA-Z0-9]+');
-      const fetchIdx = source.indexOf('fetch(');
-      expect(validationIdx).toBeLessThan(fetchIdx);
+    test('validation happens before the Polar API call', () => {
+      const validationIdx = source.indexOf('isPlausibleOrderId(body.order_id)');
+      const refundIdx = source.indexOf('polar.refunds.create');
+      expect(validationIdx).toBeLessThan(refundIdx);
     });
   });
 });
@@ -664,8 +666,8 @@ describe('SEC-25: Marketing SEO pages — public access', () => {
       expect(isPublicPath('/api/health')).toBe(true);
     });
 
-    test('/api/webhooks/paddle is public (existing)', () => {
-      expect(isPublicPath('/api/webhooks/paddle')).toBe(true);
+    test('/api/webhooks/polar is public (existing)', () => {
+      expect(isPublicPath('/api/webhooks/polar')).toBe(true);
     });
 
     test('/api/trust/stats is public', () => {
@@ -770,10 +772,10 @@ describe('Phase 2 — End-to-end risk mitigation summary', () => {
     }
   });
 
-  test('SEC-09 RISK MITIGATED: Transaction ID validated before Paddle API call', () => {
+  test('SEC-09 RISK MITIGATED: Order ID validated before Polar API call', () => {
     const source = readSrc('src/app/api/admin/payments/route.ts');
-    expect(source).toContain('txn_[a-zA-Z0-9]+');
-    expect(source).toContain('Invalid transaction_id format');
+    expect(source).toContain('isPlausibleOrderId');
+    expect(source).toContain('Invalid order_id format');
   });
 
   test('SEC-10 RISK MITIGATED: Document parse uses 5-min TTL', () => {

@@ -90,7 +90,7 @@ export default function IntakeClient({
       } else {
         // Deposit. An active subscriber ("Unlimited") owes no per-case payment,
         // so there is nothing to poll for — generate directly. Otherwise, payment
-        // happened in the diagnostic flow; poll for the Paddle webhook to confirm
+        // happened in the diagnostic flow; poll for the Polar webhook to confirm
         // payment_status=paid before generating.
         if (!hasActiveSubscription) {
           setAdvanceMessage('Confirming payment...');

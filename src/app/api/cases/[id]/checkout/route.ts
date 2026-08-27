@@ -1,9 +1,12 @@
 /**
  * POST /api/cases/[id]/checkout
  *
- * Links a Paddle transaction to a case after checkout so the webhook can match
- * transaction.completed events. Does NOT mark as paid (webhook does that).
- * Ownership via cases.getMine / cases.updateMine.
+ * NOTE: Under Polar, case↔order linking is now WEBHOOK-DRIVEN — the checkout
+ * metadata ({caseId}) is echoed on the `order.paid` webhook, which stores the
+ * Polar order id on the case. This route's original job (linking a client-known
+ * transaction id) is therefore largely superseded; it is kept for compatibility
+ * and still records the A/B price variant. It does NOT mark as paid (webhook
+ * does that). Ownership via cases.getMine / cases.updateMine.
  */
 
 import { NextResponse } from 'next/server';
@@ -41,7 +44,7 @@ export async function POST(
       return NextResponse.json({ error: 'Case not found' }, { status: 404 });
     }
 
-    if (caseRow.paddle_transaction_id) {
+    if (caseRow.polar_order_id) {
       return NextResponse.json({ ok: true, already_linked: true });
     }
 
@@ -60,7 +63,7 @@ export async function POST(
 
     await m(api.cases.updateMine, {
       caseId: caseId as Id<'cases'>,
-      patch: { paddleTransactionId: transactionId },
+      patch: { polarOrderId: transactionId },
     });
 
     /* ---- Log A/B price variant (best-effort) ---- */
@@ -78,7 +81,7 @@ export async function POST(
           action: 'checkout',
           price_variant_amount: variant.amount,
           price_variant_label: variant.label,
-          price_id: variant.priceId,
+          product_id: variant.productId,
           transaction_id: transactionId,
         },
       });

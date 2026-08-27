@@ -31,7 +31,7 @@ export function serializeCase(doc: Doc<'cases'>) {
     jurisdiction: doc.jurisdiction,
     diagnostic_state: doc.diagnosticState ?? null,
     payment_status: doc.paymentStatus,
-    paddle_transaction_id: doc.paddleTransactionId ?? null,
+    polar_order_id: doc.polarOrderId ?? null,
     preview_shown_at: iso(doc.previewShownAt),
     refusal_trigger: doc.refusalTrigger ?? null,
     total_ai_cost: doc.totalAiCost,
@@ -175,9 +175,9 @@ export function serializeOutcome(doc: Doc<'outcomes'>) {
 export function serializeSubscription(doc: Doc<'subscriptions'>) {
   return {
     id: doc._id,
-    user_id: doc.userId ?? doc.paddleCustomerId ?? null,
-    paddle_customer_id: doc.paddleCustomerId ?? null,
-    paddle_subscription_id: doc.paddleSubscriptionId,
+    user_id: doc.userId ?? doc.polarCustomerId ?? null,
+    polar_customer_id: doc.polarCustomerId ?? null,
+    polar_subscription_id: doc.polarSubscriptionId,
     plan: doc.plan,
     status: doc.status,
     current_period_start: iso(doc.currentPeriodStart),

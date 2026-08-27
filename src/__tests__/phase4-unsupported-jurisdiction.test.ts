@@ -446,8 +446,8 @@ describe('4c: Auto-refund in generate route', () => {
     expect(generateSource).toContain('processAutoRefundIfNeeded(caseId');
   });
 
-  it('looks up paddle_transaction_id for refund', () => {
-    expect(generateSource).toContain('paddle_transaction_id');
+  it('looks up polar_order_id for refund', () => {
+    expect(generateSource).toContain('polar_order_id');
   });
 
   it('returns 422 error for unsupported jurisdiction', () => {
@@ -502,24 +502,26 @@ describe('4c (cont): Auto-refund function', () => {
     expect(autoRefundSource).toContain("caseRow.wedge !== 'deposit'");
   });
 
-  it('calls Paddle API for refund', () => {
-    expect(autoRefundSource).toContain('requestPaddleRefund');
-    expect(autoRefundSource).toContain('/transactions/');
-    expect(autoRefundSource).toContain('/refund');
+  it('calls the Polar refund API for refund', () => {
+    expect(autoRefundSource).toContain('requestPolarRefund');
+    expect(autoRefundSource).toContain('polar.refunds.create');
+    expect(autoRefundSource).toContain('orderId');
   });
 
-  it('uses server-side Paddle API key', () => {
-    expect(autoRefundSource).toContain('process.env.PADDLE_API_KEY');
+  it('refunds through the single Polar client (getPolar)', () => {
+    expect(autoRefundSource).toContain('getPolar()');
   });
 
-  it('handles missing API key gracefully', () => {
-    expect(autoRefundSource).toContain('Paddle API key not configured');
+  it('handles a missing Polar access token gracefully', () => {
+    expect(autoRefundSource).toContain('Polar access token not configured');
     expect(autoRefundSource).toContain("ok: false");
   });
 
-  it('supports sandbox and production Paddle URLs', () => {
-    expect(autoRefundSource).toContain('sandbox-api.paddle.com');
-    expect(autoRefundSource).toContain('api.paddle.com');
+  it('uses the Polar server flag rather than hardcoded Paddle URLs', () => {
+    // The single Polar client selects sandbox/production from POLAR_SERVER; the
+    // refund code no longer builds Paddle REST URLs.
+    expect(autoRefundSource).not.toContain('paddle.com');
+    expect(autoRefundSource).toContain('POLAR_ACCESS_TOKEN');
   });
 
   it('updates case status to refunded/closed after refund', () => {
@@ -684,13 +686,13 @@ describe('4 (risk mitigation): Safety nets', () => {
     expect(letter).not.toMatch(/[A-Z]{2,}\.\s*(Code|Stat|Rev|Gen\.?\s*Laws)\s*§/);
   });
 
-  it('R4: Auto-refund checks for missing Paddle API key', () => {
+  it('R4: Auto-refund checks for a missing Polar access token', () => {
     const source = fs.readFileSync(
       path.resolve(__dirname, '../lib/payments/auto-refund.ts'),
       'utf-8',
     );
-    expect(source).toContain("!apiKey");
-    expect(source).toContain('Paddle API key not configured');
+    expect(source).toContain('!process.env.POLAR_ACCESS_TOKEN');
+    expect(source).toContain('Polar access token not configured');
   });
 
   it('auto-refund never throws (returns error result instead)', () => {

@@ -3,18 +3,18 @@ import { internalQuery, internalMutation } from './_generated/server';
 import { serializeCase } from './lib/serialize';
 
 /**
- * Payment-related case lookups/updates used by the Paddle webhook processor and
+ * Payment-related case lookups/updates used by the Polar webhook processor and
  * the auto-refund flow. All internal (webhooks run outside a user session; the
  * old code used the service-role client).
  */
 
-export const caseByPaddleTxnInternal = internalQuery({
-  args: { paddleTransactionId: v.string() },
-  handler: async (ctx, { paddleTransactionId }) => {
+export const caseByPolarOrderInternal = internalQuery({
+  args: { polarOrderId: v.string() },
+  handler: async (ctx, { polarOrderId }) => {
     const doc = await ctx.db
       .query('cases')
-      .withIndex('by_paddle_transaction_id', (q) =>
-        q.eq('paddleTransactionId', paddleTransactionId),
+      .withIndex('by_polar_order_id', (q) =>
+        q.eq('polarOrderId', polarOrderId),
       )
       .unique();
     return doc ? serializeCase(doc) : null;

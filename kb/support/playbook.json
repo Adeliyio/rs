@@ -28,7 +28,7 @@
     },
     "refund_request_before_generation": {
       "trigger": "User requests a refund before their letter has been generated (within 7 days of purchase)",
-      "response": "We're happy to process your refund. Since your letter hasn't been generated yet, we'll issue the refund right away. You'll see it in your account within 5-10 business days depending on your payment provider. [Process refund in Paddle dashboard]"
+      "response": "We're happy to process your refund. Since your letter hasn't been generated yet, we'll issue the refund right away. You'll see it in your account within 5-10 business days depending on your payment provider. [Process refund in Polar dashboard]"
     },
     "refund_request_after_generation": {
       "trigger": "User requests a refund after their letter has been generated",

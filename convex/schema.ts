@@ -83,7 +83,7 @@ export default defineSchema({
     jurisdiction: v.string(),
     diagnosticState: v.optional(v.any()), // jsonb
     paymentStatus: paymentStatus,
-    paddleTransactionId: v.optional(v.string()),
+    polarOrderId: v.optional(v.string()),
     previewShownAt: v.optional(v.number()),
     refusalTrigger: v.optional(v.string()),
     totalAiCost: v.number(),
@@ -96,7 +96,7 @@ export default defineSchema({
     // Replaces the partial-unique index uq_active_case; uniqueness is enforced
     // in the createCase mutation (Convex has no partial unique constraints).
     .index('by_user_wedge_jurisdiction', ['userId', 'wedge', 'jurisdiction'])
-    .index('by_paddle_transaction_id', ['paddleTransactionId'])
+    .index('by_polar_order_id', ['polarOrderId'])
     .index('by_status', ['status']),
 
   /* ---------------------------------------------------------------- */
@@ -207,14 +207,14 @@ export default defineSchema({
   /*  subscriptions                                                   */
   /* ---------------------------------------------------------------- */
   subscriptions: defineTable({
-    // NOTE: under Supabase this stored Paddle's customer_id (a string), NOT the
+    // NOTE: under Supabase this stored Polar's customer_id (a string), NOT the
     // app user uuid — a pre-existing quirk. In Convex, userId must be a real
-    // users id, so we keep the Paddle customer id in `paddleCustomerId` and set
+    // users id, so we keep the Polar customer id in `polarCustomerId` and set
     // `userId` only when it can be resolved to an app user. Reads tolerate an
     // absent userId.
     userId: v.optional(v.id('users')),
-    paddleCustomerId: v.optional(v.string()),
-    paddleSubscriptionId: v.string(), // UNIQUE — enforced via index lookup
+    polarCustomerId: v.optional(v.string()),
+    polarSubscriptionId: v.string(), // UNIQUE — enforced via index lookup
     plan: v.string(),
     status: v.string(),
     currentPeriodStart: v.optional(v.number()),
@@ -224,7 +224,7 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index('by_user', ['userId'])
-    .index('by_paddle_subscription_id', ['paddleSubscriptionId']),
+    .index('by_polar_subscription_id', ['polarSubscriptionId']),
 
   /* ---------------------------------------------------------------- */
   /*  waitlist_entries                                                */

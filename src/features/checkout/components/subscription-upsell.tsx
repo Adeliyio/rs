@@ -4,7 +4,7 @@
  * Subscription upsell — shown after a single-case deposit purchase.
  *
  * Offers monthly ($15/mo) and annual ($129/yr) plans for unlimited cases.
- * Uses Paddle checkout for payment processing.
+ * Uses Polar redirect checkout for payment processing.
  *
  * PRD §10: subscription SKUs.
  */
@@ -14,7 +14,7 @@ import { Check, Zap } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PaddleCheckout } from './paddle-checkout';
+import { PolarCheckout } from './polar-checkout';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -38,37 +38,32 @@ export function SubscriptionUpsell({
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan>(null);
   const [showCheckout, setShowCheckout] = useState(false);
 
-  const monthlyPriceId =
-    process.env.NEXT_PUBLIC_PADDLE_MONTHLY_PRICE_ID ?? '';
-  const annualPriceId =
-    process.env.NEXT_PUBLIC_PADDLE_ANNUAL_PRICE_ID ?? '';
+  const monthlyProductId =
+    process.env.NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY ?? '';
+  const annualProductId =
+    process.env.NEXT_PUBLIC_POLAR_PRODUCT_YEARLY ?? '';
 
   const handleSelectPlan = useCallback((plan: 'monthly' | 'annual') => {
     setSelectedPlan(plan);
     setShowCheckout(true);
   }, []);
 
-  const handleSuccess = useCallback(() => {
-    // Subscription will be created via webhook
-    window.location.reload();
-  }, []);
-
   if (showCheckout && selectedPlan) {
-    const priceId =
-      selectedPlan === 'monthly' ? monthlyPriceId : annualPriceId;
+    const productId =
+      selectedPlan === 'monthly' ? monthlyProductId : annualProductId;
     const planName =
       selectedPlan === 'monthly'
         ? 'Unlimited Monthly Plan ($15/mo)'
         : 'Unlimited Annual Plan ($129/yr)';
 
+    // Redirect checkout — subscription is created via the subscription.active
+    // webhook; the user returns to POLAR_SUCCESS_URL. Not case-specific, so no
+    // metadata.caseId.
     return (
-      <PaddleCheckout
-        caseId="" // Not case-specific
-        priceId={priceId}
+      <PolarCheckout
+        productId={productId}
         userEmail={userEmail}
         productName={planName}
-        onSuccess={handleSuccess}
-        onCancel={() => setShowCheckout(false)}
       />
     );
   }

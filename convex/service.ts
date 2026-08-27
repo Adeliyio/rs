@@ -5,7 +5,7 @@ import { internal } from './_generated/api';
 /**
  * SERVICE FUNCTIONS — the replacement for the Supabase service-role key.
  *
- * These are PUBLIC (callable over HTTP from trusted Node contexts: the Paddle
+ * These are PUBLIC (callable over HTTP from trusted Node contexts: the Polar
  * webhook processor, BullMQ workers, and admin API routes) but every one
  * requires the shared `CONVEX_SERVICE_SECRET`. That secret is the trust
  * boundary: possessing it means "act as the system", exactly like the old
@@ -68,11 +68,11 @@ export const patchCase = mutation({
   },
 });
 
-export const caseByPaddleTxn = query({
-  args: { ...secretArg, paddleTransactionId: v.string() },
-  handler: async (ctx, { secret, paddleTransactionId }): Promise<any> => {
+export const caseByPolarOrder = query({
+  args: { ...secretArg, polarOrderId: v.string() },
+  handler: async (ctx, { secret, polarOrderId }): Promise<any> => {
     assertSecret(secret);
-    return ctx.runQuery(internal.payments.caseByPaddleTxnInternal, { paddleTransactionId });
+    return ctx.runQuery(internal.payments.caseByPolarOrderInternal, { polarOrderId });
   },
 });
 
@@ -321,19 +321,19 @@ export const listVerifiedOutcomes = query({
 /*  subscriptions                                                     */
 /* ------------------------------------------------------------------ */
 
-export const getSubscriptionByPaddleId = query({
-  args: { ...secretArg, paddleSubscriptionId: v.string() },
-  handler: async (ctx, { secret, paddleSubscriptionId }): Promise<any> => {
+export const getSubscriptionByPolarId = query({
+  args: { ...secretArg, polarSubscriptionId: v.string() },
+  handler: async (ctx, { secret, polarSubscriptionId }): Promise<any> => {
     assertSecret(secret);
-    return ctx.runQuery(internal.subscriptions.getByPaddleIdInternal, { paddleSubscriptionId });
+    return ctx.runQuery(internal.subscriptions.getByPolarIdInternal, { polarSubscriptionId });
   },
 });
 
 export const createSubscription = mutation({
   args: {
     ...secretArg,
-    paddleCustomerId: v.optional(v.string()),
-    paddleSubscriptionId: v.string(),
+    polarCustomerId: v.optional(v.string()),
+    polarSubscriptionId: v.string(),
     plan: v.string(),
     status: v.string(),
     currentPeriodStart: v.optional(v.number()),
@@ -345,12 +345,12 @@ export const createSubscription = mutation({
   },
 });
 
-export const patchSubscriptionByPaddleId = mutation({
-  args: { ...secretArg, paddleSubscriptionId: v.string(), patch: v.any() },
-  handler: async (ctx, { secret, paddleSubscriptionId, patch }): Promise<any> => {
+export const patchSubscriptionByPolarId = mutation({
+  args: { ...secretArg, polarSubscriptionId: v.string(), patch: v.any() },
+  handler: async (ctx, { secret, polarSubscriptionId, patch }): Promise<any> => {
     assertSecret(secret);
-    return ctx.runMutation(internal.subscriptions.patchByPaddleIdInternal, {
-      paddleSubscriptionId,
+    return ctx.runMutation(internal.subscriptions.patchByPolarIdInternal, {
+      polarSubscriptionId,
       patch,
     });
   },
