@@ -11,10 +11,8 @@
  */
 
 import { assembleGroundingContext } from '@/lib/ai/grounding';
-import {
-  generateSubscriptionSequence,
-  type UserSituation,
-} from '@/lib/ai/generation';
+import type { UserSituation } from '@/lib/ai/generation';
+import { generateSubscriptionSequenceFromTemplates } from '@/features/subscription/generation/template-engine';
 import { validateCitations } from '@/lib/ai/citation-validator';
 import { scanCompliance } from '@/lib/ai/compliance-scanner';
 import { injectEmailDisclaimer } from '@/lib/ai/disclaimer-injector';
@@ -168,8 +166,8 @@ async function runPipeline(
   /* 2. Build user situation */
   const userSituation = extractUserSituation(answers);
 
-  /* 3. Generate sequence via LLM */
-  const rawSteps = await generateSubscriptionSequence(
+  /* 3. Generate sequence via deterministic templates ($0, synchronous, no LLM) */
+  const rawSteps = generateSubscriptionSequenceFromTemplates(
     grounding.context,
     grounding.statute_ids,
     userSituation,
@@ -230,11 +228,11 @@ async function runPipeline(
  * Steps:
  * 1. Extract wedge, jurisdiction, vertical from answers
  * 2. Load KB entries and assemble grounding context
- * 3. Call generateSubscriptionSequence() via LLM
+ * 3. Generate the sequence via deterministic templates ($0, no LLM)
  * 4. Validate citations on each step
  * 5. Scan compliance on each step
  * 6. Inject disclaimers
- * 7. If validation/compliance fails: retry once with stricter prompt
+ * 7. If validation/compliance fails: retry once (templates always pass, so harmless)
  * 8. Return GeneratedSequence or error
  *
  * @param caseId  The case ID (for the returned sequence).
