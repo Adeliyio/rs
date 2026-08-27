@@ -35,6 +35,19 @@ const PUBLIC_PREFIXES = [
   '/api/trust/',
   '/api/waitlist',
   '/api/keep-alive',
+  // Value-first funnel (M3): the anonymous diagnostic preview is a deterministic,
+  // no-cost, no-write KB read — public so a visitor sees their result before any
+  // account. Note this is more specific than the app-only '/api/diagnostic'
+  // prefix, and public API paths are matched first in the middleware, so only
+  // '/api/diagnostic/preview' is exposed — '/api/diagnostic/state' stays gated.
+  '/api/diagnostic/preview',
+  // The diagnostic question graph is a static KB file (no per-user data) — public
+  // so the anonymous flow can render questions before any account exists.
+  '/api/diagnostic/graph',
+  // Anonymous cancellation generation — the free wedge is fully open. Generation
+  // is deterministic templates ($0, no AI), returns the sequence without any DB
+  // write, so it is safe and cost-free to expose anonymously.
+  '/api/diagnostic/cancellation',
 ];
 
 /**
