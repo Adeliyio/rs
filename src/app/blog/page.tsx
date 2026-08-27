@@ -5,6 +5,8 @@ import { ArrowRight } from 'lucide-react';
 import { ARTICLES } from '@/lib/blog/articles';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
 import { Logo } from '@/components/logo';
+import { safeJsonLd } from '@/lib/safe-json-ld';
+import { breadcrumbSchema } from '@/lib/seo/schema';
 
 export const metadata: Metadata = {
   title: 'Blog — US Security Deposit Law, Subscription Cancellation, and Consumer Rights',
@@ -27,8 +29,14 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function BlogIndexPage() {
+  const breadcrumb = breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: '/blog' },
+  ]);
+
   return (
     <main className="min-h-screen bg-background">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
       {/* Nav */}
       <nav className="sticky top-0 z-40 border-b border-border bg-background/95 px-6 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">

@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
 import { Logo } from '@/components/logo';
+import { safeJsonLd } from '@/lib/safe-json-ld';
+import { breadcrumbSchema, freeCancellationServiceSchema } from '@/lib/seo/schema';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -58,6 +60,14 @@ export interface VerticalPageData {
 /* ------------------------------------------------------------------ */
 
 export function VerticalCancelPage({ data }: { data: VerticalPageData }) {
+  const path = `/cancel/${data.slug}`;
+  const breadcrumb = breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Cancel a Subscription', path: '/tools/cancel-subscription' },
+    { name: data.displayName, path },
+  ]);
+  const service = freeCancellationServiceSchema(path);
+
   return (
     <main className="min-h-screen bg-background">
       {/* ============================================================ */}
@@ -342,6 +352,11 @@ export function VerticalCancelPage({ data }: { data: VerticalPageData }) {
           </p>
         </div>
       </footer>
+
+      {/* JSON-LD — breadcrumb + free-cancellation Service, derived from data +
+          seo/config so it can't drift from the visible page. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(service) }} />
     </main>
   );
 }

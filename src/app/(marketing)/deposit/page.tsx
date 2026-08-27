@@ -2,6 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Shield, FileText, Scale, ArrowRight } from 'lucide-react';
 
+import { safeJsonLd } from '@/lib/safe-json-ld';
+import { breadcrumbSchema } from '@/lib/seo/schema';
+
 export const metadata: Metadata = {
   title: 'Security Deposit Recovery — California, Texas, New York, Florida',
   description:
@@ -24,8 +27,14 @@ const STATES = [
 ];
 
 export default function DepositLandingPage() {
+  const breadcrumb = breadcrumbSchema([
+    { name: 'Home', path: '/' },
+    { name: 'Security Deposit', path: '/deposit' },
+  ]);
+
   return (
     <main className="min-h-screen bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
       {/* Hero */}
       <section className="mx-auto max-w-4xl px-6 py-20 text-center">
         <h1 className="text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl">

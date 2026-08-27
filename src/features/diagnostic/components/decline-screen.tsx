@@ -27,6 +27,16 @@ import type {
   RefusalResource,
 } from '@/types/kb.types';
 
+// These KB files are small, static, and needed on the client (this is a
+// 'use client' component). Import them normally so webpack BUNDLES them —
+// a previous `import(/* webpackIgnore: true */ '../../../../kb/...json')` tried
+// to fetch them from the browser at runtime, but kb/ isn't a served asset in
+// production, so the browser got a 404 HTML page ("Expected a
+// JavaScript-or-Wasm module script but got text/html") and the refusal screen
+// failed to load.
+import declineCopyData from '../../../../kb/refusal/decline-copy.json';
+import tangledCaseRulesData from '../../../../kb/refusal/tangled-case-rules.json';
+
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
 /* ------------------------------------------------------------------ */
@@ -126,17 +136,11 @@ export default function DeclineScreen({
   useEffect(() => {
     if (declineMessage && footer) return;
 
-    // Dynamic import — the loader is server-only but we wrap it in
-    // a lazy import that Next.js will tree-shake for server bundling.
-    // For client usage we load from the API or inline the data.
-    async function loadCopy() {
+    // Read from the statically-imported (bundled) KB data — no runtime fetch,
+    // so this works in production where kb/ is not a served asset.
+    function loadCopy() {
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const declineCopyModule = await import(
-          /* webpackIgnore: true */ '../../../../kb/refusal/decline-copy.json'
-        );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const data = (declineCopyModule.default ?? declineCopyModule) as {
+        const data = declineCopyData as unknown as {
           decline_messages: Record<string, DeclineCopyMessage>;
           common_footer: DeclineCopyFooter;
         };
@@ -149,15 +153,10 @@ export default function DeclineScreen({
       }
     }
 
-    async function loadResources() {
+    function loadResources() {
       if (resourceTemplate || !resourceType) return;
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const rulesModule = await import(
-          /* webpackIgnore: true */ '../../../../kb/refusal/tangled-case-rules.json'
-        );
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        const data = (rulesModule.default ?? rulesModule) as {
+        const data = tangledCaseRulesData as unknown as {
           resource_templates: Record<string, RefusalResourceTemplate>;
         };
 
@@ -168,8 +167,8 @@ export default function DeclineScreen({
       }
     }
 
-    void loadCopy();
-    void loadResources();
+    loadCopy();
+    loadResources();
   }, [ruleId, resourceType, declineMessage, footer, resourceTemplate]);
 
   /* -------------------------------------------------------------- */
