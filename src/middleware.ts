@@ -100,6 +100,12 @@ function isPublicPath(pathname: string): boolean {
 }
 
 function isAppOnlyPath(pathname: string): boolean {
+  // A path that is explicitly public is never "app-only" — otherwise the
+  // subdomain router would redirect it to app.resolvaio.com. That matters for
+  // the anonymous diagnostic endpoints (/api/diagnostic/{graph,preview,
+  // cancellation}): they are called by the public /start page on the ROOT
+  // domain, and a cross-subdomain redirect turns them into a CORS failure.
+  if (isPublicPath(pathname)) return false;
   return APP_ONLY_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
