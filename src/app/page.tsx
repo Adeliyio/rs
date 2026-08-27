@@ -199,14 +199,14 @@ export default function HomePage(): React.JSX.Element {
             <a href="#faq" className="text-[#5F5F5F] transition-colors hover:text-[#111]">FAQ</a>
             <Link href="/login" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Sign In</Link>
             <a
-              href={`${APP_BASE}/new`}
+              href="/start"
               className="rounded-lg bg-[#3B4CCA] px-4 py-2 font-medium text-white shadow-[0_2px_10px_rgba(59,76,202,0.35)] transition-all hover:bg-[#2C3AA8] active:scale-[0.98]"
             >
               Start Free Diagnostic
             </a>
           </div>
           <a
-            href={`${APP_BASE}/new`}
+            href="/start"
             className="rounded-lg bg-[#3B4CCA] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#2C3AA8] active:scale-[0.98] sm:hidden"
           >
             Start Free Diagnostic
@@ -239,7 +239,7 @@ export default function HomePage(): React.JSX.Element {
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
               <a
-                href={`${APP_BASE}/new`}
+                href="/start"
                 className="inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] hover:shadow-[0_6px_20px_rgba(59,76,202,0.5)] active:scale-[0.98]"
               >
                 Start Free Diagnostic <ChevronRight className="h-4 w-4" />
@@ -739,7 +739,7 @@ export default function HomePage(): React.JSX.Element {
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> All 50 states</li>
               </ul>
               <a
-                href={`${APP_BASE}/new?wedge=subscription`}
+                href="/start?wedge=subscription"
                 className="mt-8 block rounded-lg border border-[#E8E8E5] py-3 text-center text-[14px] font-semibold text-[#111] transition-all hover:border-[#111]/20 hover:bg-[#F7F7F5] active:scale-[0.98]"
               >
                 Start Free Diagnostic
@@ -771,7 +771,7 @@ export default function HomePage(): React.JSX.Element {
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Refund for defective outputs</li>
               </ul>
               <a
-                href={`${APP_BASE}/new?wedge=deposit`}
+                href="/start?wedge=deposit"
                 className="mt-8 block rounded-lg bg-[#3B4CCA] py-3 text-center text-[14px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] active:scale-[0.98]"
               >
                 Start Deposit Case
@@ -864,7 +864,7 @@ export default function HomePage(): React.JSX.Element {
             send.
           </p>
           <a
-            href={`${APP_BASE}/new`}
+            href="/start"
             className="mt-10 inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] hover:shadow-[0_6px_20px_rgba(59,76,202,0.5)] active:scale-[0.98]"
           >
             Start Free Diagnostic <ChevronRight className="h-4 w-4" />
@@ -898,7 +898,7 @@ export default function HomePage(): React.JSX.Element {
               </div>
               <div className="space-y-2.5">
                 <p className="font-semibold text-[#5F5F5F]">Account</p>
-                <a href={`${APP_BASE}/new`} className="block transition-colors hover:text-[#111]">Start Diagnostic</a>
+                <a href="/start" className="block transition-colors hover:text-[#111]">Start Diagnostic</a>
                 <Link href="/login" className="block transition-colors hover:text-[#111]">Sign In</Link>
                 <Link href="/about" className="block transition-colors hover:text-[#111]">About</Link>
               </div>

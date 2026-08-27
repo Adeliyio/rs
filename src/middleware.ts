@@ -22,6 +22,11 @@ const PUBLIC_ROUTES = [
   '/register',
   '/forgot-password',
   '/update-password',
+  // Value-first funnel entry (SPEC.md M3): the anonymous diagnostic runs here
+  // with no account. It only reads the public /api/diagnostic/{graph,preview,
+  // cancellation} endpoints (already public above) — nothing that costs money —
+  // so the page itself must be public too.
+  '/start',
 ];
 
 /** Path prefixes for public marketing/SEO pages (SEC-25). */
