@@ -4,6 +4,7 @@ import { ArrowRight } from 'lucide-react';
 
 import { ARTICLES } from '@/lib/blog/articles';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
+import { Logo } from '@/components/logo';
 
 export const metadata: Metadata = {
   title: 'Blog — US Security Deposit Law, Subscription Cancellation, and Consumer Rights',
@@ -31,8 +32,8 @@ export default function BlogIndexPage() {
       {/* Nav */}
       <nav className="sticky top-0 z-40 border-b border-border bg-background/95 px-6 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-foreground">
-            Resolvaio
+          <Link href="/" aria-label="Resolvaio home">
+            <Logo />
           </Link>
           <div className="hidden items-center gap-8 text-[13px] sm:flex">
             <ToolsDropdown />

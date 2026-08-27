@@ -4,6 +4,9 @@
  */
 
 export function LogoIcon({ className = 'h-8 w-8' }: { className?: string }) {
+  // The shield inherits `currentColor` (ink-navy `text-primary` by default), so
+  // the mark matches the palette and adapts if the surrounding text color
+  // changes. The scale is cut in the paper background color.
   return (
     <svg
       viewBox="0 0 40 40"
@@ -15,26 +18,27 @@ export function LogoIcon({ className = 'h-8 w-8' }: { className?: string }) {
       {/* Shield shape */}
       <path
         d="M20 3L6 9V18C6 27.94 12.04 37.28 20 39C27.96 37.28 34 27.94 34 18V9L20 3Z"
-        fill="#111111"
+        fill="currentColor"
       />
       {/* Inner shield highlight */}
       <path
         d="M20 6L9 11V18C9 26.28 14.22 34.02 20 35.8C25.78 34.02 31 26.28 31 18V11L20 6Z"
-        fill="#1A1A1A"
+        fill="currentColor"
+        opacity="0.82"
       />
-      {/* Scale/balance inside shield */}
+      {/* Scale/balance inside shield — cut in the paper color */}
       {/* Pillar */}
-      <rect x="19" y="13" width="2" height="14" rx="1" fill="#F7F7F5" />
+      <rect x="19" y="13" width="2" height="14" rx="1" fill="hsl(var(--background))" />
       {/* Beam */}
-      <rect x="12" y="14.5" width="16" height="1.5" rx="0.75" fill="#F7F7F5" />
+      <rect x="12" y="14.5" width="16" height="1.5" rx="0.75" fill="hsl(var(--background))" />
       {/* Left pan */}
-      <path d="M12 15.5L10 21H14L12 15.5Z" fill="#F7F7F5" opacity="0.9" />
-      <ellipse cx="12" cy="21.5" rx="2.5" ry="0.8" fill="#F7F7F5" opacity="0.9" />
+      <path d="M12 15.5L10 21H14L12 15.5Z" fill="hsl(var(--background))" opacity="0.9" />
+      <ellipse cx="12" cy="21.5" rx="2.5" ry="0.8" fill="hsl(var(--background))" opacity="0.9" />
       {/* Right pan */}
-      <path d="M28 15.5L26 21H30L28 15.5Z" fill="#F7F7F5" opacity="0.9" />
-      <ellipse cx="28" cy="21.5" rx="2.5" ry="0.8" fill="#F7F7F5" opacity="0.9" />
+      <path d="M28 15.5L26 21H30L28 15.5Z" fill="hsl(var(--background))" opacity="0.9" />
+      <ellipse cx="28" cy="21.5" rx="2.5" ry="0.8" fill="hsl(var(--background))" opacity="0.9" />
       {/* Base */}
-      <rect x="16" y="27" width="8" height="1.5" rx="0.75" fill="#F7F7F5" />
+      <rect x="16" y="27" width="8" height="1.5" rx="0.75" fill="hsl(var(--background))" />
     </svg>
   );
 }
@@ -42,19 +46,20 @@ export function LogoIcon({ className = 'h-8 w-8' }: { className?: string }) {
 export function Logo({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <LogoIcon className="h-8 w-8" />
-      <span className="text-lg font-semibold tracking-tight text-foreground">
+      <LogoIcon className="h-8 w-8 text-primary" />
+      <span className="font-display text-lg font-semibold tracking-tight text-foreground">
         Resolvaio
       </span>
     </div>
   );
 }
 
+/** For dark surfaces (dark sidebars/footers): mark + wordmark render in white. */
 export function LogoLight({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <LogoIcon className="h-8 w-8" />
-      <span className="text-lg font-semibold tracking-tight text-white">
+      <LogoIcon className="h-8 w-8 text-white" />
+      <span className="font-display text-lg font-semibold tracking-tight text-white">
         Resolvaio
       </span>
     </div>

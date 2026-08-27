@@ -8,6 +8,7 @@ import {
   Shield,
 } from 'lucide-react';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
+import { Logo } from '@/components/logo';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -64,8 +65,8 @@ export function VerticalCancelPage({ data }: { data: VerticalPageData }) {
       {/* ============================================================ */}
       <nav className="sticky top-0 z-40 border-b border-border bg-background/95 px-6 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-foreground">
-            Resolvaio
+          <Link href="/" aria-label="Resolvaio home">
+            <Logo />
           </Link>
           <div className="hidden items-center gap-8 text-[13px] sm:flex">
             <a href="#barriers" className="text-muted-foreground transition-colors hover:text-foreground">Common Barriers</a>
