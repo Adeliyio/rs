@@ -33,16 +33,16 @@ export function CookieConsent() {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-80 rounded-2xl border border-[#E8E8E5] bg-white p-5 shadow-premium-lg">
-      <p className="text-[13px] leading-relaxed text-[#5F5F5F]">
+    <div className="fixed bottom-4 right-4 z-50 w-80 rounded-2xl border border-border bg-white p-5 shadow-premium-lg">
+      <p className="text-[13px] leading-relaxed text-muted-foreground">
         We use strictly necessary cookies for authentication. No tracking cookies.{' '}
-        <a href="/about" className="underline transition-colors hover:text-[#111]">
+        <a href="/about" className="underline transition-colors hover:text-foreground">
           Learn more
         </a>
       </p>
       <button
         onClick={handleAccept}
-        className="mt-3 w-full rounded-lg bg-[#111] px-4 py-2 text-[13px] font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98]"
+        className="mt-3 w-full rounded-lg bg-foreground px-4 py-2 text-[13px] font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
       >
         Got it
       </button>

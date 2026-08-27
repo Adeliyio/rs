@@ -460,7 +460,7 @@ export default function FileUploadNodeComponent({
             size="sm"
             onClick={handleContinue}
             disabled={isUploading || (uploadedIds.length === 0 && !isOptional)}
-            className="gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none"
+            className="gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none"
           >
             {isUploading ? (
               <>

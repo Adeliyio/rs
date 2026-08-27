@@ -284,7 +284,7 @@ export default function DeductionTableNodeComponent({
         <Button
           size="sm"
           onClick={handleSubmit}
-          className="gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none"
+          className="gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none"
         >
           Continue
         </Button>

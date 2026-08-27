@@ -164,8 +164,8 @@ export function LetterPreview({
           </p>
 
           {/* Statute section — one visible */}
-          <div className="mb-4 rounded-md border border-blue-100 bg-blue-50 p-3">
-            <p className="text-xs font-semibold uppercase text-blue-600">
+          <div className="mb-4 rounded-md border border-primary/20 bg-accent p-3">
+            <p className="text-xs font-semibold uppercase text-primary">
               Statutory Basis (1 of {statuteCount} statutes cited)
             </p>
             <p className="mt-1 text-sm text-neutral-800">

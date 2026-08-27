@@ -95,14 +95,14 @@ export function AnonymousPreviewResult({
 
       {/* Sample statute — one grounded citation, framed as information */}
       {data.sample_statute && (
-        <div className="rounded-xl border border-blue-100 bg-blue-50/70 p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-700">
+        <div className="rounded-xl border border-primary/20 bg-accent/70 p-5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary">
             Sample statute (1 of {data.statute_count})
           </p>
-          <p className="mt-1.5 text-sm font-medium text-blue-950">
+          <p className="mt-1.5 text-sm font-medium text-accent-foreground">
             {data.sample_statute.citation} — {data.sample_statute.title}
           </p>
-          <p className="mt-1 text-xs text-blue-900/80">
+          <p className="mt-1 text-xs text-accent-foreground/80">
             {data.jurisdiction_full_name} law sets specific rules and timelines
             for returning a security deposit. Your full case references every
             applicable statute.

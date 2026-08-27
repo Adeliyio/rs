@@ -14,6 +14,9 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+        // Editorial serif for headlines + statute citations (used with restraint).
+        display: ['var(--font-display)', 'Georgia', 'ui-serif', 'serif'],
+        serif: ['var(--font-display)', 'Georgia', 'ui-serif', 'serif'],
       },
       colors: {
         border: 'hsl(var(--border))',
@@ -40,6 +43,13 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
+        },
+        // Statutory-deadline accent — the single warm tone, used only where the
+        // law's clock turns in the user's favor.
+        deadline: {
+          DEFAULT: 'hsl(var(--deadline))',
+          foreground: 'hsl(var(--deadline-foreground))',
+          soft: 'hsl(var(--deadline-soft))',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',

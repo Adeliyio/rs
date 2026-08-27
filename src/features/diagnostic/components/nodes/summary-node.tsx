@@ -156,7 +156,7 @@ export default function SummaryNodeComponent({
         onClick={() => onAnswer('confirmed')}
         disabled={requiresDisclaimer && !acknowledged}
         className={cn(
-          'gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none',
+          'gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none',
           requiresDisclaimer && !acknowledged && 'opacity-50 cursor-not-allowed',
         )}
       >

@@ -8,28 +8,28 @@ export const metadata: Metadata = {
 
 export default function TermsOfServicePage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] px-6 py-20">
+    <main className="min-h-screen bg-background px-6 py-20">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="text-[13px] text-[#8A8A8A] transition-colors hover:text-[#111]"
+          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Back to home
         </Link>
 
-        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-[#111]">
+        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-foreground">
           Terms of Service
         </h1>
-        <p className="mt-2 text-[13px] text-[#8A8A8A]">
+        <p className="mt-2 text-[13px] text-muted-foreground">
           Effective Date: May 28, 2026 &middot; Last Updated: May 28, 2026
         </p>
 
-        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-[#5F5F5F]">
+        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-muted-foreground">
           {/* ---------------------------------------------------------- */}
           {/*  1. Acceptance                                             */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               1. Acceptance of Terms
             </h2>
             <p>
@@ -47,11 +47,11 @@ export default function TermsOfServicePage() {
           {/*  2. Service Description                                    */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               2. Service Description
             </h2>
             <p>
-              Resolvaio is a <strong className="text-[#111]">writing assistance tool</strong> that
+              Resolvaio is a <strong className="text-foreground">writing assistance tool</strong> that
               helps United States consumers draft demand letters for security
               deposit disputes and cancellation email sequences for unwanted
               subscriptions. The Service uses artificial intelligence to generate
@@ -59,7 +59,7 @@ export default function TermsOfServicePage() {
               statutes.
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">
+              <strong className="text-foreground">
                 Resolvaio is not a law firm and does not provide legal advice.
               </strong>{' '}
               Use of the Service does not create an attorney-client
@@ -74,7 +74,7 @@ export default function TermsOfServicePage() {
           {/*  3. Eligibility                                            */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               3. Eligibility
             </h2>
             <p>
@@ -88,7 +88,7 @@ export default function TermsOfServicePage() {
           {/*  4. Account                                                */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               4. Account Registration
             </h2>
             <p>
@@ -98,7 +98,7 @@ export default function TermsOfServicePage() {
               immediately at{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -110,24 +110,24 @@ export default function TermsOfServicePage() {
           {/*  5. Pricing & Payment                                      */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               5. Pricing and Payment
             </h2>
             <ul className="list-disc space-y-2.5 pl-6">
               <li>
-                <strong className="text-[#111]">
+                <strong className="text-foreground">
                   Subscription Cancellation Emails:
                 </strong>{' '}
                 Free. No payment required.
               </li>
               <li>
-                <strong className="text-[#111]">
+                <strong className="text-foreground">
                   Single Deposit Demand Letter:
                 </strong>{' '}
                 $49 one-time payment.
               </li>
               <li>
-                <strong className="text-[#111]">Unlimited Plan:</strong> $15/month
+                <strong className="text-foreground">Unlimited Plan:</strong> $15/month
                 or $129/year, providing unlimited deposit case generation.
               </li>
             </ul>
@@ -138,7 +138,7 @@ export default function TermsOfServicePage() {
                 href="https://polar.sh/legal/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Polar&rsquo;s Terms of Service
               </a>
@@ -151,7 +151,7 @@ export default function TermsOfServicePage() {
           {/*  6. Refund Policy                                          */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               6. Refund Policy
             </h2>
             <p>
@@ -160,12 +160,12 @@ export default function TermsOfServicePage() {
             </p>
             <ul className="mt-3 list-disc space-y-2.5 pl-6">
               <li>
-                <strong className="text-[#111]">Before letter generation:</strong>{' '}
+                <strong className="text-foreground">Before letter generation:</strong>{' '}
                 If you have paid but have not yet generated your demand letter,
                 you may request a full refund within 7 days of purchase.
               </li>
               <li>
-                <strong className="text-[#111]">After letter generation:</strong>{' '}
+                <strong className="text-foreground">After letter generation:</strong>{' '}
                 Once your demand letter has been generated and delivered to you,
                 the service is considered rendered. Refunds after generation are
                 available only if the Service produced a materially defective
@@ -174,18 +174,18 @@ export default function TermsOfServicePage() {
                 mind&rdquo; is not grounds for a refund after delivery.
               </li>
               <li>
-                <strong className="text-[#111]">Unsupported jurisdiction:</strong>{' '}
+                <strong className="text-foreground">Unsupported jurisdiction:</strong>{' '}
                 If your jurisdiction is not supported, you will be refunded
                 automatically.
               </li>
               <li>
-                <strong className="text-[#111]">Subscriptions:</strong> You may
+                <strong className="text-foreground">Subscriptions:</strong> You may
                 cancel your subscription at any time. Cancellation takes effect
                 at the end of your current billing period. No refunds are issued
                 for partial billing periods.
               </li>
               <li>
-                <strong className="text-[#111]">Limit:</strong> One refund per
+                <strong className="text-foreground">Limit:</strong> One refund per
                 account. Accounts with a pattern of refund requests may be
                 suspended.
               </li>
@@ -194,7 +194,7 @@ export default function TermsOfServicePage() {
               To request a refund, email{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -206,7 +206,7 @@ export default function TermsOfServicePage() {
           {/*  7. Acceptable Use                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               7. Acceptable Use
             </h2>
             <p>
@@ -227,7 +227,7 @@ export default function TermsOfServicePage() {
               these rules. See our full{' '}
               <Link
                 href="/legal/acceptable-use"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Acceptable Use Policy
               </Link>{' '}
@@ -239,25 +239,25 @@ export default function TermsOfServicePage() {
           {/*  8. User Content & IP                                      */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               8. Your Content and Intellectual Property
             </h2>
             <p>
-              <strong className="text-[#111]">Your content:</strong> You retain
+              <strong className="text-foreground">Your content:</strong> You retain
               ownership of all documents, information, and materials you upload
               to the Service. By uploading content, you grant Resolvaio a
               limited, non-exclusive license to process that content solely to
               provide the Service to you.
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Generated documents:</strong> You
+              <strong className="text-foreground">Generated documents:</strong> You
               own the demand letters, email sequences, and filing packets
               generated for you through the Service. You are free to use, modify,
               and send them as you see fit. Resolvaio retains no ownership claim
               over generated documents.
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Resolvaio IP:</strong> The
+              <strong className="text-foreground">Resolvaio IP:</strong> The
               Service, including its design, code, knowledge base, and
               underlying technology, is owned by Resolvaio and protected by
               intellectual property laws. These Terms do not grant you any rights
@@ -269,7 +269,7 @@ export default function TermsOfServicePage() {
           {/*  9. Evidence & Accuracy                                    */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               9. Evidence Authenticity and Accuracy
             </h2>
             <p>
@@ -286,7 +286,7 @@ export default function TermsOfServicePage() {
           {/*  10. AI Disclosure                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               10. AI-Generated Content
             </h2>
             <p>
@@ -297,7 +297,7 @@ export default function TermsOfServicePage() {
               See our full{' '}
               <Link
                 href="/legal/ai-disclosure"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 AI-Generated Content Disclosure
               </Link>{' '}
@@ -309,7 +309,7 @@ export default function TermsOfServicePage() {
           {/*  11. Electronic Communications                             */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               11. Electronic Communications Consent
             </h2>
             <p>
@@ -326,7 +326,7 @@ export default function TermsOfServicePage() {
           {/*  12. Disclaimers                                           */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               12. Disclaimers
             </h2>
             <p className="uppercase tracking-wide">
@@ -351,7 +351,7 @@ export default function TermsOfServicePage() {
           {/*  13. Limitation of Liability                               */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               13. Limitation of Liability
             </h2>
             <p className="uppercase tracking-wide">
@@ -372,7 +372,7 @@ export default function TermsOfServicePage() {
           {/*  14. Indemnification                                       */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               14. Indemnification
             </h2>
             <p>
@@ -391,15 +391,15 @@ export default function TermsOfServicePage() {
           {/*  15. Dispute Resolution                                    */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               15. Dispute Resolution and Arbitration
             </h2>
             <p>
-              <strong className="text-[#111]">Informal Resolution:</strong> Before
+              <strong className="text-foreground">Informal Resolution:</strong> Before
               filing any formal proceeding, you agree to contact us at{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -407,20 +407,20 @@ export default function TermsOfServicePage() {
               days.
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Binding Arbitration:</strong> Any
+              <strong className="text-foreground">Binding Arbitration:</strong> Any
               dispute not resolved informally shall be settled by binding
               arbitration administered by the American Arbitration Association
               (&ldquo;AAA&rdquo;) under its Consumer Arbitration Rules. The
               arbitration shall be conducted in English.
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Class Action Waiver:</strong> You
+              <strong className="text-foreground">Class Action Waiver:</strong> You
               agree that disputes will be resolved on an individual basis. You
               waive any right to participate in a class action, collective
               action, or representative proceeding.
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Small Claims Exception:</strong>{' '}
+              <strong className="text-foreground">Small Claims Exception:</strong>{' '}
               Either party may bring an individual action in small claims court
               if the claim qualifies.
             </p>
@@ -430,7 +430,7 @@ export default function TermsOfServicePage() {
           {/*  16. DMCA                                                  */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               16. Copyright and DMCA
             </h2>
             <p>
@@ -438,7 +438,7 @@ export default function TermsOfServicePage() {
               copyright, please send a DMCA takedown notice to{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -455,7 +455,7 @@ export default function TermsOfServicePage() {
           {/*  17. Termination                                           */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               17. Termination
             </h2>
             <p>
@@ -463,7 +463,7 @@ export default function TermsOfServicePage() {
               settings or by emailing{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>
@@ -477,7 +477,7 @@ export default function TermsOfServicePage() {
           {/*  18. Governing Law                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               18. Governing Law
             </h2>
             <p>
@@ -491,7 +491,7 @@ export default function TermsOfServicePage() {
           {/*  19. Severability                                          */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               19. Severability
             </h2>
             <p>
@@ -504,28 +504,28 @@ export default function TermsOfServicePage() {
           {/*  20. Entire Agreement                                      */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               20. Entire Agreement
             </h2>
             <p>
               These Terms, together with our{' '}
               <Link
                 href="/legal/privacy"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Privacy Policy
               </Link>
               ,{' '}
               <Link
                 href="/legal/acceptable-use"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Acceptable Use Policy
               </Link>
               , and{' '}
               <Link
                 href="/legal/cookies"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Cookie Policy
               </Link>
@@ -538,14 +538,14 @@ export default function TermsOfServicePage() {
           {/*  21. Contact                                               */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               21. Contact
             </h2>
             <p>
               Questions about these Terms? Email us at{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>
@@ -554,15 +554,15 @@ export default function TermsOfServicePage() {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-[#E8E8E5] pt-8 text-center">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-[#8A8A8A]">
-            <Link href="/legal/privacy" className="transition-colors hover:text-[#111]">Privacy</Link>
-            <Link href="/legal/cookies" className="transition-colors hover:text-[#111]">Cookies</Link>
-            <Link href="/legal/acceptable-use" className="transition-colors hover:text-[#111]">Acceptable Use</Link>
-            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-[#111]">AI Disclosure</Link>
-            <Link href="/legal/accessibility" className="transition-colors hover:text-[#111]">Accessibility</Link>
+        <div className="mt-16 border-t border-border pt-8 text-center">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <Link href="/legal/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link href="/legal/cookies" className="transition-colors hover:text-foreground">Cookies</Link>
+            <Link href="/legal/acceptable-use" className="transition-colors hover:text-foreground">Acceptable Use</Link>
+            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-foreground">AI Disclosure</Link>
+            <Link href="/legal/accessibility" className="transition-colors hover:text-foreground">Accessibility</Link>
           </div>
-          <p className="mt-4 text-[12px] text-[#8A8A8A]">
+          <p className="mt-4 text-[12px] text-muted-foreground">
             &copy; {new Date().getFullYear()} Resolvaio. All rights reserved.
             Resolvaio is owned and operated by Nikola Innovations Limited.
           </p>

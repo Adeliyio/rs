@@ -8,23 +8,23 @@ export const metadata: Metadata = {
 
 export default function CookiePolicyPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] px-6 py-20">
+    <main className="min-h-screen bg-background px-6 py-20">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="text-[13px] text-[#8A8A8A] transition-colors hover:text-[#111]"
+          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Back to home
         </Link>
 
-        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-[#111]">
+        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-foreground">
           Cookie &amp; Tracking Policy
         </h1>
-        <p className="mt-2 text-[13px] text-[#8A8A8A]">
+        <p className="mt-2 text-[13px] text-muted-foreground">
           Effective Date: May 28, 2026 &middot; Last Updated: May 28, 2026
         </p>
 
-        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-[#5F5F5F]">
+        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-muted-foreground">
           {/* ---------------------------------------------------------- */}
           {/*  Overview                                                  */}
           {/* ---------------------------------------------------------- */}
@@ -40,22 +40,22 @@ export default function CookiePolicyPage() {
           {/*  1. Cookies We Use                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               1. Cookies We Use
             </h2>
 
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-[14px]">
                 <thead>
-                  <tr className="border-b border-[#E8E8E5] text-left text-[#111]">
+                  <tr className="border-b border-border text-left text-foreground">
                     <th className="pb-2 pr-4 font-semibold">Cookie</th>
                     <th className="pb-2 pr-4 font-semibold">Type</th>
                     <th className="pb-2 pr-4 font-semibold">Purpose</th>
                     <th className="pb-2 font-semibold">Duration</th>
                   </tr>
                 </thead>
-                <tbody className="text-[#5F5F5F]">
-                  <tr className="border-b border-[#E8E8E5]">
+                <tbody className="text-muted-foreground">
+                  <tr className="border-b border-border">
                     <td className="py-2.5 pr-4 font-mono text-[13px]">
                       __convexAuth*
                     </td>
@@ -82,7 +82,7 @@ export default function CookiePolicyPage() {
           {/*  2. localStorage                                           */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               2. Local Storage
             </h2>
             <p>
@@ -91,12 +91,12 @@ export default function CookiePolicyPage() {
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-[14px]">
                 <thead>
-                  <tr className="border-b border-[#E8E8E5] text-left text-[#111]">
+                  <tr className="border-b border-border text-left text-foreground">
                     <th className="pb-2 pr-4 font-semibold">Key</th>
                     <th className="pb-2 font-semibold">Purpose</th>
                   </tr>
                 </thead>
-                <tbody className="text-[#5F5F5F]">
+                <tbody className="text-muted-foreground">
                   <tr>
                     <td className="py-2.5 pr-4 font-mono text-[13px]">
                       resolvaio_cookie_consent
@@ -119,7 +119,7 @@ export default function CookiePolicyPage() {
           {/*  3. Analytics                                              */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               3. Analytics (Cookie-Free)
             </h2>
             <p>
@@ -128,7 +128,7 @@ export default function CookiePolicyPage() {
                 href="https://plausible.io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Plausible Analytics
               </a>
@@ -153,7 +153,7 @@ export default function CookiePolicyPage() {
           {/*  4. Error Tracking                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               4. Error Tracking
             </h2>
             <p>
@@ -162,7 +162,7 @@ export default function CookiePolicyPage() {
                 href="https://sentry.io"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Sentry
               </a>{' '}
@@ -185,7 +185,7 @@ export default function CookiePolicyPage() {
           {/*  5. What We Don't Use                                      */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               5. What We Do Not Use
             </h2>
             <ul className="list-disc space-y-2.5 pl-6">
@@ -201,14 +201,14 @@ export default function CookiePolicyPage() {
           {/*  6. Contact                                                */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               6. Questions
             </h2>
             <p>
               Questions about our use of cookies or tracking? Email{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>
@@ -217,15 +217,15 @@ export default function CookiePolicyPage() {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-[#E8E8E5] pt-8 text-center">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-[#8A8A8A]">
-            <Link href="/legal/terms" className="transition-colors hover:text-[#111]">Terms</Link>
-            <Link href="/legal/privacy" className="transition-colors hover:text-[#111]">Privacy</Link>
-            <Link href="/legal/acceptable-use" className="transition-colors hover:text-[#111]">Acceptable Use</Link>
-            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-[#111]">AI Disclosure</Link>
-            <Link href="/legal/accessibility" className="transition-colors hover:text-[#111]">Accessibility</Link>
+        <div className="mt-16 border-t border-border pt-8 text-center">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <Link href="/legal/terms" className="transition-colors hover:text-foreground">Terms</Link>
+            <Link href="/legal/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link href="/legal/acceptable-use" className="transition-colors hover:text-foreground">Acceptable Use</Link>
+            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-foreground">AI Disclosure</Link>
+            <Link href="/legal/accessibility" className="transition-colors hover:text-foreground">Accessibility</Link>
           </div>
-          <p className="mt-4 text-[12px] text-[#8A8A8A]">
+          <p className="mt-4 text-[12px] text-muted-foreground">
             &copy; {new Date().getFullYear()} Resolvaio. All rights reserved.
             Resolvaio is owned and operated by Nikola Innovations Limited.
           </p>

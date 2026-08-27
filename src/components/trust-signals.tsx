@@ -40,41 +40,41 @@ export function TrustSignals() {
   }
 
   return (
-    <div className="border-t border-[#E8E8E5] bg-[#F7F7F5] py-16">
+    <div className="border-t border-border bg-background py-16">
       <div className="mx-auto max-w-4xl px-6">
-        <h2 className="mb-8 text-center text-[16px] font-semibold text-[#111]">
+        <h2 className="mb-8 text-center text-[16px] font-semibold text-foreground">
           Trusted by consumers across the US
         </h2>
 
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
           <div className="flex flex-col items-center gap-3 text-center">
-            <Users className="h-5 w-5 text-[#8A8A8A]" />
-            <div className="text-[28px] font-semibold tracking-tight text-[#111]">
+            <Users className="h-5 w-5 text-muted-foreground" />
+            <div className="text-[28px] font-semibold tracking-tight text-foreground">
               {stats.total_cases_completed.toLocaleString()}+
             </div>
-            <div className="text-[13px] text-[#5F5F5F]">Cases completed</div>
+            <div className="text-[13px] text-muted-foreground">Cases completed</div>
           </div>
 
           {stats.recovery.available && stats.recovery.average_recovered && (
             <div className="flex flex-col items-center gap-3 text-center">
-              <Shield className="h-5 w-5 text-[#8A8A8A]" />
-              <div className="text-[28px] font-semibold tracking-tight text-[#111]">
+              <Shield className="h-5 w-5 text-muted-foreground" />
+              <div className="text-[28px] font-semibold tracking-tight text-foreground">
                 ${stats.recovery.average_recovered.toLocaleString()}
               </div>
-              <div className="text-[13px] text-[#5F5F5F]">Average recovery</div>
+              <div className="text-[13px] text-muted-foreground">Average recovery</div>
             </div>
           )}
 
           <div className="flex flex-col items-center gap-3 text-center">
-            <MapPin className="h-5 w-5 text-[#8A8A8A]" />
-            <div className="text-[28px] font-semibold tracking-tight text-[#111]">
+            <MapPin className="h-5 w-5 text-muted-foreground" />
+            <div className="text-[28px] font-semibold tracking-tight text-foreground">
               {stats.jurisdictions_covered}
             </div>
-            <div className="text-[13px] text-[#5F5F5F]">States covered</div>
+            <div className="text-[13px] text-muted-foreground">States covered</div>
           </div>
         </div>
 
-        <p className="mt-8 text-center text-[12px] text-[#8A8A8A]">
+        <p className="mt-8 text-center text-[12px] text-muted-foreground">
           Individual results vary. This is a writing tool, not legal
           representation. Statistics reflect consented, verified outcomes only.
         </p>

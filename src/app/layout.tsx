@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Fraunces } from 'next/font/google';
 
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
 
@@ -13,6 +13,19 @@ import './globals.css';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+});
+
+/**
+ * Display face — Fraunces, an editorial serif with a lawyerly, document-grade
+ * weight (optical sizing, high contrast). Used with restraint for headlines and
+ * statute citations; Inter carries all UI and body text.
+ */
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  variable: '--font-display',
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -63,7 +76,7 @@ export default function RootLayout({
   return (
     <ConvexAuthNextjsServerProvider>
       <html lang="en-US" suppressHydrationWarning>
-        <body className={`${inter.variable} font-sans antialiased`}>
+        <body className={`${inter.variable} ${fraunces.variable} font-sans antialiased`}>
           <ConvexClientProvider>
             {children}
             <CookieConsent />

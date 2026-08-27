@@ -318,17 +318,17 @@ export function DeadlineCalculator() {
   return (
     <div>
       {/* Input form */}
-      <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8">
+      <div className="rounded-2xl border border-border bg-white p-8">
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="flex flex-col gap-2">
-            <label htmlFor="state" className="text-[13px] font-medium text-[#111]">
+            <label htmlFor="state" className="text-[13px] font-medium text-foreground">
               State
             </label>
             <select
               id="state"
               value={selectedState}
               onChange={(e) => { setSelectedState(e.target.value); setResult(null); }}
-              className="h-11 w-full rounded-lg border border-[#E8E8E5] bg-[#F7F7F5] px-4 text-[14px] text-[#111] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-shadow"
+              className="h-11 w-full rounded-lg border border-border bg-background px-4 text-[14px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-shadow"
             >
               <option value="">Select your state</option>
               {STATE_DEADLINES.map((s) => (
@@ -339,7 +339,7 @@ export function DeadlineCalculator() {
             </select>
           </div>
           <div className="flex flex-col gap-2">
-            <label htmlFor="moveout" className="text-[13px] font-medium text-[#111]">
+            <label htmlFor="moveout" className="text-[13px] font-medium text-foreground">
               Move-out date
             </label>
             <input
@@ -347,7 +347,7 @@ export function DeadlineCalculator() {
               type="date"
               value={moveOutDate}
               onChange={(e) => { setMoveOutDate(e.target.value); setResult(null); }}
-              className="h-11 w-full rounded-lg border border-[#E8E8E5] bg-[#F7F7F5] px-4 text-[14px] text-[#111] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-shadow"
+              className="h-11 w-full rounded-lg border border-border bg-background px-4 text-[14px] text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-shadow"
             />
           </div>
         </div>
@@ -355,7 +355,7 @@ export function DeadlineCalculator() {
           type="button"
           onClick={handleCalculate}
           disabled={!selectedState || !moveOutDate}
-          className="mt-6 w-full rounded-lg bg-[#111] py-3 text-[14px] font-semibold text-white transition-all hover:bg-[#222] active:scale-[0.98] disabled:bg-[#E8E8E5] disabled:text-[#8A8A8A] disabled:active:scale-100"
+          className="mt-6 w-full rounded-lg bg-foreground py-3 text-[14px] font-semibold text-white transition-all hover:bg-foreground/90 active:scale-[0.98] disabled:bg-muted disabled:text-muted-foreground disabled:active:scale-100"
         >
           Calculate Deadline
         </button>
@@ -377,12 +377,12 @@ export function DeadlineCalculator() {
                 <Clock className="mt-1 h-6 w-6 shrink-0 text-emerald-600" />
               )}
               <div>
-                <h3 className="text-[20px] font-semibold text-[#111]">
+                <h3 className="text-[20px] font-semibold text-foreground">
                   {result.deadlinePassed
                     ? `Deadline passed ${result.daysOverdue} day${result.daysOverdue === 1 ? '' : 's'} ago`
                     : 'Deadline has not passed yet'}
                 </h3>
-                <p className="mt-2 text-[15px] leading-[1.7] text-[#5F5F5F]">
+                <p className="mt-2 text-[15px] leading-[1.7] text-muted-foreground">
                   {result.deadlinePassed
                     ? `Your landlord\u2019s ${result.state.days}-day deadline expired on ${result.deadlineDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}. It has been ${result.daysElapsed} days since you moved out.`
                     : `Your landlord has until ${result.deadlineDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} (${result.state.days} days from move-out) to return your deposit or provide an itemized statement.`}
@@ -392,33 +392,33 @@ export function DeadlineCalculator() {
           </div>
 
           {/* Details card */}
-          <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8">
+          <div className="rounded-2xl border border-border bg-white p-8">
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[13px] font-medium text-[#8A8A8A]">Statute</p>
-                <p className="text-right text-[14px] font-medium text-[#111]">{result.state.statute}</p>
+                <p className="text-[13px] font-medium text-muted-foreground">Statute</p>
+                <p className="text-right text-[14px] font-medium text-foreground">{result.state.statute}</p>
               </div>
-              <div className="border-t border-[#E8E8E5]" />
+              <div className="border-t border-border" />
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[13px] font-medium text-[#8A8A8A]">Return deadline</p>
-                <p className="text-right text-[14px] font-medium text-[#111]">{result.state.days} days</p>
+                <p className="text-[13px] font-medium text-muted-foreground">Return deadline</p>
+                <p className="text-right text-[14px] font-medium text-foreground">{result.state.days} days</p>
               </div>
-              <div className="border-t border-[#E8E8E5]" />
+              <div className="border-t border-border" />
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[13px] font-medium text-[#8A8A8A]">Days since move-out</p>
-                <p className="text-right text-[14px] font-medium text-[#111]">{result.daysElapsed} days</p>
+                <p className="text-[13px] font-medium text-muted-foreground">Days since move-out</p>
+                <p className="text-right text-[14px] font-medium text-foreground">{result.daysElapsed} days</p>
               </div>
-              <div className="border-t border-[#E8E8E5]" />
+              <div className="border-t border-border" />
               <div className="flex items-start justify-between gap-4">
-                <p className="text-[13px] font-medium text-[#8A8A8A]">Penalty if missed</p>
-                <p className="text-right text-[14px] font-medium text-[#111]">{result.state.penalty}</p>
+                <p className="text-[13px] font-medium text-muted-foreground">Penalty if missed</p>
+                <p className="text-right text-[14px] font-medium text-foreground">{result.state.penalty}</p>
               </div>
               {result.state.note && (
                 <>
-                  <div className="border-t border-[#E8E8E5]" />
+                  <div className="border-t border-border" />
                   <div className="flex items-start justify-between gap-4">
-                    <p className="text-[13px] font-medium text-[#8A8A8A]">Note</p>
-                    <p className="text-right text-[14px] text-[#5F5F5F]">{result.state.note}</p>
+                    <p className="text-[13px] font-medium text-muted-foreground">Note</p>
+                    <p className="text-right text-[14px] text-muted-foreground">{result.state.note}</p>
                   </div>
                 </>
               )}
@@ -427,21 +427,21 @@ export function DeadlineCalculator() {
 
           {/* CTA */}
           {result.deadlinePassed && result.state.supported && (
-            <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8 text-center">
+            <div className="rounded-2xl border border-border bg-white p-8 text-center">
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Check className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="mt-4 text-[18px] font-semibold text-[#111]">
+              <h3 className="mt-4 text-[18px] font-semibold text-foreground">
                 Generate your demand letter
               </h3>
-              <p className="mt-2 text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
                 Your landlord missed the {result.state.days}-day deadline under{' '}
                 {result.state.statute}. A demand letter citing this statute and the
                 penalty provision is the standard next step.
               </p>
               <Link
                 href="/new?wedge=deposit"
-                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-[#111] px-6 py-3 text-[14px] font-semibold text-white transition-all hover:bg-[#222] active:scale-[0.98]"
+                className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground px-6 py-3 text-[14px] font-semibold text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
               >
                 Start Deposit Case — $49 <ArrowRight className="h-4 w-4" />
               </Link>
@@ -449,11 +449,11 @@ export function DeadlineCalculator() {
           )}
 
           {result.deadlinePassed && !result.state.supported && (
-            <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8 text-center">
-              <h3 className="text-[18px] font-semibold text-[#111]">
+            <div className="rounded-2xl border border-border bg-white p-8 text-center">
+              <h3 className="text-[18px] font-semibold text-foreground">
                 {result.state.name} is not yet supported
               </h3>
-              <p className="mt-2 text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
                 We currently generate demand letters for California, Texas, New York,
                 and Florida. We are expanding to additional states based on demand.
               </p>
@@ -465,14 +465,14 @@ export function DeadlineCalculator() {
                 </div>
               ) : (
                 <form onSubmit={handleWaitlistSubmit} className="mx-auto mt-5 max-w-md space-y-3">
-                  <p className="text-[13px] font-medium text-[#111]">Join the waitlist</p>
+                  <p className="text-[13px] font-medium text-foreground">Join the waitlist</p>
                   <div className="flex gap-2">
                     <input
                       type="text"
                       value={waitlistName}
                       onChange={(e) => setWaitlistName(e.target.value)}
                       placeholder="Your name"
-                      className="flex-1 rounded-lg border border-[#E8E8E5] bg-[#F7F7F5] px-3 py-2.5 text-[14px] text-[#111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                     <input
                       type="email"
@@ -480,13 +480,13 @@ export function DeadlineCalculator() {
                       onChange={(e) => setWaitlistEmail(e.target.value)}
                       placeholder="your@email.com"
                       required
-                      className="flex-1 rounded-lg border border-[#E8E8E5] bg-[#F7F7F5] px-3 py-2.5 text-[14px] text-[#111] placeholder:text-[#8A8A8A] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                      className="flex-1 rounded-lg border border-border bg-background px-3 py-2.5 text-[14px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={waitlistStatus === 'loading'}
-                    className="w-full rounded-lg bg-[#111] py-2.5 text-[14px] font-semibold text-white transition-all hover:bg-[#222] active:scale-[0.98] disabled:opacity-70"
+                    className="w-full rounded-lg bg-foreground py-2.5 text-[14px] font-semibold text-white transition-all hover:bg-foreground/90 active:scale-[0.98] disabled:opacity-70"
                   >
                     {waitlistStatus === 'loading' ? (
                       <span className="inline-flex items-center gap-1.5">
@@ -507,8 +507,8 @@ export function DeadlineCalculator() {
           )}
 
           {!result.deadlinePassed && (
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-6 text-center">
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+            <div className="rounded-2xl border border-border bg-background p-6 text-center">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 The deadline hasn&apos;t passed yet. If it passes without a return
                 or itemized statement, a demand letter citing {result.state.statute}{' '}
                 is the standard next step.
@@ -517,7 +517,7 @@ export function DeadlineCalculator() {
           )}
 
           {/* Disclaimer */}
-          <p className="text-[12px] leading-relaxed text-[#8A8A8A]">
+          <p className="text-[12px] leading-relaxed text-muted-foreground">
             This calculation is based on the general statutory deadline and does
             not account for holidays, weekends, or special circumstances that may
             affect the deadline in your jurisdiction. Some states have different

@@ -355,14 +355,14 @@ export default function LetterView({
 
       {/* Sending instructions (expandable) */}
       {showSendGuide && (
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-primary/20 bg-accent/50">
           <CardContent className="px-4 py-4">
-            <h3 className="mb-3 text-sm font-semibold text-blue-900">
+            <h3 className="mb-3 text-sm font-semibold text-accent-foreground">
               How to Send Your Demand Letter
             </h3>
-            <ol className="space-y-3 text-sm text-blue-800">
+            <ol className="space-y-3 text-sm text-accent-foreground">
               <li className="flex gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                   1
                 </span>
                 <span>
@@ -371,7 +371,7 @@ export default function LetterView({
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                   2
                 </span>
                 <span>
@@ -382,7 +382,7 @@ export default function LetterView({
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                   3
                 </span>
                 <span>
@@ -392,7 +392,7 @@ export default function LetterView({
                 </span>
               </li>
               <li className="flex gap-2">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
                   4
                 </span>
                 <span>
@@ -402,7 +402,7 @@ export default function LetterView({
                 </span>
               </li>
             </ol>
-            <p className="mt-3 text-xs text-blue-600">
+            <p className="mt-3 text-xs text-accent-foreground/70">
               People in similar situations commonly send this type of letter.
               Most landlords respond within the statutory window.
             </p>

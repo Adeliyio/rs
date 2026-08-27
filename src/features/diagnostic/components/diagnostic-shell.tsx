@@ -66,7 +66,7 @@ function ProgressBar({
   return (
     <div className="h-1.5 w-full rounded-full bg-border overflow-hidden">
       <div
-        className="h-full rounded-full bg-blue-500 transition-all duration-500 ease-out"
+        className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
         style={{ width: `${String(pct)}%` }}
       />
     </div>

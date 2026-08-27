@@ -69,16 +69,16 @@ export function SubscriptionUpsell({
   }
 
   return (
-    <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+    <Card className="border-primary/20 bg-gradient-to-br from-accent to-white">
       <CardContent className="px-6 py-6">
         <div className="mb-4 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-blue-600" />
-          <h3 className="text-lg font-semibold text-blue-900">
+          <Zap className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold text-foreground">
             Save on Future Cases
           </h3>
         </div>
 
-        <p className="mb-6 text-sm text-blue-800/80">
+        <p className="mb-6 text-sm text-muted-foreground">
           Unlock unlimited deposit demand letters with a subscription plan.
           Use it for any property, in any supported state, as many times as
           you need.
@@ -89,7 +89,7 @@ export function SubscriptionUpsell({
           <button
             type="button"
             onClick={() => handleSelectPlan('monthly')}
-            className="rounded-lg border border-blue-200 bg-white p-4 text-left transition-colors hover:border-blue-400 hover:bg-blue-50/50"
+            className="rounded-lg border border-primary/20 bg-white p-4 text-left transition-colors hover:border-primary/40 hover:bg-accent/50"
           >
             <div className="text-lg font-bold text-neutral-900">$15/mo</div>
             <div className="mt-0.5 text-sm text-neutral-600">
@@ -97,15 +97,15 @@ export function SubscriptionUpsell({
             </div>
             <ul className="mt-3 space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-blue-600" />
+                <Check className="h-3 w-3 text-primary" />
                 Unlimited deposit letters
               </li>
               <li className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-blue-600" />
+                <Check className="h-3 w-3 text-primary" />
                 All supported states
               </li>
               <li className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-blue-600" />
+                <Check className="h-3 w-3 text-primary" />
                 Cancel anytime
               </li>
             </ul>
@@ -115,9 +115,9 @@ export function SubscriptionUpsell({
           <button
             type="button"
             onClick={() => handleSelectPlan('annual')}
-            className="relative rounded-lg border-2 border-blue-400 bg-white p-4 text-left transition-colors hover:bg-blue-50/50"
+            className="relative rounded-lg border-2 border-primary bg-white p-4 text-left transition-colors hover:bg-accent/50"
           >
-            <div className="absolute -top-2.5 right-3 rounded-full bg-blue-600 px-2.5 py-0.5 text-[10px] font-semibold text-white">
+            <div className="absolute -top-2.5 right-3 rounded-full bg-primary px-2.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
               Save 28%
             </div>
             <div className="text-lg font-bold text-neutral-900">
@@ -128,15 +128,15 @@ export function SubscriptionUpsell({
             </div>
             <ul className="mt-3 space-y-1.5 text-xs text-neutral-600">
               <li className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-blue-600" />
+                <Check className="h-3 w-3 text-primary" />
                 Unlimited deposit letters
               </li>
               <li className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-blue-600" />
+                <Check className="h-3 w-3 text-primary" />
                 All supported states
               </li>
               <li className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-blue-600" />
+                <Check className="h-3 w-3 text-primary" />
                 Best value — $10.75/mo
               </li>
             </ul>

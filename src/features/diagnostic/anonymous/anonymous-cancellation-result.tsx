@@ -136,11 +136,11 @@ function StepCard({
           </pre>
         </div>
         {step.citations.length > 0 && (
-          <div className="rounded-lg border border-blue-100 bg-blue-50/70 px-3 py-2">
-            <span className="text-[11px] uppercase tracking-wider text-blue-700">
+          <div className="rounded-lg border border-primary/20 bg-accent/70 px-3 py-2">
+            <span className="text-[11px] uppercase tracking-wider text-primary">
               Grounded in
             </span>
-            <p className="mt-0.5 text-xs text-blue-900">
+            <p className="mt-0.5 text-xs text-accent-foreground">
               {step.citations.join(' · ')}
             </p>
           </div>

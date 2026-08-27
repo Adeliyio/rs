@@ -190,9 +190,9 @@ export function DepositStatePage({
                 <li key={c.slug}>
                   <Link
                     href={`${statePath}/${c.slug}`}
-                    className="flex items-start gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-[#3B4CCA]/40 hover:bg-neutral-50"
+                    className="flex items-start gap-3 rounded-lg border border-neutral-200 p-4 transition-colors hover:border-primary/40 hover:bg-neutral-50"
                   >
-                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#3B4CCA]" />
+                    <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                     <span>
                       <span className="block font-semibold text-neutral-900">{c.name}</span>
                       <span className="mt-0.5 block text-sm text-neutral-500">{c.filingFee}</span>

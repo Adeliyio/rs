@@ -25,27 +25,27 @@ export const metadata: Metadata = {
 
 export default function DepositDeadlinePage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5]">
+    <main className="min-h-screen bg-background">
       {/* Nav */}
-      <nav className="sticky top-0 z-40 border-b border-[#E8E8E5] bg-[#F7F7F5]/95 px-6 py-4 backdrop-blur-md">
+      <nav className="sticky top-0 z-40 border-b border-border bg-background/95 px-6 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-[#111]">
+          <Link href="/" className="text-lg font-semibold text-foreground">
             Resolvaio
           </Link>
           <div className="hidden items-center gap-8 text-[13px] sm:flex">
             <ToolsDropdown />
-            <Link href="/blog" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Blog</Link>
-            <Link href="/login" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Sign In</Link>
+            <Link href="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Blog</Link>
+            <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <Link
               href="/new"
-              className="rounded-lg bg-[#111] px-4 py-2 font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98]"
+              className="rounded-lg bg-foreground px-4 py-2 font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Start Free Diagnostic
             </Link>
           </div>
           <Link
             href="/new"
-            className="rounded-lg bg-[#111] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98] sm:hidden"
+            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98] sm:hidden"
           >
             Start Free
           </Link>
@@ -55,12 +55,12 @@ export default function DepositDeadlinePage() {
       {/* Hero */}
       <section className="px-6 py-20 text-center sm:py-24">
         <div className="mx-auto max-w-2xl">
-          <h1 className="text-[36px] font-semibold leading-[1.1] tracking-tight text-[#111] sm:text-[48px]">
+          <h1 className="text-[36px] font-semibold leading-[1.1] tracking-tight text-foreground sm:text-[48px]">
             Security deposit
             <br />
-            <span className="text-[#5F5F5F]">deadline calculator.</span>
+            <span className="text-muted-foreground">deadline calculator.</span>
           </h1>
-          <p className="mt-6 text-[16px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mt-6 text-[16px] leading-[1.7] text-muted-foreground">
             Enter your state and move-out date. We&apos;ll show you the exact
             deadline your landlord has to return your deposit, the statute that
             requires it, and what happens if they miss it.
@@ -76,32 +76,32 @@ export default function DepositDeadlinePage() {
       </section>
 
       {/* How it works */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-16 sm:py-20">
+      <section className="border-t border-border bg-white px-6 py-16 sm:py-20">
         <div className="mx-auto max-w-4xl">
-          <h2 className="mb-10 text-center text-[24px] font-semibold tracking-tight text-[#111]">
+          <h2 className="mb-10 text-center text-[24px] font-semibold tracking-tight text-foreground">
             What this calculator does
           </h2>
           <div className="grid gap-8 sm:grid-cols-3">
             <div className="text-center">
-              <p className="mb-2 text-[28px] font-semibold text-[#111]">1</p>
-              <h3 className="text-[15px] font-semibold text-[#111]">Looks up your state law</h3>
-              <p className="mt-2 text-[13px] leading-[1.6] text-[#5F5F5F]">
+              <p className="mb-2 text-[28px] font-semibold text-foreground">1</p>
+              <h3 className="text-[15px] font-semibold text-foreground">Looks up your state law</h3>
+              <p className="mt-2 text-[13px] leading-[1.6] text-muted-foreground">
                 Each state has a different deadline. We pull the exact statute
                 and number of days for your jurisdiction.
               </p>
             </div>
             <div className="text-center">
-              <p className="mb-2 text-[28px] font-semibold text-[#111]">2</p>
-              <h3 className="text-[15px] font-semibold text-[#111]">Calculates your deadline</h3>
-              <p className="mt-2 text-[13px] leading-[1.6] text-[#5F5F5F]">
+              <p className="mb-2 text-[28px] font-semibold text-foreground">2</p>
+              <h3 className="text-[15px] font-semibold text-foreground">Calculates your deadline</h3>
+              <p className="mt-2 text-[13px] leading-[1.6] text-muted-foreground">
                 From your move-out date, we calculate the exact calendar date
                 your landlord&apos;s deadline expires.
               </p>
             </div>
             <div className="text-center">
-              <p className="mb-2 text-[28px] font-semibold text-[#111]">3</p>
-              <h3 className="text-[15px] font-semibold text-[#111]">Shows the penalty</h3>
-              <p className="mt-2 text-[13px] leading-[1.6] text-[#5F5F5F]">
+              <p className="mb-2 text-[28px] font-semibold text-foreground">3</p>
+              <h3 className="text-[15px] font-semibold text-foreground">Shows the penalty</h3>
+              <p className="mt-2 text-[13px] leading-[1.6] text-muted-foreground">
                 If the deadline has passed, you see the specific penalty
                 provision the statute provides.
               </p>
@@ -111,26 +111,26 @@ export default function DepositDeadlinePage() {
       </section>
 
       {/* Disclaimer + Footer */}
-      <footer className="border-t border-[#E8E8E5] px-6 py-10">
+      <footer className="border-t border-border px-6 py-10">
         <div className="mx-auto max-w-4xl text-center">
-          <Link href="/" className="text-[15px] font-semibold text-[#111]">
+          <Link href="/" className="text-[15px] font-semibold text-foreground">
             Resolvaio
           </Link>
-          <p className="mx-auto mt-4 max-w-2xl text-[12px] leading-relaxed text-[#8A8A8A]">
+          <p className="mx-auto mt-4 max-w-2xl text-[12px] leading-relaxed text-muted-foreground">
             This calculator provides general information about statutory
             deadlines. It does not constitute legal advice and does not account
             for all possible exceptions (holidays, weekends, special
             circumstances). Verify current law with official sources. Consider
             consulting a licensed attorney for advice about your specific situation.
           </p>
-          <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-[#8A8A8A]">
-            <Link href="/legal/terms" className="transition-colors hover:text-[#111]">Terms</Link>
-            <Link href="/legal/privacy" className="transition-colors hover:text-[#111]">Privacy</Link>
-            <Link href="/legal/cookies" className="transition-colors hover:text-[#111]">Cookies</Link>
-            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-[#111]">AI Disclosure</Link>
-            <Link href="/legal/accessibility" className="transition-colors hover:text-[#111]">Accessibility</Link>
+          <div className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <Link href="/legal/terms" className="transition-colors hover:text-foreground">Terms</Link>
+            <Link href="/legal/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link href="/legal/cookies" className="transition-colors hover:text-foreground">Cookies</Link>
+            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-foreground">AI Disclosure</Link>
+            <Link href="/legal/accessibility" className="transition-colors hover:text-foreground">Accessibility</Link>
           </div>
-          <p className="mt-4 text-[12px] text-[#8A8A8A]">
+          <p className="mt-4 text-[12px] text-muted-foreground">
             &copy; {new Date().getFullYear()} Resolvaio. All rights reserved.
             Resolvaio is owned and operated by Nikola Innovations Limited.
           </p>

@@ -8,28 +8,28 @@ export const metadata: Metadata = {
 
 export default function AccessibilityPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] px-6 py-20">
+    <main className="min-h-screen bg-background px-6 py-20">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="text-[13px] text-[#8A8A8A] transition-colors hover:text-[#111]"
+          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Back to home
         </Link>
 
-        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-[#111]">
+        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-foreground">
           Accessibility Statement
         </h1>
-        <p className="mt-2 text-[13px] text-[#8A8A8A]">
+        <p className="mt-2 text-[13px] text-muted-foreground">
           Last Updated: May 28, 2026
         </p>
 
-        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-[#5F5F5F]">
+        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-muted-foreground">
           {/* ---------------------------------------------------------- */}
           {/*  Commitment                                                */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               Our Commitment
             </h2>
             <p>
@@ -44,7 +44,7 @@ export default function AccessibilityPage() {
           {/*  Standards                                                 */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               Conformance Status
             </h2>
             <p>
@@ -53,7 +53,7 @@ export default function AccessibilityPage() {
                 href="https://www.w3.org/WAI/standards-guidelines/wcag/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Web Content Accessibility Guidelines (WCAG) 2.1
               </a>{' '}
@@ -62,7 +62,7 @@ export default function AccessibilityPage() {
             </p>
             <p className="mt-3">
               Our current conformance status is{' '}
-              <strong className="text-[#111]">partial</strong>. We are actively
+              <strong className="text-foreground">partial</strong>. We are actively
               working to identify and resolve accessibility gaps.
             </p>
           </section>
@@ -71,7 +71,7 @@ export default function AccessibilityPage() {
           {/*  What We Do                                                */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               Measures We Take
             </h2>
             <ul className="list-disc space-y-2.5 pl-6">
@@ -88,7 +88,7 @@ export default function AccessibilityPage() {
           {/*  Known Limitations                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               Known Limitations
             </h2>
             <p>
@@ -106,7 +106,7 @@ export default function AccessibilityPage() {
           {/*  Feedback                                                  */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               Feedback
             </h2>
             <p>
@@ -115,16 +115,16 @@ export default function AccessibilityPage() {
               improvement, please contact us:
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Email:</strong>{' '}
+              <strong className="text-foreground">Email:</strong>{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>
             </p>
             <p className="mt-1">
-              <strong className="text-[#111]">Subject line:</strong>{' '}
+              <strong className="text-foreground">Subject line:</strong>{' '}
               &ldquo;Accessibility Feedback&rdquo;
             </p>
             <p className="mt-3">
@@ -134,15 +134,15 @@ export default function AccessibilityPage() {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-[#E8E8E5] pt-8 text-center">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-[#8A8A8A]">
-            <Link href="/legal/terms" className="transition-colors hover:text-[#111]">Terms</Link>
-            <Link href="/legal/privacy" className="transition-colors hover:text-[#111]">Privacy</Link>
-            <Link href="/legal/cookies" className="transition-colors hover:text-[#111]">Cookies</Link>
-            <Link href="/legal/acceptable-use" className="transition-colors hover:text-[#111]">Acceptable Use</Link>
-            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-[#111]">AI Disclosure</Link>
+        <div className="mt-16 border-t border-border pt-8 text-center">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <Link href="/legal/terms" className="transition-colors hover:text-foreground">Terms</Link>
+            <Link href="/legal/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link href="/legal/cookies" className="transition-colors hover:text-foreground">Cookies</Link>
+            <Link href="/legal/acceptable-use" className="transition-colors hover:text-foreground">Acceptable Use</Link>
+            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-foreground">AI Disclosure</Link>
           </div>
-          <p className="mt-4 text-[12px] text-[#8A8A8A]">
+          <p className="mt-4 text-[12px] text-muted-foreground">
             &copy; {new Date().getFullYear()} Resolvaio. All rights reserved.
             Resolvaio is owned and operated by Nikola Innovations Limited.
           </p>

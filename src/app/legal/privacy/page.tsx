@@ -8,23 +8,23 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] px-6 py-20">
+    <main className="min-h-screen bg-background px-6 py-20">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="text-[13px] text-[#8A8A8A] transition-colors hover:text-[#111]"
+          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Back to home
         </Link>
 
-        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-[#111]">
+        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-foreground">
           Privacy Policy
         </h1>
-        <p className="mt-2 text-[13px] text-[#8A8A8A]">
+        <p className="mt-2 text-[13px] text-muted-foreground">
           Effective Date: May 28, 2026 &middot; Last Updated: May 28, 2026
         </p>
 
-        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-[#5F5F5F]">
+        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-muted-foreground">
           {/* ---------------------------------------------------------- */}
           {/*  Introduction                                              */}
           {/* ---------------------------------------------------------- */}
@@ -43,11 +43,11 @@ export default function PrivacyPolicyPage() {
           {/*  1. Information We Collect                                  */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               1. Information We Collect
             </h2>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               1.1 Account Information
             </h3>
             <p>
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
               user identifier.
             </p>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               1.2 Case and Dispute Data
             </h3>
             <p>
@@ -70,7 +70,7 @@ export default function PrivacyPolicyPage() {
               <li>Reported outcomes (optional, with your consent)</li>
             </ul>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               1.3 Uploaded Documents
             </h3>
             <p>
@@ -81,13 +81,13 @@ export default function PrivacyPolicyPage() {
               your letters.
             </p>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               1.4 Payment Information
             </h3>
             <p>
               Payments are processed by Polar. We store Polar order IDs,
               subscription IDs, payment status, and billing period dates.{' '}
-              <strong className="text-[#111]">
+              <strong className="text-foreground">
                 We do not store your credit card number, CVV, or bank account
                 details.
               </strong>{' '}
@@ -96,24 +96,24 @@ export default function PrivacyPolicyPage() {
                 href="https://polar.sh/legal/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Polar&rsquo;s Privacy Policy
               </a>
               .
             </p>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               1.5 Automatically Collected Information
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
               <li>
-                <strong className="text-[#111]">Authentication logs:</strong> IP
+                <strong className="text-foreground">Authentication logs:</strong> IP
                 address, user agent, login timestamp, and success/failure status
                 for security purposes.
               </li>
               <li>
-                <strong className="text-[#111]">Analytics:</strong> We use
+                <strong className="text-foreground">Analytics:</strong> We use
                 Plausible Analytics, a privacy-focused, cookie-free analytics
                 service. Plausible collects aggregate page views and custom
                 events (e.g., case created, letter generated) without personal
@@ -122,14 +122,14 @@ export default function PrivacyPolicyPage() {
                   href="https://plausible.io/data-policy"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#111] underline underline-offset-4"
+                  className="text-foreground underline underline-offset-4"
                 >
                   Plausible&rsquo;s Data Policy
                 </a>
                 .
               </li>
               <li>
-                <strong className="text-[#111]">Error tracking:</strong> We use
+                <strong className="text-foreground">Error tracking:</strong> We use
                 Sentry to capture application errors. Error reports may include
                 request traces and, optionally, a user identifier for debugging.
                 See{' '}
@@ -137,7 +137,7 @@ export default function PrivacyPolicyPage() {
                   href="https://sentry.io/privacy/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#111] underline underline-offset-4"
+                  className="text-foreground underline underline-offset-4"
                 >
                   Sentry&rsquo;s Privacy Policy
                 </a>
@@ -150,36 +150,36 @@ export default function PrivacyPolicyPage() {
           {/*  2. How We Use Your Information                             */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               2. How We Use Your Information
             </h2>
             <ul className="list-disc space-y-2.5 pl-6">
               <li>
-                <strong className="text-[#111]">Provide the Service:</strong>{' '}
+                <strong className="text-foreground">Provide the Service:</strong>{' '}
                 Generate demand letters, cancellation sequences, and filing
                 packets based on your case information.
               </li>
               <li>
-                <strong className="text-[#111]">Process payments:</strong>{' '}
+                <strong className="text-foreground">Process payments:</strong>{' '}
                 Facilitate transactions through Polar and manage subscription
                 status.
               </li>
               <li>
-                <strong className="text-[#111]">Send transactional emails:</strong>{' '}
+                <strong className="text-foreground">Send transactional emails:</strong>{' '}
                 Deliver generated documents, account confirmations, and deadline
                 reminders via Resend.
               </li>
               <li>
-                <strong className="text-[#111]">Improve the Service:</strong>{' '}
+                <strong className="text-foreground">Improve the Service:</strong>{' '}
                 Analyze aggregate, anonymized usage patterns to improve
                 reliability and user experience.
               </li>
               <li>
-                <strong className="text-[#111]">Security and fraud prevention:</strong>{' '}
+                <strong className="text-foreground">Security and fraud prevention:</strong>{' '}
                 Monitor for abuse, unauthorized access, and fraudulent activity.
               </li>
               <li>
-                <strong className="text-[#111]">Legal compliance:</strong>{' '}
+                <strong className="text-foreground">Legal compliance:</strong>{' '}
                 Respond to lawful requests and comply with applicable law.
               </li>
             </ul>
@@ -189,7 +189,7 @@ export default function PrivacyPolicyPage() {
           {/*  3. Third-Party Service Providers                          */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               3. Third-Party Service Providers (Sub-Processors)
             </h2>
             <p>
@@ -199,50 +199,50 @@ export default function PrivacyPolicyPage() {
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-[14px]">
                 <thead>
-                  <tr className="border-b border-[#E8E8E5] text-left text-[#111]">
+                  <tr className="border-b border-border text-left text-foreground">
                     <th className="pb-2 pr-4 font-semibold">Provider</th>
                     <th className="pb-2 pr-4 font-semibold">Purpose</th>
                     <th className="pb-2 font-semibold">Data Shared</th>
                   </tr>
                 </thead>
-                <tbody className="text-[#5F5F5F]">
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Convex</td>
+                <tbody className="text-muted-foreground">
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Convex</td>
                     <td className="py-2.5 pr-4">Database and authentication</td>
                     <td className="py-2.5">All account and case data</td>
                   </tr>
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Cloudflare R2</td>
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Cloudflare R2</td>
                     <td className="py-2.5 pr-4">Uploaded document and file storage</td>
                     <td className="py-2.5">Documents you upload (leases, statements, photos)</td>
                   </tr>
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">OpenAI</td>
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">OpenAI</td>
                     <td className="py-2.5 pr-4">AI text and vision generation</td>
                     <td className="py-2.5">Case context, document contents (zero data retention enabled)</td>
                   </tr>
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Tavily</td>
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Tavily</td>
                     <td className="py-2.5 pr-4">Statute verification via web search</td>
                     <td className="py-2.5">Jurisdiction and statute queries (cached, no PII)</td>
                   </tr>
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Polar</td>
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Polar</td>
                     <td className="py-2.5 pr-4">Payment processing (merchant of record)</td>
                     <td className="py-2.5">Email, order and subscription data</td>
                   </tr>
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Resend</td>
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Resend</td>
                     <td className="py-2.5 pr-4">Transactional email delivery</td>
                     <td className="py-2.5">Email address, letter content</td>
                   </tr>
-                  <tr className="border-b border-[#E8E8E5]">
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Plausible</td>
+                  <tr className="border-b border-border">
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Plausible</td>
                     <td className="py-2.5 pr-4">Privacy-focused analytics</td>
                     <td className="py-2.5">Aggregate page views and events (no PII, no cookies)</td>
                   </tr>
                   <tr>
-                    <td className="py-2.5 pr-4 font-medium text-[#111]">Sentry</td>
+                    <td className="py-2.5 pr-4 font-medium text-foreground">Sentry</td>
                     <td className="py-2.5 pr-4">Error monitoring</td>
                     <td className="py-2.5">Error logs, request traces</td>
                   </tr>
@@ -250,7 +250,7 @@ export default function PrivacyPolicyPage() {
               </table>
             </div>
             <p className="mt-4">
-              <strong className="text-[#111]">OpenAI Zero Data Retention:</strong>{' '}
+              <strong className="text-foreground">OpenAI Zero Data Retention:</strong>{' '}
               We have enabled zero data retention on our OpenAI API account.
               This means OpenAI does not store your case data or document
               contents after processing and does not use your data to train its
@@ -262,18 +262,18 @@ export default function PrivacyPolicyPage() {
           {/*  4. Cookies & Tracking                                     */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               4. Cookies and Tracking Technologies
             </h2>
             <p>
-              We use <strong className="text-[#111]">strictly necessary cookies only</strong>{' '}
+              We use <strong className="text-foreground">strictly necessary cookies only</strong>{' '}
               for authentication (Convex Auth session cookies). We do not use
               advertising cookies, marketing pixels, or third-party tracking
               cookies. Our analytics provider (Plausible) is entirely
               cookie-free. See our full{' '}
               <Link
                 href="/legal/cookies"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Cookie Policy
               </Link>{' '}
@@ -285,36 +285,36 @@ export default function PrivacyPolicyPage() {
           {/*  5. Data Retention                                         */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               5. Data Retention
             </h2>
             <ul className="list-disc space-y-2.5 pl-6">
               <li>
-                <strong className="text-[#111]">Account data:</strong> Retained
+                <strong className="text-foreground">Account data:</strong> Retained
                 for the lifetime of your account.
               </li>
               <li>
-                <strong className="text-[#111]">Case data and documents:</strong>{' '}
+                <strong className="text-foreground">Case data and documents:</strong>{' '}
                 Retained for the lifetime of your account. Deleted when you
                 delete your account.
               </li>
               <li>
-                <strong className="text-[#111]">Payment records:</strong>{' '}
+                <strong className="text-foreground">Payment records:</strong>{' '}
                 Transaction records are retained for 7 years for tax and
                 regulatory compliance, even after account deletion.
               </li>
               <li>
-                <strong className="text-[#111]">Authentication logs:</strong>{' '}
+                <strong className="text-foreground">Authentication logs:</strong>{' '}
                 Login attempt records are retained for 90 days for security
                 purposes.
               </li>
               <li>
-                <strong className="text-[#111]">Audit logs:</strong> System
+                <strong className="text-foreground">Audit logs:</strong> System
                 audit logs are anonymized (not deleted) upon account deletion
                 and retained for operational integrity.
               </li>
               <li>
-                <strong className="text-[#111]">Statute search cache:</strong>{' '}
+                <strong className="text-foreground">Statute search cache:</strong>{' '}
                 Tavily search results are cached for 30 days and contain no
                 personal information.
               </li>
@@ -325,7 +325,7 @@ export default function PrivacyPolicyPage() {
           {/*  6. Data Security                                          */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               6. Data Security
             </h2>
             <p>
@@ -350,34 +350,34 @@ export default function PrivacyPolicyPage() {
           {/*  7. Your Rights                                            */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               7. Your Privacy Rights
             </h2>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               7.1 All Users
             </h3>
             <p>All users have the right to:</p>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
               <li>
-                <strong className="text-[#111]">Access:</strong> Export a full
+                <strong className="text-foreground">Access:</strong> Export a full
                 copy of your data in JSON format via your account settings or by
                 emailing us.
               </li>
               <li>
-                <strong className="text-[#111]">Deletion:</strong> Permanently
+                <strong className="text-foreground">Deletion:</strong> Permanently
                 delete your account and all associated data (cases, documents,
                 letters, sequences, subscriptions) via your account settings or
                 by emailing us. Deletion is cascading and includes files stored
                 in our cloud storage.
               </li>
               <li>
-                <strong className="text-[#111]">Correction:</strong> Update your
+                <strong className="text-foreground">Correction:</strong> Update your
                 account information through your account settings.
               </li>
             </ul>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               7.2 California Residents (CCPA/CPRA)
             </h3>
             <p>
@@ -387,22 +387,22 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
               <li>
-                <strong className="text-[#111]">Right to Know:</strong> You may
+                <strong className="text-foreground">Right to Know:</strong> You may
                 request the categories and specific pieces of personal
                 information we have collected about you.
               </li>
               <li>
-                <strong className="text-[#111]">Right to Delete:</strong> You
+                <strong className="text-foreground">Right to Delete:</strong> You
                 may request deletion of your personal information, subject to
                 certain exceptions.
               </li>
               <li>
-                <strong className="text-[#111]">Right to Opt-Out of Sale:</strong>{' '}
+                <strong className="text-foreground">Right to Opt-Out of Sale:</strong>{' '}
                 We do not sell your personal information. We do not share your
                 personal information for cross-context behavioral advertising.
               </li>
               <li>
-                <strong className="text-[#111]">
+                <strong className="text-foreground">
                   Right to Non-Discrimination:
                 </strong>{' '}
                 We will not discriminate against you for exercising your privacy
@@ -413,7 +413,7 @@ export default function PrivacyPolicyPage() {
               To exercise any of these rights, email{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -421,7 +421,7 @@ export default function PrivacyPolicyPage() {
               within 45 days.
             </p>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               7.3 Other US State Privacy Laws
             </h3>
             <p>
@@ -431,7 +431,7 @@ export default function PrivacyPolicyPage() {
               Contact us at{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -443,7 +443,7 @@ export default function PrivacyPolicyPage() {
           {/*  8. Do Not Sell                                             */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               8. Do Not Sell or Share My Personal Information
             </h2>
             <p>
@@ -458,7 +458,7 @@ export default function PrivacyPolicyPage() {
           {/*  9. Children                                               */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               9. Children&rsquo;s Privacy
             </h2>
             <p>
@@ -468,7 +468,7 @@ export default function PrivacyPolicyPage() {
               contact us at{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -480,7 +480,7 @@ export default function PrivacyPolicyPage() {
           {/*  10. International Users                                   */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               10. International Users
             </h2>
             <p>
@@ -495,7 +495,7 @@ export default function PrivacyPolicyPage() {
           {/*  11. Changes                                               */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               11. Changes to This Policy
             </h2>
             <p>
@@ -510,7 +510,7 @@ export default function PrivacyPolicyPage() {
           {/*  12. Contact                                               */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               12. Contact Us
             </h2>
             <p>
@@ -518,16 +518,16 @@ export default function PrivacyPolicyPage() {
               deletion requests, contact us at:
             </p>
             <p className="mt-3">
-              <strong className="text-[#111]">Email:</strong>{' '}
+              <strong className="text-foreground">Email:</strong>{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>
             </p>
             <p className="mt-1">
-              <strong className="text-[#111]">Subject line:</strong>{' '}
+              <strong className="text-foreground">Subject line:</strong>{' '}
               &ldquo;Privacy Request&rdquo;
             </p>
             <p className="mt-3">
@@ -536,15 +536,15 @@ export default function PrivacyPolicyPage() {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-[#E8E8E5] pt-8 text-center">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-[#8A8A8A]">
-            <Link href="/legal/terms" className="transition-colors hover:text-[#111]">Terms</Link>
-            <Link href="/legal/cookies" className="transition-colors hover:text-[#111]">Cookies</Link>
-            <Link href="/legal/acceptable-use" className="transition-colors hover:text-[#111]">Acceptable Use</Link>
-            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-[#111]">AI Disclosure</Link>
-            <Link href="/legal/accessibility" className="transition-colors hover:text-[#111]">Accessibility</Link>
+        <div className="mt-16 border-t border-border pt-8 text-center">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <Link href="/legal/terms" className="transition-colors hover:text-foreground">Terms</Link>
+            <Link href="/legal/cookies" className="transition-colors hover:text-foreground">Cookies</Link>
+            <Link href="/legal/acceptable-use" className="transition-colors hover:text-foreground">Acceptable Use</Link>
+            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-foreground">AI Disclosure</Link>
+            <Link href="/legal/accessibility" className="transition-colors hover:text-foreground">Accessibility</Link>
           </div>
-          <p className="mt-4 text-[12px] text-[#8A8A8A]">
+          <p className="mt-4 text-[12px] text-muted-foreground">
             &copy; {new Date().getFullYear()} Resolvaio. All rights reserved.
             Resolvaio is owned and operated by Nikola Innovations Limited.
           </p>

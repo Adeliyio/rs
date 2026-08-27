@@ -5,88 +5,100 @@
 @layer base {
   :root {
     /* ------------------------------------------------------------------ */
-    /*  Resolvaio — Premium Minimalism Palette                            */
-    /*  Warm stone background, refined grayscale, single blue accent.     */
+    /*  Resolvaio — Ink & Statute Palette                                 */
+    /*  Serious, document-grade: deep ink-navy authority on warm archival */
+    /*  paper. One brass accent, reserved solely for the statutory        */
+    /*  deadline — the single moment the law turns in the user's favor.   */
     /* ------------------------------------------------------------------ */
 
-    --background: 40 20% 97%;          /* #F7F7F5 — warm stone */
-    --foreground: 0 0% 7%;             /* #111111 — near-black, not pure */
+    --background: 40 20% 97%;          /* #F7F7F5 — warm archival stone */
+    --foreground: 210 43% 11%;         /* #0B1B2B — ink navy, near-black */
     --card: 0 0% 100%;                 /* #FFFFFF */
-    --card-foreground: 0 0% 7%;        /* #111111 */
+    --card-foreground: 210 43% 11%;    /* #0B1B2B */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 7%;
-    --primary: 217 91% 60%;            /* #3B82F6 — single accent blue */
+    --popover-foreground: 210 43% 11%;
+    --primary: 208 62% 19%;            /* #12324F — deep ink-navy (was slop blue-500) */
     --primary-foreground: 0 0% 100%;
     --secondary: 40 12% 95%;           /* warm light gray */
-    --secondary-foreground: 0 0% 7%;
+    --secondary-foreground: 210 43% 11%;
     --muted: 40 12% 95%;
-    --muted-foreground: 0 0% 37%;      /* #5F5F5F — secondary text */
-    --accent: 217 100% 96%;            /* #EEF4FF — accent soft */
-    --accent-foreground: 217 71% 45%;  /* deeper blue for text-on-accent */
+    --muted-foreground: 210 12% 37%;   /* cool-tinted secondary text */
+    --accent: 208 24% 93%;             /* #E8EEF2 — cool slate paper (was icy blue) */
+    --accent-foreground: 208 62% 19%;  /* ink-navy text on accent */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
     --border: 40 8% 91%;               /* #E8E8E5 — warm border */
-    --input: 40 8% 88%;                /* slightly stronger for input borders */
-    --ring: 217 91% 60%;
-    --radius: 0.75rem;                 /* 12px base — up from 10px */
+    --input: 40 8% 88%;
+    --ring: 208 62% 19%;               /* ink-navy focus ring */
+    --radius: 0.75rem;
+
+    /* Deadline / statutory-urgency accent — the ONE warm tone in the system.
+       Used only where the law's clock turns in the user's favor. */
+    --deadline: 30 46% 45%;            /* #A8763E — brass */
+    --deadline-foreground: 0 0% 100%;
+    --deadline-soft: 33 45% 94%;       /* #F5EDE3 — brass tint surface */
 
     /* Status colors */
     --success: 152 60% 42%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
-    --info: 217 91% 60%;
+    --info: 208 62% 19%;               /* ink-navy */
     --info-foreground: 0 0% 100%;
 
-    /* Sidebar — refined dark, not pitch-black */
-    --sidebar-background: 220 16% 7%;     /* #0F1117 — warm dark */
-    --sidebar-foreground: 220 10% 76%;    /* #B8BBC3 */
-    --sidebar-primary: 217 91% 60%;       /* matches accent */
+    /* Sidebar — deep ink, consistent with the navy system */
+    --sidebar-background: 210 40% 8%;     /* #0B1B2B-adjacent ink */
+    --sidebar-foreground: 210 12% 76%;
+    --sidebar-primary: 205 45% 45%;       /* lifted navy for contrast on ink */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 12%;        /* #191C23 */
-    --sidebar-accent-foreground: 220 10% 92%;
-    --sidebar-border: 220 12% 14%;        /* #1F2229 */
-    --sidebar-ring: 217 91% 60%;
-    --sidebar-muted: 220 8% 46%;          /* #6B7080 */
+    --sidebar-accent: 210 30% 13%;
+    --sidebar-accent-foreground: 210 12% 92%;
+    --sidebar-border: 210 24% 15%;
+    --sidebar-ring: 205 45% 45%;
+    --sidebar-muted: 210 10% 46%;
   }
 
   .dark {
-    --background: 220 16% 5%;
-    --foreground: 220 10% 94%;
-    --card: 220 16% 8%;
-    --card-foreground: 220 10% 94%;
-    --popover: 220 16% 8%;
-    --popover-foreground: 220 10% 94%;
-    --primary: 217 91% 64%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 12%;
-    --secondary-foreground: 220 10% 94%;
-    --muted: 220 14% 12%;
-    --muted-foreground: 220 10% 50%;
-    --accent: 217 50% 14%;
-    --accent-foreground: 217 80% 72%;
+    --background: 210 40% 5%;
+    --foreground: 210 12% 94%;
+    --card: 210 36% 8%;
+    --card-foreground: 210 12% 94%;
+    --popover: 210 36% 8%;
+    --popover-foreground: 210 12% 94%;
+    --primary: 205 50% 58%;            /* lifted ink-navy for dark surfaces */
+    --primary-foreground: 210 40% 8%;
+    --secondary: 210 24% 12%;
+    --secondary-foreground: 210 12% 94%;
+    --muted: 210 24% 12%;
+    --muted-foreground: 210 10% 55%;
+    --accent: 208 40% 16%;
+    --accent-foreground: 205 55% 74%;
     --destructive: 0 62% 40%;
     --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 14%;
-    --input: 220 14% 14%;
-    --ring: 217 91% 64%;
+    --border: 210 24% 14%;
+    --input: 210 24% 14%;
+    --ring: 205 50% 58%;
+
+    --deadline: 33 52% 58%;            /* brass, lifted for dark */
+    --deadline-foreground: 210 40% 8%;
+    --deadline-soft: 30 30% 16%;
 
     --success: 152 60% 48%;
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 56%;
     --warning-foreground: 0 0% 100%;
-    --info: 217 91% 64%;
-    --info-foreground: 0 0% 100%;
+    --info: 205 50% 58%;
+    --info-foreground: 210 40% 8%;
 
-    --sidebar-background: 220 18% 4%;
-    --sidebar-foreground: 220 10% 76%;
-    --sidebar-primary: 217 91% 64%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 10%;
-    --sidebar-accent-foreground: 220 10% 92%;
-    --sidebar-border: 220 14% 10%;
-    --sidebar-ring: 217 91% 64%;
-    --sidebar-muted: 220 8% 42%;
+    --sidebar-background: 210 44% 4%;
+    --sidebar-foreground: 210 12% 76%;
+    --sidebar-primary: 205 50% 58%;
+    --sidebar-primary-foreground: 210 40% 8%;
+    --sidebar-accent: 210 30% 10%;
+    --sidebar-accent-foreground: 210 12% 92%;
+    --sidebar-border: 210 24% 10%;
+    --sidebar-ring: 205 50% 58%;
+    --sidebar-muted: 210 10% 42%;
   }
 }
 
@@ -101,6 +113,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Major headings carry the editorial serif (Fraunces) for a document-grade,
+     lawyerly voice. Smaller headings (h3+) stay in the UI sans for clarity.
+     Any element can opt back into the sans with `font-sans`, or into the serif
+     with `font-display`. */
+  h1,
+  h2 {
+    font-family: var(--font-display), Georgia, ui-serif, serif;
+    letter-spacing: -0.015em;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -110,7 +132,7 @@
 @layer utilities {
   /* Status badge variants — refined, muted tones */
   .status-intake {
-    @apply bg-blue-50 text-blue-700 border-blue-200/60;
+    @apply bg-accent text-accent-foreground border-primary/20;
   }
   .status-generated {
     @apply bg-purple-50 text-purple-700 border-purple-200/60;
@@ -143,7 +165,7 @@
 
   /* Gradient text */
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70;
   }
 
   /* Premium card shadow — subtle, layered */
@@ -166,15 +188,15 @@
 /* ==================================================================== */
 @layer utilities {
   :root {
-    --glass-accent: #3b4cca;            /* deep indigo-blue — the one accent */
-    --glass-accent-ink: #2c3aa8;
-    --glass-accent-soft: #e9ebfb;
+    --glass-accent: #12324f;            /* deep ink-navy — the one accent */
+    --glass-accent-ink: #0b1b2b;
+    --glass-accent-soft: #e8eef2;
     --glass-fill: rgba(255, 255, 255, 0.55);
     --glass-fill-strong: rgba(255, 255, 255, 0.72);
     --glass-stroke: rgba(255, 255, 255, 0.7);
-    --glass-shadow: 0 8px 32px rgba(17, 17, 17, 0.08), 0 2px 8px rgba(17, 17, 17, 0.04);
+    --glass-shadow: 0 8px 32px rgba(11, 27, 43, 0.08), 0 2px 8px rgba(11, 27, 43, 0.04);
     --aurora-sand: #ece7dc;
-    --aurora-indigo: #dfe2f6;
+    --aurora-indigo: #dce4ec;           /* cool slate wash (was indigo) */
   }
 
   /* The ambient background — a quiet single-hue aurora behind the page.  */
@@ -254,7 +276,7 @@
     position: absolute;
     inset: -12% -8%;
     z-index: -1;
-    background: radial-gradient(closest-side, rgba(59, 76, 202, 0.16), transparent 70%);
+    background: radial-gradient(closest-side, rgba(18, 50, 79, 0.16), transparent 70%);
     filter: blur(8px);
     pointer-events: none;
   }

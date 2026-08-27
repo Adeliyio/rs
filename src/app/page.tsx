@@ -193,21 +193,21 @@ export default function HomePage(): React.JSX.Element {
         <div className="glass mx-auto flex max-w-5xl items-center justify-between px-5 py-3">
           <Logo />
           <div className="hidden items-center gap-8 text-[13px] sm:flex">
-            <a href="#how-it-works" className="text-[#5F5F5F] transition-colors hover:text-[#111]">How It Works</a>
-            <a href="#pricing" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Pricing</a>
+            <a href="#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How It Works</a>
+            <a href="#pricing" className="text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
             <ToolsDropdown />
-            <a href="#faq" className="text-[#5F5F5F] transition-colors hover:text-[#111]">FAQ</a>
-            <Link href="/login" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Sign In</Link>
+            <a href="#faq" className="text-muted-foreground transition-colors hover:text-foreground">FAQ</a>
+            <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <a
               href="/start"
-              className="rounded-lg bg-[#3B4CCA] px-4 py-2 font-medium text-white shadow-[0_2px_10px_rgba(59,76,202,0.35)] transition-all hover:bg-[#2C3AA8] active:scale-[0.98]"
+              className="rounded-lg bg-primary px-4 py-2 font-medium text-white shadow-[0_2px_10px_rgba(18,50,79,0.35)] transition-all hover:bg-primary/90 active:scale-[0.98]"
             >
               Start Free Diagnostic
             </a>
           </div>
           <a
             href="/start"
-            className="rounded-lg bg-[#3B4CCA] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#2C3AA8] active:scale-[0.98] sm:hidden"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-all hover:bg-primary/90 active:scale-[0.98] sm:hidden"
           >
             Start Free Diagnostic
           </a>
@@ -221,17 +221,17 @@ export default function HomePage(): React.JSX.Element {
         <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
           {/* Left — copy */}
           <div className="text-center lg:text-left">
-            <p className="mb-5 text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+            <p className="mb-5 text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
               Built for renters, subscribers, and anyone tired of getting ripped off
             </p>
-            <h1 className="text-[38px] font-semibold leading-[1.1] tracking-tight text-[#111] sm:text-[50px]">
+            <h1 className="text-[38px] font-semibold leading-[1.1] tracking-tight text-foreground sm:text-[50px]">
               Demand your deposit back.
               <br />
               Cancel the subscription.
               <br />
-              <span className="text-[#3B4CCA]">Cite the actual law.</span>
+              <span className="text-primary">Cite the actual law.</span>
             </h1>
-            <p className="mt-8 text-[16px] leading-[1.7] text-[#5F5F5F]">
+            <p className="mt-8 text-[16px] leading-[1.7] text-muted-foreground">
               Resolvaio writes demand letters and cancellation emails grounded in
               verified state-specific statutes &mdash; not generic templates your
               landlord has seen a hundred times, and not AI tools inventing case
@@ -240,18 +240,18 @@ export default function HomePage(): React.JSX.Element {
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
               <a
                 href="/start"
-                className="inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] hover:shadow-[0_6px_20px_rgba(59,76,202,0.5)] active:scale-[0.98]"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(18,50,79,0.4)] transition-all hover:bg-primary/90 hover:shadow-[0_6px_20px_rgba(18,50,79,0.5)] active:scale-[0.98]"
               >
                 Start Free Diagnostic <ChevronRight className="h-4 w-4" />
               </a>
               <a
                 href="#the-difference"
-                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#5F5F5F] transition-colors hover:text-[#111]"
+                className="inline-flex items-center gap-1.5 text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 See a sample letter <ChevronRight className="h-4 w-4" />
               </a>
             </div>
-            <p className="mt-6 text-[12px] text-[#8A8A8A]">
+            <p className="mt-6 text-[12px] text-muted-foreground">
               Writing assistance grounded in verified law. Not legal advice. Not a law firm.
             </p>
           </div>
@@ -263,29 +263,29 @@ export default function HomePage(): React.JSX.Element {
             <div className="glass-strong w-full max-w-[380px] rotate-[-1.2deg] p-3 shadow-[0_20px_60px_rgba(17,17,17,0.14)]">
               {/* Window chrome */}
               <div className="flex items-center gap-1.5 px-2 pb-2.5 pt-1">
-                <span className="h-2.5 w-2.5 rounded-full bg-[#E4E4E1]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#E4E4E1]" />
-                <span className="h-2.5 w-2.5 rounded-full bg-[#E4E4E1]" />
-                <span className="ml-2 text-[10px] font-medium tracking-wide text-[#9A9A96]">
+                <span className="h-2.5 w-2.5 rounded-full bg-muted" />
+                <span className="h-2.5 w-2.5 rounded-full bg-muted" />
+                <span className="h-2.5 w-2.5 rounded-full bg-muted" />
+                <span className="ml-2 text-[10px] font-medium tracking-wide text-muted-foreground/70">
                   demand-letter.pdf
                 </span>
               </div>
               {/* The "paper" */}
               <div className="rounded-xl bg-white px-6 py-6 shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]">
-                <p className="text-[10px] font-medium uppercase tracking-widest text-[#9A9A96]">
+                <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/70">
                   Via Certified Mail
                 </p>
-                <p className="mt-3 text-[12px] font-semibold text-[#111]">
+                <p className="mt-3 text-[12px] font-semibold text-foreground">
                   Re: Return of Security Deposit
                 </p>
                 <div className="mt-3 space-y-1.5" aria-hidden="true">
-                  <div className="h-2 w-full rounded bg-[#EFEFEC]" />
-                  <div className="h-2 w-[92%] rounded bg-[#EFEFEC]" />
-                  <div className="h-2 w-[78%] rounded bg-[#EFEFEC]" />
+                  <div className="h-2 w-full rounded bg-muted" />
+                  <div className="h-2 w-[92%] rounded bg-muted" />
+                  <div className="h-2 w-[78%] rounded bg-muted" />
                 </div>
                 {/* The highlighted real statute — the whole point */}
-                <div className="mt-4 rounded-lg border border-[#D9DDF6] bg-[#EEF0FB] px-3 py-2.5">
-                  <p className="text-[11px] leading-[1.6] text-[#2C3AA8]">
+                <div className="mt-4 rounded-lg border border-accent bg-accent px-3 py-2.5">
+                  <p className="text-[11px] leading-[1.6] text-primary">
                     Under <span className="font-semibold">Cal. Civ. Code &sect; 1950.5(g)</span>,
                     a landlord must return the deposit within{' '}
                     <span className="font-semibold">21 days</span> of move-out, itemized in
@@ -293,21 +293,21 @@ export default function HomePage(): React.JSX.Element {
                   </p>
                 </div>
                 <div className="mt-4 space-y-1.5" aria-hidden="true">
-                  <div className="h-2 w-full rounded bg-[#EFEFEC]" />
-                  <div className="h-2 w-[85%] rounded bg-[#EFEFEC]" />
+                  <div className="h-2 w-full rounded bg-muted" />
+                  <div className="h-2 w-[85%] rounded bg-muted" />
                 </div>
                 {/* Amount demanded */}
-                <div className="mt-4 flex items-center justify-between border-t border-[#F0F0ED] pt-3">
-                  <span className="text-[11px] text-[#5F5F5F]">Amount demanded</span>
-                  <span className="text-[15px] font-semibold text-[#111]">$2,400.00</span>
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+                  <span className="text-[11px] text-muted-foreground">Amount demanded</span>
+                  <span className="text-[15px] font-semibold text-foreground">$2,400.00</span>
                 </div>
               </div>
               {/* Verified-citation stamp */}
               <div className="mt-3 flex items-center gap-2 px-2 pb-1">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#3B4CCA]">
+                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                   <Check className="h-3 w-3 text-white" strokeWidth={3} />
                 </span>
-                <span className="text-[11px] font-medium text-[#5F5F5F]">
+                <span className="text-[11px] font-medium text-muted-foreground">
                   Citation verified against the current statute
                 </span>
               </div>
@@ -321,10 +321,10 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       <section id="the-difference" className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             See the Difference
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Same dispute. Two very different letters.
           </h2>
 
@@ -335,7 +335,7 @@ export default function HomePage(): React.JSX.Element {
                 <X className="h-5 w-5 text-red-500" />
                 <span className="text-[14px] font-semibold text-red-700">Without Resolvaio</span>
               </div>
-              <blockquote className="font-serif text-[14px] italic leading-[1.8] text-[#5F5F5F]">
+              <blockquote className="font-serif text-[14px] italic leading-[1.8] text-muted-foreground">
                 &ldquo;Dear Landlord,
                 <br /><br />
                 I am writing to request the return of my security deposit. I
@@ -357,7 +357,7 @@ export default function HomePage(): React.JSX.Element {
                 <Check className="h-5 w-5 text-emerald-600" />
                 <span className="text-[14px] font-semibold text-emerald-700">With Resolvaio</span>
               </div>
-              <blockquote className="font-serif text-[14px] italic leading-[1.8] text-[#5F5F5F]">
+              <blockquote className="font-serif text-[14px] italic leading-[1.8] text-muted-foreground">
                 &ldquo;Per Cal. Civ. Code &sect; 1950.5(g), you were required to
                 return the security deposit or provide an itemized statement
                 within 21 calendar days of move-out. As of the date of this
@@ -381,15 +381,15 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  THE PROBLEM                                                 */}
       {/* ============================================================ */}
-      <section className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
+      <section className="border-t border-white/40 bg-background/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             The Problem
           </p>
-          <h2 className="mb-6 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-6 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Most dispute letters miss the law that actually applies.
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             Generic templates cite no law and landlords toss them in the trash.
             AI tools that scrape the open web write confident letters with
             statute numbers that were repealed years ago &mdash; and the other
@@ -399,27 +399,27 @@ export default function HomePage(): React.JSX.Element {
           </p>
 
           {/* Comparison table */}
-          <div className="overflow-x-auto rounded-2xl border border-[#E8E8E5] bg-white">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-white">
             <table className="w-full text-[14px]">
               <thead>
-                <tr className="border-b border-[#E8E8E5]">
-                  <th className="p-4 text-left font-medium text-[#8A8A8A]"></th>
-                  <th className="p-4 text-left font-medium text-[#8A8A8A]">
+                <tr className="border-b border-border">
+                  <th className="p-4 text-left font-medium text-muted-foreground"></th>
+                  <th className="p-4 text-left font-medium text-muted-foreground">
                     AI Tools / Generic Templates
                   </th>
-                  <th className="p-4 text-left font-semibold text-[#111]">
+                  <th className="p-4 text-left font-semibold text-foreground">
                     Resolvaio
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON_ROWS.map((row, i) => (
-                  <tr key={i} className="border-b border-[#E8E8E5] last:border-0">
-                    <td className="p-4 font-medium text-[#111]">
+                  <tr key={i} className="border-b border-border last:border-0">
+                    <td className="p-4 font-medium text-foreground">
                       {row.label}
                     </td>
-                    <td className="p-4 text-[#8A8A8A]">{row.them}</td>
-                    <td className="p-4 font-medium text-[#111]">
+                    <td className="p-4 text-muted-foreground">{row.them}</td>
+                    <td className="p-4 font-medium text-foreground">
                       {row.us}
                     </td>
                   </tr>
@@ -438,23 +438,23 @@ export default function HomePage(): React.JSX.Element {
         className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24"
       >
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             How It Works
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Four steps. Ten minutes to a sendable letter.
           </h2>
           <div className="grid gap-10 sm:grid-cols-2">
             {HOW_IT_WORKS.map((step) => (
               <div key={step.step} className="flex gap-5">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold text-white">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-foreground text-[14px] font-semibold text-white">
                   {step.step}
                 </div>
                 <div>
-                  <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+                  <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                     {step.title}
                   </h3>
-                  <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+                  <p className="text-[14px] leading-[1.7] text-muted-foreground">
                     {step.description}
                   </p>
                 </div>
@@ -467,15 +467,15 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  CITATION ENGINE                                             */}
       {/* ============================================================ */}
-      <section className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
+      <section className="border-t border-white/40 bg-background/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             The Citation Engine
           </p>
-          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Same dispute. Different state. Different law. Cited correctly.
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             The reason templates fail is that the law isn&apos;t generic. A
             21-day return deadline in California isn&apos;t a 30-day deadline in
             Texas isn&apos;t a 14-day deadline in New York. Resolvaio cites the
@@ -510,22 +510,22 @@ export default function HomePage(): React.JSX.Element {
             ].map((ex) => (
               <div
                 key={ex.state}
-                className="rounded-2xl border border-[#E8E8E5] bg-white p-8"
+                className="rounded-2xl border border-border bg-white p-8"
               >
-                <p className="mb-3 text-[12px] font-semibold uppercase tracking-widest text-[#8A8A8A]">
+                <p className="mb-3 text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">
                   {ex.state}
                 </p>
-                <blockquote className="mb-4 font-serif text-[14px] italic leading-[1.8] text-[#5F5F5F]">
+                <blockquote className="mb-4 font-serif text-[14px] italic leading-[1.8] text-muted-foreground">
                   &ldquo;{ex.quote}&rdquo;
                 </blockquote>
-                <p className="text-[12px] text-[#8A8A8A]">
+                <p className="text-[12px] text-muted-foreground">
                   {ex.statute} &middot; {ex.remedy}
                 </p>
               </div>
             ))}
           </div>
 
-          <p className="mt-10 text-center text-[14px] font-medium text-[#5F5F5F]">
+          <p className="mt-10 text-center text-[14px] font-medium text-muted-foreground">
             No generic templates. No guessed citations. Only jurisdiction-specific
             law. The compliance scanner double-checks every citation against our
             primary source database before the letter hits your screen.
@@ -538,13 +538,13 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       <section className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             The Cancellation Sequence
           </p>
-          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Three emails. Escalating citations. One sequence they can&apos;t ignore.
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             Most cancellation attempts fail because they&apos;re polite requests
             with no legal backing. Resolvaio generates a 3-step sequence that
             escalates from request to regulatory complaint &mdash; each email
@@ -574,25 +574,25 @@ export default function HomePage(): React.JSX.Element {
             ].map((step) => (
               <div
                 key={step.day}
-                className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-6 sm:p-8"
+                className="rounded-2xl border border-border bg-background p-6 sm:p-8"
               >
                 <div className="mb-4 flex items-center gap-2.5">
-                  <step.icon className="h-4 w-4 text-[#5F5F5F]" />
-                  <span className="text-[12px] font-semibold uppercase tracking-widest text-[#8A8A8A]">
+                  <step.icon className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">
                     {step.day}
                   </span>
                 </div>
-                <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+                <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                   {step.title}
                 </h3>
-                <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+                <p className="text-[14px] leading-[1.7] text-muted-foreground">
                   {step.body}
                 </p>
               </div>
             ))}
           </div>
 
-          <p className="mt-10 text-center text-[14px] text-[#5F5F5F]">
+          <p className="mt-10 text-center text-[14px] text-muted-foreground">
             Works for gyms, telecom, SaaS, streaming, and mobile apps. Federal
             baseline in all 50 states. State-specific citations for California
             (ARL) and New York (GBL &sect; 527-a).
@@ -603,27 +603,27 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  TRUST STACK                                                 */}
       {/* ============================================================ */}
-      <section id="trust" className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
+      <section id="trust" className="border-t border-white/40 bg-background/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             The Trust Stack
           </p>
-          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Trust isn&apos;t a tagline. It&apos;s the architecture.
           </h2>
-          <p className="mx-auto mb-12 max-w-xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             Resolvaio is a writing assistance tool, not a law firm. That
             distinction matters &mdash; and the whole product is built to honor
             it.
           </p>
 
           <div className="grid gap-6 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8">
-              <Shield className="mb-4 h-6 w-6 text-[#111]" />
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+            <div className="rounded-2xl border border-border bg-white p-8">
+              <Shield className="mb-4 h-6 w-6 text-foreground" />
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                 Verified primary sources
               </h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 Statutes are pulled from a curated database of primary legal
                 sources &mdash; state codes, federal regulations, official
                 rulemaking. We don&apos;t scrape the open web or rely on AI
@@ -631,12 +631,12 @@ export default function HomePage(): React.JSX.Element {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8">
-              <Scale className="mb-4 h-6 w-6 text-[#111]" />
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+            <div className="rounded-2xl border border-border bg-white p-8">
+              <Scale className="mb-4 h-6 w-6 text-foreground" />
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                 Compliance scanner on every draft
               </h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 Before you see a letter, a compliance scanner checks it for
                 prohibited language &mdash; no legal advice, no outcome
                 predictions, no evaluative claims. If something would cross into
@@ -644,12 +644,12 @@ export default function HomePage(): React.JSX.Element {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8">
-              <AlertTriangle className="mb-4 h-6 w-6 text-[#111]" />
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+            <div className="rounded-2xl border border-border bg-white p-8">
+              <AlertTriangle className="mb-4 h-6 w-6 text-foreground" />
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                 We tell you when we can&apos;t help
               </h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 If your state isn&apos;t supported, you get an honest decline, a
                 free generic template, your state&apos;s consumer protection
                 resources, and a spot on the waitlist. We&apos;d rather decline a
@@ -658,7 +658,7 @@ export default function HomePage(): React.JSX.Element {
             </div>
           </div>
 
-          <p className="mt-8 text-center text-[12px] text-[#8A8A8A]">
+          <p className="mt-8 text-center text-[12px] text-muted-foreground">
             Subscription cancellations supported in all 50 states &mdash; federal
             ROSCA baseline plus state-specific citations for California (ARL) and
             New York (GBL &sect; 527-a).
@@ -671,10 +671,10 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       <section className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Where We Operate
           </p>
-          <h2 className="mb-10 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-10 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Deposit cases, by state.
           </h2>
 
@@ -682,23 +682,23 @@ export default function HomePage(): React.JSX.Element {
             {STATES.map((s) => (
               <div
                 key={s.state}
-                className="flex items-start gap-4 rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-6"
+                className="flex items-start gap-4 rounded-2xl border border-border bg-background p-6"
               >
-                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-[#5F5F5F]" />
+                <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                 <div>
-                  <p className="text-[15px] font-semibold text-[#111]">{s.state}</p>
-                  <p className="mt-1 text-[14px] text-[#5F5F5F]">{s.counties}</p>
+                  <p className="text-[15px] font-semibold text-foreground">{s.state}</p>
+                  <p className="mt-1 text-[14px] text-muted-foreground">{s.counties}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          <p className="mt-8 text-center text-[14px] text-[#5F5F5F]">
+          <p className="mt-8 text-center text-[14px] text-muted-foreground">
             Each county has its own small claims court &mdash; different forms,
             different filing fees, different page limits. We ship the right
             packet for yours.
           </p>
-          <p className="mt-2 text-center text-[14px] font-medium text-[#111]">
+          <p className="mt-2 text-center text-[14px] font-medium text-foreground">
             Subscription cancellation: All 50 US states.
           </p>
         </div>
@@ -707,30 +707,30 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  PRICING                                                     */}
       {/* ============================================================ */}
-      <section id="pricing" className="border-t border-white/40 bg-[#F7F7F5]/50 backdrop-blur-sm px-6 py-20 sm:py-24">
+      <section id="pricing" className="border-t border-white/40 bg-background/50 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Pricing
           </p>
-          <h2 className="mb-2 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-2 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Priced like a tool, not a lawsuit.
           </h2>
-          <p className="mx-auto mb-12 max-w-lg text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-lg text-center text-[15px] leading-[1.7] text-muted-foreground">
             Legal help can cost more than the dispute itself. Resolvaio handles
             it for $49 &mdash; or free if it&apos;s a subscription.
           </p>
 
           <div className="grid gap-6 sm:grid-cols-3">
             {/* Free */}
-            <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8">
-              <h3 className="text-[16px] font-semibold text-[#111]">
+            <div className="rounded-2xl border border-border bg-white p-8">
+              <h3 className="text-[16px] font-semibold text-foreground">
                 Subscription Cancellation
               </h3>
-              <p className="mt-3 text-[36px] font-semibold tracking-tight text-[#111]">Free</p>
-              <p className="mt-1 text-[13px] text-[#8A8A8A]">
+              <p className="mt-3 text-[36px] font-semibold tracking-tight text-foreground">Free</p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 Always free. No card required.
               </p>
-              <ul className="mt-6 space-y-3 text-[14px] text-[#5F5F5F]">
+              <ul className="mt-6 space-y-3 text-[14px] text-muted-foreground">
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> 3-step email sequence (Day 0, 7, 14)</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Federal ROSCA + state-specific citations</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Per-vertical templates (gym, telecom, SaaS, streaming, mobile app)</li>
@@ -740,28 +740,28 @@ export default function HomePage(): React.JSX.Element {
               </ul>
               <a
                 href="/start?wedge=subscription"
-                className="mt-8 block rounded-lg border border-[#E8E8E5] py-3 text-center text-[14px] font-semibold text-[#111] transition-all hover:border-[#111]/20 hover:bg-[#F7F7F5] active:scale-[0.98]"
+                className="mt-8 block rounded-lg border border-border py-3 text-center text-[14px] font-semibold text-foreground transition-all hover:border-foreground/20 hover:bg-background active:scale-[0.98]"
               >
                 Start Free Diagnostic
               </a>
             </div>
 
             {/* $49 — highlighted focal glass card */}
-            <div className="glass-strong relative border-[#C7CDF3] bg-[rgba(238,240,251,0.72)] p-8 shadow-[0_16px_48px_rgba(59,76,202,0.16)]">
-              <span className="absolute -top-3 left-6 rounded-full bg-[#3B4CCA] px-3 py-1 text-[11px] font-semibold tracking-wide text-white shadow-[0_2px_8px_rgba(59,76,202,0.4)]">
+            <div className="glass-strong relative border-accent bg-[rgba(255,255,255,0.72)] p-8 shadow-[0_16px_48px_rgba(18,50,79,0.16)]">
+              <span className="absolute -top-3 left-6 rounded-full bg-primary px-3 py-1 text-[11px] font-semibold tracking-wide text-white shadow-[0_2px_8px_rgba(18,50,79,0.4)]">
                 MOST CHOSEN
               </span>
-              <h3 className="text-[16px] font-semibold text-[#111]">
+              <h3 className="text-[16px] font-semibold text-foreground">
                 Single Deposit Case
               </h3>
-              <p className="mt-3 text-[36px] font-semibold tracking-tight text-[#111]">$49</p>
-              <p className="mt-1 text-[13px] text-[#8A8A8A]">
+              <p className="mt-3 text-[36px] font-semibold tracking-tight text-foreground">$49</p>
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 One-time payment
               </p>
-              <p className="mt-1 text-[12px] italic text-[#8A8A8A]">
+              <p className="mt-1 text-[12px] italic text-muted-foreground">
                 For one landlord. One letter. One clear next step.
               </p>
-              <ul className="mt-6 space-y-3 text-[14px] text-[#5F5F5F]">
+              <ul className="mt-6 space-y-3 text-[14px] text-muted-foreground">
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Full demand letter + PDF</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> State-specific statutory citations</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> AI vision extraction from documents</li>
@@ -772,28 +772,28 @@ export default function HomePage(): React.JSX.Element {
               </ul>
               <a
                 href="/start?wedge=deposit"
-                className="mt-8 block rounded-lg bg-[#3B4CCA] py-3 text-center text-[14px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] active:scale-[0.98]"
+                className="mt-8 block rounded-lg bg-primary py-3 text-center text-[14px] font-semibold text-white shadow-[0_4px_16px_rgba(18,50,79,0.4)] transition-all hover:bg-primary/90 active:scale-[0.98]"
               >
                 Start Deposit Case
               </a>
             </div>
 
             {/* Unlimited */}
-            <div className="relative rounded-2xl border border-[#E8E8E5] bg-white p-8">
-              <span className="absolute -top-3 left-6 rounded-full bg-[#111] px-3 py-1 text-[11px] font-semibold tracking-wide text-white">
+            <div className="relative rounded-2xl border border-border bg-white p-8">
+              <span className="absolute -top-3 left-6 rounded-full bg-foreground px-3 py-1 text-[11px] font-semibold tracking-wide text-white">
                 BEST VALUE
               </span>
-              <h3 className="text-[16px] font-semibold text-[#111]">Unlimited</h3>
-              <p className="mt-3 text-[36px] font-semibold tracking-tight text-[#111]">
-                $15<span className="text-[18px] font-normal text-[#5F5F5F]">/mo</span>
+              <h3 className="text-[16px] font-semibold text-foreground">Unlimited</h3>
+              <p className="mt-3 text-[36px] font-semibold tracking-tight text-foreground">
+                $15<span className="text-[18px] font-normal text-muted-foreground">/mo</span>
               </p>
-              <p className="mt-1 text-[13px] text-[#8A8A8A]">
+              <p className="mt-1 text-[13px] text-muted-foreground">
                 or $129/year ($10.75/mo)
               </p>
-              <p className="mt-1 text-[12px] italic text-[#8A8A8A]">
+              <p className="mt-1 text-[12px] italic text-muted-foreground">
                 For renters with more than one deposit to recover.
               </p>
-              <ul className="mt-6 space-y-3 text-[14px] text-[#5F5F5F]">
+              <ul className="mt-6 space-y-3 text-[14px] text-muted-foreground">
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Everything in Single Case</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Unlimited deposit cases</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Priority generation</li>
@@ -801,14 +801,14 @@ export default function HomePage(): React.JSX.Element {
               </ul>
               <a
                 href={`${APP_BASE}/new?plan=unlimited`}
-                className="mt-8 block rounded-lg border border-[#E8E8E5] py-3 text-center text-[14px] font-semibold text-[#111] transition-all hover:border-[#111]/20 hover:bg-[#F7F7F5] active:scale-[0.98]"
+                className="mt-8 block rounded-lg border border-border py-3 text-center text-[14px] font-semibold text-foreground transition-all hover:border-foreground/20 hover:bg-background active:scale-[0.98]"
               >
                 Go Unlimited
               </a>
             </div>
           </div>
 
-          <p className="mt-8 text-center text-[12px] text-[#8A8A8A]">
+          <p className="mt-8 text-center text-[12px] text-muted-foreground">
             Cancel anytime. Refund available before generation. One user,
             one account &mdash; we don&apos;t currently support firm or
             shared-team usage.
@@ -826,21 +826,21 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       <section id="faq" className="border-t border-white/60 bg-white/70 backdrop-blur-sm px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             FAQ
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Common questions
           </h2>
 
           <div className="space-y-3">
             {FAQS.map((faq, i) => (
-              <details key={i} className="group rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5]">
-                <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-[15px] font-semibold text-[#111]">
+              <details key={i} className="group rounded-2xl border border-border bg-background">
+                <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-[15px] font-semibold text-foreground">
                   {faq.q}
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#8A8A8A] transition-transform group-open:rotate-90" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
                 </summary>
-                <p className="px-6 pb-5 text-[14px] leading-[1.7] text-[#5F5F5F]">
+                <p className="px-6 pb-5 text-[14px] leading-[1.7] text-muted-foreground">
                   {faq.a}
                 </p>
               </details>
@@ -855,21 +855,21 @@ export default function HomePage(): React.JSX.Element {
       <section className="px-6 py-24 sm:py-32">
         <div className="glass-strong relative mx-auto max-w-2xl overflow-hidden px-8 py-14 text-center sm:px-14">
           <div className="accent-glow" aria-hidden="true" />
-          <h2 className="text-[32px] font-semibold tracking-tight text-[#111] sm:text-[40px]">
+          <h2 className="text-[32px] font-semibold tracking-tight text-foreground sm:text-[40px]">
             Most disputes stall before anything is sent.
           </h2>
-          <p className="mt-6 text-[16px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mt-6 text-[16px] leading-[1.7] text-muted-foreground">
             A well-cited demand letter is the first step. The diagnostic is free.
             The statutes are verified. The letter is yours to review before you
             send.
           </p>
           <a
             href="/start"
-            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(59,76,202,0.4)] transition-all hover:bg-[#2C3AA8] hover:shadow-[0_6px_20px_rgba(59,76,202,0.5)] active:scale-[0.98]"
+            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-3.5 text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(18,50,79,0.4)] transition-all hover:bg-primary/90 hover:shadow-[0_6px_20px_rgba(18,50,79,0.5)] active:scale-[0.98]"
           >
             Start Free Diagnostic <ChevronRight className="h-4 w-4" />
           </a>
-          <p className="mt-6 text-[12px] text-[#8A8A8A]">
+          <p className="mt-6 text-[12px] text-muted-foreground">
             No card required. See your statutes before you pay. See our refund
             policy.
           </p>
@@ -879,42 +879,42 @@ export default function HomePage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FOOTER                                                      */}
       {/* ============================================================ */}
-      <footer className="border-t border-[#E8E8E5] px-6 py-12">
+      <footer className="border-t border-border px-6 py-12">
         <div className="mx-auto max-w-4xl">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <Logo />
-              <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-[#8A8A8A]">
+              <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
                 Demand letters and cancellation emails grounded in verified
                 consumer protection law. Writing assistance, not legal advice.
               </p>
             </div>
-            <div className="flex gap-10 text-[13px] text-[#8A8A8A]">
+            <div className="flex gap-10 text-[13px] text-muted-foreground">
               <div className="space-y-2.5">
-                <p className="font-semibold text-[#5F5F5F]">Tools</p>
-                <Link href="/tools/cancel-subscription" className="block transition-colors hover:text-[#111]">Cancel Subscription</Link>
-                <Link href="/tools/deposit-deadline" className="block transition-colors hover:text-[#111]">Deposit Deadline Calculator</Link>
-                <Link href="/blog" className="block transition-colors hover:text-[#111]">Blog</Link>
+                <p className="font-semibold text-muted-foreground">Tools</p>
+                <Link href="/tools/cancel-subscription" className="block transition-colors hover:text-foreground">Cancel Subscription</Link>
+                <Link href="/tools/deposit-deadline" className="block transition-colors hover:text-foreground">Deposit Deadline Calculator</Link>
+                <Link href="/blog" className="block transition-colors hover:text-foreground">Blog</Link>
               </div>
               <div className="space-y-2.5">
-                <p className="font-semibold text-[#5F5F5F]">Account</p>
-                <a href="/start" className="block transition-colors hover:text-[#111]">Start Diagnostic</a>
-                <Link href="/login" className="block transition-colors hover:text-[#111]">Sign In</Link>
-                <Link href="/about" className="block transition-colors hover:text-[#111]">About</Link>
+                <p className="font-semibold text-muted-foreground">Account</p>
+                <a href="/start" className="block transition-colors hover:text-foreground">Start Diagnostic</a>
+                <Link href="/login" className="block transition-colors hover:text-foreground">Sign In</Link>
+                <Link href="/about" className="block transition-colors hover:text-foreground">About</Link>
               </div>
               <div className="space-y-2.5">
-                <p className="font-semibold text-[#5F5F5F]">Legal</p>
-                <Link href="/legal/terms" className="block transition-colors hover:text-[#111]">Terms of Service</Link>
-                <Link href="/legal/privacy" className="block transition-colors hover:text-[#111]">Privacy Policy</Link>
-                <Link href="/legal/cookies" className="block transition-colors hover:text-[#111]">Cookie Policy</Link>
-                <Link href="/legal/acceptable-use" className="block transition-colors hover:text-[#111]">Acceptable Use</Link>
-                <Link href="/legal/ai-disclosure" className="block transition-colors hover:text-[#111]">AI Disclosure</Link>
-                <Link href="/legal/accessibility" className="block transition-colors hover:text-[#111]">Accessibility</Link>
+                <p className="font-semibold text-muted-foreground">Legal</p>
+                <Link href="/legal/terms" className="block transition-colors hover:text-foreground">Terms of Service</Link>
+                <Link href="/legal/privacy" className="block transition-colors hover:text-foreground">Privacy Policy</Link>
+                <Link href="/legal/cookies" className="block transition-colors hover:text-foreground">Cookie Policy</Link>
+                <Link href="/legal/acceptable-use" className="block transition-colors hover:text-foreground">Acceptable Use</Link>
+                <Link href="/legal/ai-disclosure" className="block transition-colors hover:text-foreground">AI Disclosure</Link>
+                <Link href="/legal/accessibility" className="block transition-colors hover:text-foreground">Accessibility</Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-10 border-t border-[#E8E8E5] pt-8 text-center text-[12px] leading-relaxed text-[#8A8A8A]">
+          <div className="mt-10 border-t border-border pt-8 text-center text-[12px] leading-relaxed text-muted-foreground">
             <p>
               Resolvaio provides writing assistance and general information about
               consumer disputes. It does not provide legal advice, does not

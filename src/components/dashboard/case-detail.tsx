@@ -109,7 +109,7 @@ function NextAction({
   if (status === 'intake') {
     return (
       <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3.5">
-        <div className="h-8 w-0.5 shrink-0 rounded-full bg-blue-500" />
+        <div className="h-8 w-0.5 shrink-0 rounded-full bg-primary" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">Continue your diagnostic</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -118,7 +118,7 @@ function NextAction({
         </div>
         <Button
           size="sm"
-          className="shrink-0 gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none"
+          className="shrink-0 gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none"
           onClick={actions?.onContinue}
         >
           Continue
@@ -131,7 +131,7 @@ function NextAction({
   if (status === 'generated') {
     return (
       <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3.5">
-        <div className="h-8 w-0.5 shrink-0 rounded-full bg-blue-500" />
+        <div className="h-8 w-0.5 shrink-0 rounded-full bg-primary" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">Your letter is ready</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -150,7 +150,7 @@ function NextAction({
           </Button>
           <Button
             size="sm"
-            className="gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none"
+            className="gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none"
             onClick={actions?.onMarkSent}
           >
             Mark as Sent
@@ -163,7 +163,7 @@ function NextAction({
   if (status === 'sent' || status === 'awaiting') {
     return (
       <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3.5">
-        <div className="h-8 w-0.5 shrink-0 rounded-full bg-blue-500" />
+        <div className="h-8 w-0.5 shrink-0 rounded-full bg-primary" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">Waiting for a response</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -173,7 +173,7 @@ function NextAction({
         </div>
         <Button
           size="sm"
-          className="shrink-0 gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none"
+          className="shrink-0 gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none"
           onClick={actions?.onReportResponse}
         >
           Report Response
@@ -185,7 +185,7 @@ function NextAction({
   if (status === 'escalation_drafted') {
     return (
       <div className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3.5">
-        <div className="h-8 w-0.5 shrink-0 rounded-full bg-blue-500" />
+        <div className="h-8 w-0.5 shrink-0 rounded-full bg-primary" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium">Escalation packet ready</p>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -195,7 +195,7 @@ function NextAction({
         </div>
         <Button
           size="sm"
-          className="shrink-0 gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 shadow-none"
+          className="shrink-0 gap-1.5 bg-accent text-accent-foreground border border-primary/20 hover:bg-accent/80 shadow-none"
           onClick={actions?.onDownloadPacket}
         >
           <Download className="h-3.5 w-3.5" />
@@ -251,7 +251,7 @@ function ProgressBar({ status }: { status: CaseStatus }): React.JSX.Element {
               className={cn(
                 'h-1.5 flex-1 rounded-full transition-colors',
                 isCompleted && 'bg-emerald-500',
-                isCurrent && 'bg-blue-500',
+                isCurrent && 'bg-primary',
                 !isCompleted && !isCurrent && 'bg-border'
               )}
             />
@@ -374,8 +374,8 @@ export function CaseDetail({
       <div>
         {/* #5 — icon in a tinted tile */}
         <div className="flex items-center gap-2.5">
-          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-md bg-blue-50">
-            <WedgeIcon className="h-4 w-4 text-blue-600" />
+          <div className="flex h-[30px] w-[30px] items-center justify-center rounded-md bg-accent">
+            <WedgeIcon className="h-4 w-4 text-primary" />
           </div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-medium tracking-tight">{wedgeLabel}</h2>

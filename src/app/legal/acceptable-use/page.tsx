@@ -8,23 +8,23 @@ export const metadata: Metadata = {
 
 export default function AcceptableUsePolicyPage() {
   return (
-    <main className="min-h-screen bg-[#F7F7F5] px-6 py-20">
+    <main className="min-h-screen bg-background px-6 py-20">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/"
-          className="text-[13px] text-[#8A8A8A] transition-colors hover:text-[#111]"
+          className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
         >
           Back to home
         </Link>
 
-        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-[#111]">
+        <h1 className="mt-8 text-[32px] font-semibold tracking-tight text-foreground">
           Acceptable Use Policy
         </h1>
-        <p className="mt-2 text-[13px] text-[#8A8A8A]">
+        <p className="mt-2 text-[13px] text-muted-foreground">
           Effective Date: May 28, 2026 &middot; Last Updated: May 28, 2026
         </p>
 
-        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-[#5F5F5F]">
+        <div className="mt-10 space-y-8 text-[15px] leading-[1.7] text-muted-foreground">
           {/* ---------------------------------------------------------- */}
           {/*  Overview                                                  */}
           {/* ---------------------------------------------------------- */}
@@ -34,7 +34,7 @@ export default function AcceptableUsePolicyPage() {
               of Resolvaio. It supplements our{' '}
               <Link
                 href="/legal/terms"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 Terms of Service
               </Link>
@@ -47,7 +47,7 @@ export default function AcceptableUsePolicyPage() {
           {/*  1. Intended Use                                           */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               1. Intended Use
             </h2>
             <p>
@@ -62,12 +62,12 @@ export default function AcceptableUsePolicyPage() {
           {/*  2. Prohibited Conduct                                     */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               2. Prohibited Conduct
             </h2>
             <p>You must not use the Service to:</p>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               2.1 Fraud and Deception
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
@@ -78,7 +78,7 @@ export default function AcceptableUsePolicyPage() {
               <li>File complaints with courts or agencies based on false information generated through the Service</li>
             </ul>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               2.2 Harassment and Abuse
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
@@ -87,7 +87,7 @@ export default function AcceptableUsePolicyPage() {
               <li>Use the Service as a tool for extortion or coercion</li>
             </ul>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               2.3 Unauthorized Practice of Law
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
@@ -96,7 +96,7 @@ export default function AcceptableUsePolicyPage() {
               <li>Operate a legal services business using Resolvaio as your backend</li>
             </ul>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               2.4 System Abuse
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
@@ -107,7 +107,7 @@ export default function AcceptableUsePolicyPage() {
               <li>Create multiple accounts to circumvent refund limits, abuse caps, or enforcement actions</li>
             </ul>
 
-            <h3 className="mt-4 text-[16px] font-semibold text-[#333]">
+            <h3 className="mt-4 text-[16px] font-semibold text-foreground">
               2.5 Commercial Misuse
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6">
@@ -121,7 +121,7 @@ export default function AcceptableUsePolicyPage() {
           {/*  3. Evidence Standards                                     */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               3. Evidence Authenticity
             </h2>
             <p>
@@ -143,7 +143,7 @@ export default function AcceptableUsePolicyPage() {
           {/*  4. Usage Limits                                           */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               4. Usage Limits
             </h2>
             <p>
@@ -159,7 +159,7 @@ export default function AcceptableUsePolicyPage() {
           {/*  5. Enforcement                                            */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               5. Enforcement
             </h2>
             <p>
@@ -179,7 +179,7 @@ export default function AcceptableUsePolicyPage() {
           {/*  6. Reporting                                              */}
           {/* ---------------------------------------------------------- */}
           <section>
-            <h2 className="text-[20px] font-semibold text-[#111]">
+            <h2 className="text-[20px] font-semibold text-foreground">
               6. Reporting Violations
             </h2>
             <p>
@@ -187,7 +187,7 @@ export default function AcceptableUsePolicyPage() {
               AUP, please report it to{' '}
               <a
                 href="mailto:support@resolvaio.com"
-                className="text-[#111] underline underline-offset-4"
+                className="text-foreground underline underline-offset-4"
               >
                 support@resolvaio.com
               </a>{' '}
@@ -196,15 +196,15 @@ export default function AcceptableUsePolicyPage() {
           </section>
         </div>
 
-        <div className="mt-16 border-t border-[#E8E8E5] pt-8 text-center">
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-[#8A8A8A]">
-            <Link href="/legal/terms" className="transition-colors hover:text-[#111]">Terms</Link>
-            <Link href="/legal/privacy" className="transition-colors hover:text-[#111]">Privacy</Link>
-            <Link href="/legal/cookies" className="transition-colors hover:text-[#111]">Cookies</Link>
-            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-[#111]">AI Disclosure</Link>
-            <Link href="/legal/accessibility" className="transition-colors hover:text-[#111]">Accessibility</Link>
+        <div className="mt-16 border-t border-border pt-8 text-center">
+          <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] text-muted-foreground">
+            <Link href="/legal/terms" className="transition-colors hover:text-foreground">Terms</Link>
+            <Link href="/legal/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
+            <Link href="/legal/cookies" className="transition-colors hover:text-foreground">Cookies</Link>
+            <Link href="/legal/ai-disclosure" className="transition-colors hover:text-foreground">AI Disclosure</Link>
+            <Link href="/legal/accessibility" className="transition-colors hover:text-foreground">Accessibility</Link>
           </div>
-          <p className="mt-4 text-[12px] text-[#8A8A8A]">
+          <p className="mt-4 text-[12px] text-muted-foreground">
             &copy; {new Date().getFullYear()} Resolvaio. All rights reserved.
             Resolvaio is owned and operated by Nikola Innovations Limited.
           </p>

@@ -168,31 +168,31 @@ Sincerely,
 
 export default function CancelSubscriptionToolPage(): React.JSX.Element {
   return (
-    <main className="min-h-screen bg-[#F7F7F5]">
+    <main className="min-h-screen bg-background">
       {/* ============================================================ */}
       {/*  NAV                                                         */}
       {/* ============================================================ */}
-      <nav className="sticky top-0 z-40 border-b border-[#E8E8E5] bg-[#F7F7F5]/95 px-6 py-4 backdrop-blur-md">
+      <nav className="sticky top-0 z-40 border-b border-border bg-background/95 px-6 py-4 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <Link href="/" className="text-lg font-semibold text-[#111]">
+          <Link href="/" className="text-lg font-semibold text-foreground">
             Resolvaio
           </Link>
           <div className="hidden items-center gap-8 text-[13px] sm:flex">
             <ToolsDropdown />
-            <a href="#how-it-works" className="text-[#5F5F5F] transition-colors hover:text-[#111]">How It Works</a>
-            <a href="#sample" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Sample</a>
-            <Link href="/blog" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Blog</Link>
-            <Link href="/login" className="text-[#5F5F5F] transition-colors hover:text-[#111]">Sign In</Link>
+            <a href="#how-it-works" className="text-muted-foreground transition-colors hover:text-foreground">How It Works</a>
+            <a href="#sample" className="text-muted-foreground transition-colors hover:text-foreground">Sample</a>
+            <Link href="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Blog</Link>
+            <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <Link
               href="/new?wedge=subscription"
-              className="rounded-lg bg-[#111] px-4 py-2 font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98]"
+              className="rounded-lg bg-foreground px-4 py-2 font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Free Emails
             </Link>
           </div>
           <Link
             href="/new?wedge=subscription"
-            className="rounded-lg bg-[#111] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#222] active:scale-[0.98] sm:hidden"
+            className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98] sm:hidden"
           >
             Generate Free Emails
           </Link>
@@ -204,16 +204,16 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       <section className="px-6 py-24 text-center sm:py-32">
         <div className="mx-auto max-w-2xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#E8E8E5] bg-white px-4 py-1.5 text-[13px] font-medium text-[#5F5F5F]">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-white px-4 py-1.5 text-[13px] font-medium text-muted-foreground">
             <Check className="h-3.5 w-3.5 text-emerald-600" />
             100% free. No card required. All 50 states.
           </div>
-          <h1 className="text-[42px] font-semibold leading-[1.1] tracking-tight text-[#111] sm:text-[56px]">
+          <h1 className="text-[42px] font-semibold leading-[1.1] tracking-tight text-foreground sm:text-[56px]">
             Cancel any subscription.
             <br />
-            <span className="text-[#5F5F5F]">Cite the law they&apos;re ignoring.</span>
+            <span className="text-muted-foreground">Cite the law they&apos;re ignoring.</span>
           </h1>
-          <p className="mt-8 text-[16px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mt-8 text-[16px] leading-[1.7] text-muted-foreground">
             Generate a free 3-step cancellation email sequence grounded in ROSCA,
             the Fair Credit Billing Act, and your state&apos;s consumer protection
             statutes. Not a polite request &mdash; a documented demand citing the
@@ -222,18 +222,18 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               href="/new?wedge=subscription"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#111] px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-[#222] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Your Free Emails <ArrowRight className="h-4 w-4" />
             </Link>
             <a
               href="#sample"
-              className="inline-flex items-center gap-1.5 text-[14px] font-medium text-[#5F5F5F] transition-colors hover:text-[#111]"
+              className="inline-flex items-center gap-1.5 text-[14px] font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               See a sample email <ChevronRight className="h-4 w-4" />
             </a>
           </div>
-          <p className="mt-6 text-[12px] text-[#8A8A8A]">
+          <p className="mt-6 text-[12px] text-muted-foreground">
             Writing assistance grounded in verified law. Not legal advice. Not a law firm.
           </p>
         </div>
@@ -242,36 +242,36 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  HOW IT WORKS                                                */}
       {/* ============================================================ */}
-      <section id="how-it-works" className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section id="how-it-works" className="border-t border-border bg-white px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             How It Works
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Five minutes to three ready-to-send emails.
           </h2>
           <div className="grid gap-10 sm:grid-cols-3">
             <div className="text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold text-white">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-foreground text-[14px] font-semibold text-white">
                 1
               </div>
-              <h3 className="mt-5 text-[16px] font-semibold text-[#111]">
+              <h3 className="mt-5 text-[16px] font-semibold text-foreground">
                 Tell us about the subscription
               </h3>
-              <p className="mt-2 text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
                 Company name, account ID, what you&apos;re being charged,
                 and what happened when you tried to cancel. Takes about
                 5 minutes.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold text-white">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-foreground text-[14px] font-semibold text-white">
                 2
               </div>
-              <h3 className="mt-5 text-[16px] font-semibold text-[#111]">
+              <h3 className="mt-5 text-[16px] font-semibold text-foreground">
                 Get your 3-email sequence
               </h3>
-              <p className="mt-2 text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
                 Three escalating emails &mdash; each citing the specific
                 federal and state law that applies. Day 0 formal request,
                 Day 7 follow-up, Day 14 final notice with regulatory
@@ -279,13 +279,13 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#111] text-[14px] font-semibold text-white">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-foreground text-[14px] font-semibold text-white">
                 3
               </div>
-              <h3 className="mt-5 text-[16px] font-semibold text-[#111]">
+              <h3 className="mt-5 text-[16px] font-semibold text-foreground">
                 Copy, send, escalate
               </h3>
-              <p className="mt-2 text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
                 Copy each email and send it from your personal email account.
                 If they still haven&apos;t cancelled after Email 3, you
                 have the FTC and CFPB filing URLs and credit card dispute
@@ -299,17 +299,17 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  SAMPLE EMAIL                                                */}
       {/* ============================================================ */}
-      <section id="sample" className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section id="sample" className="border-t border-border px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Sample Output
           </p>
-          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             This is what a generic cancellation email looks like.
             <br />
-            <span className="text-[#5F5F5F]">And this is what ours looks like.</span>
+            <span className="text-muted-foreground">And this is what ours looks like.</span>
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             Most cancellation emails are polite requests that companies file
             in the trash. Ours cite the specific law they&apos;re required to comply with.
           </p>
@@ -321,7 +321,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
                 <X className="h-5 w-5 text-red-500" />
                 <span className="text-[14px] font-semibold text-red-700">Generic Template</span>
               </div>
-              <div className="font-serif text-[14px] italic leading-[1.8] text-[#5F5F5F]">
+              <div className="font-serif text-[14px] italic leading-[1.8] text-muted-foreground">
                 &ldquo;Dear Customer Service,
                 <br /><br />
                 I would like to cancel my subscription. Please process
@@ -341,7 +341,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
                 <Check className="h-5 w-5 text-emerald-600" />
                 <span className="text-[14px] font-semibold text-emerald-700">Resolvaio (Email 1 of 3)</span>
               </div>
-              <div className="font-serif text-[14px] italic leading-[1.8] text-[#5F5F5F]">
+              <div className="font-serif text-[14px] italic leading-[1.8] text-muted-foreground">
                 &ldquo;Under the Restore Online Shoppers&apos; Confidence Act
                 (ROSCA), 16 CFR Part 425, sellers offering negative option
                 features must provide a simple mechanism for consumers to
@@ -364,64 +364,64 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  THE SEQUENCE                                                */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section className="border-t border-border bg-white px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             The Sequence
           </p>
-          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Three emails. Escalating pressure. All free.
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             Each email builds on the last. If the company ignores your first
             request, the follow-ups name regulatory agencies and credit card
             dispute rights. The cost of ignoring you goes up with each step.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-6 sm:p-8">
+            <div className="rounded-2xl border border-border bg-background p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2.5">
-                <Mail className="h-4 w-4 text-[#5F5F5F]" />
-                <span className="text-[12px] font-semibold uppercase tracking-widest text-[#8A8A8A]">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Day 0
                 </span>
               </div>
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                 Formal Cancellation Demand
               </h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 Cites ROSCA and your state&apos;s auto-renewal law. Revokes
                 payment authorization. Requests written confirmation within
                 7 business days.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-6 sm:p-8">
+            <div className="rounded-2xl border border-border bg-background p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2.5">
-                <AlertTriangle className="h-4 w-4 text-[#5F5F5F]" />
-                <span className="text-[12px] font-semibold uppercase tracking-widest text-[#8A8A8A]">
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Day 7
                 </span>
               </div>
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                 Follow-Up with Escalation
               </h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 References your first email by date. Names the specific
                 regulatory agency. Mentions Fair Credit Billing Act
                 chargeback rights.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-6 sm:p-8">
+            <div className="rounded-2xl border border-border bg-background p-6 sm:p-8">
               <div className="mb-4 flex items-center gap-2.5">
-                <Shield className="h-4 w-4 text-[#5F5F5F]" />
-                <span className="text-[12px] font-semibold uppercase tracking-widest text-[#8A8A8A]">
+                <Shield className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[12px] font-semibold uppercase tracking-widest text-muted-foreground">
                   Day 14
                 </span>
               </div>
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">
                 Final Notice
               </h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 Provides FTC and CFPB complaint filing URLs. States that
                 all post-cancellation charges will be disputed with credit
                 card issuer. Final deadline.
@@ -434,32 +434,32 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FULL SAMPLE EMAIL PREVIEW                                   */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section className="border-t border-border px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-3xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Full Preview
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Here&apos;s what Email 1 looks like.
           </h2>
 
-          <div className="rounded-2xl border border-[#E8E8E5] bg-white">
+          <div className="rounded-2xl border border-border bg-white">
             {/* Email header */}
-            <div className="border-b border-[#E8E8E5] px-8 py-5">
-              <p className="text-[12px] text-[#8A8A8A]">Subject:</p>
-              <p className="mt-1 text-[15px] font-semibold text-[#111]">
+            <div className="border-b border-border px-8 py-5">
+              <p className="text-[12px] text-muted-foreground">Subject:</p>
+              <p className="mt-1 text-[15px] font-semibold text-foreground">
                 Formal Request to Cancel Subscription — [Account ID]
               </p>
             </div>
             {/* Email body */}
             <div className="px-8 py-6">
-              <pre className="whitespace-pre-wrap font-sans text-[14px] leading-[1.8] text-[#5F5F5F]">
+              <pre className="whitespace-pre-wrap font-sans text-[14px] leading-[1.8] text-muted-foreground">
                 {SAMPLE_EMAIL}
               </pre>
             </div>
             {/* Footer note */}
-            <div className="border-t border-[#E8E8E5] px-8 py-4">
-              <div className="flex items-center gap-2 text-[12px] text-[#8A8A8A]">
+            <div className="border-t border-border px-8 py-4">
+              <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
                 <Copy className="h-3.5 w-3.5" />
                 Your actual email will be personalized with your name, email, company,
                 account details, and the specific statutes for your state.
@@ -470,7 +470,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
           <div className="mt-8 text-center">
             <Link
               href="/new?wedge=subscription"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#111] px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-[#222] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Yours Free <ArrowRight className="h-4 w-4" />
             </Link>
@@ -481,30 +481,30 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  COMPARISON                                                  */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section className="border-t border-border bg-white px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Why This Is Different
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Generic templates vs. Resolvaio.
           </h2>
 
-          <div className="overflow-x-auto rounded-2xl border border-[#E8E8E5] bg-white">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-white">
             <table className="w-full text-[14px]">
               <thead>
-                <tr className="border-b border-[#E8E8E5]">
-                  <th className="p-4 text-left font-medium text-[#8A8A8A]"></th>
-                  <th className="p-4 text-left font-medium text-[#8A8A8A]">Generic Templates</th>
-                  <th className="p-4 text-left font-semibold text-[#111]">Resolvaio</th>
+                <tr className="border-b border-border">
+                  <th className="p-4 text-left font-medium text-muted-foreground"></th>
+                  <th className="p-4 text-left font-medium text-muted-foreground">Generic Templates</th>
+                  <th className="p-4 text-left font-semibold text-foreground">Resolvaio</th>
                 </tr>
               </thead>
               <tbody>
                 {COMPARISON.map((row, i) => (
-                  <tr key={i} className="border-b border-[#E8E8E5] last:border-0">
-                    <td className="p-4 font-medium text-[#111]">{row.feature}</td>
-                    <td className="p-4 text-[#8A8A8A]">{row.generic}</td>
-                    <td className="p-4 font-medium text-[#111]">{row.resolvaio}</td>
+                  <tr key={i} className="border-b border-border last:border-0">
+                    <td className="p-4 font-medium text-foreground">{row.feature}</td>
+                    <td className="p-4 text-muted-foreground">{row.generic}</td>
+                    <td className="p-4 font-medium text-foreground">{row.resolvaio}</td>
                   </tr>
                 ))}
               </tbody>
@@ -516,15 +516,15 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  VERTICALS                                                   */}
       {/* ============================================================ */}
-      <section id="verticals" className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section id="verticals" className="border-t border-border px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Industries Covered
           </p>
-          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-4 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Works for gyms, telecom, SaaS, streaming, and mobile apps.
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mx-auto mb-12 max-w-2xl text-center text-[15px] leading-[1.7] text-muted-foreground">
             Each industry has its own cancellation barriers. Our diagnostic
             identifies the specific barriers you&apos;re facing and the emails
             address them directly.
@@ -535,22 +535,22 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
               <Link
                 key={v.name}
                 href={`/cancel/${v.slug}`}
-                className="group rounded-2xl border border-[#E8E8E5] bg-white p-6 transition-all hover:border-[#111]/10 hover:shadow-premium"
+                className="group rounded-2xl border border-border bg-white p-6 transition-all hover:border-foreground/10 hover:shadow-premium"
               >
-                <h3 className="text-[16px] font-semibold text-[#111] group-hover:text-primary transition-colors">{v.name}</h3>
-                <p className="mt-1 text-[13px] text-[#8A8A8A]">{v.examples}</p>
-                <p className="mt-3 text-[14px] leading-[1.7] text-[#5F5F5F]">
-                  <span className="font-medium text-[#111]">Common barrier:</span>{' '}
+                <h3 className="text-[16px] font-semibold text-foreground group-hover:text-primary transition-colors">{v.name}</h3>
+                <p className="mt-1 text-[13px] text-muted-foreground">{v.examples}</p>
+                <p className="mt-3 text-[14px] leading-[1.7] text-muted-foreground">
+                  <span className="font-medium text-foreground">Common barrier:</span>{' '}
                   {v.barrier}
                 </p>
-                <p className="mt-3 flex items-center gap-1.5 text-[13px] font-medium text-[#5F5F5F] group-hover:text-[#111] transition-colors">
+                <p className="mt-3 flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                   Learn more <ChevronRight className="h-3.5 w-3.5" />
                 </p>
               </Link>
             ))}
           </div>
 
-          <p className="mt-8 text-center text-[14px] text-[#5F5F5F]">
+          <p className="mt-8 text-center text-[14px] text-muted-foreground">
             Federal baseline (ROSCA) covers all 50 states. State-specific citations
             included for California (ARL), New York (GBL &sect; 527-a), and others
             where available.
@@ -561,40 +561,40 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  LEGAL BASIS                                                 */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-20 sm:py-24">
+      <section className="border-t border-border bg-white px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Legal Basis
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Every citation verified. Never invented.
           </h2>
 
           <div className="grid gap-6 sm:grid-cols-3">
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-8">
-              <Scale className="mb-4 h-6 w-6 text-[#111]" />
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">ROSCA</h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+            <div className="rounded-2xl border border-border bg-background p-8">
+              <Scale className="mb-4 h-6 w-6 text-foreground" />
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">ROSCA</h3>
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 The Restore Online Shoppers&apos; Confidence Act and the FTC
                 Negative Option Rule (16 CFR Part 425) require sellers to
                 provide simple cancellation mechanisms and clear disclosure
                 of recurring charges.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-8">
-              <Shield className="mb-4 h-6 w-6 text-[#111]" />
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">Fair Credit Billing Act</h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+            <div className="rounded-2xl border border-border bg-background p-8">
+              <Shield className="mb-4 h-6 w-6 text-foreground" />
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">Fair Credit Billing Act</h3>
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 The FCBA provides consumers with chargeback rights for
                 unauthorized charges, including charges made after a
                 cancellation request. Disputes must be filed within
                 60 days of the billing statement.
               </p>
             </div>
-            <div className="rounded-2xl border border-[#E8E8E5] bg-[#F7F7F5] p-8">
-              <Clock className="mb-4 h-6 w-6 text-[#111]" />
-              <h3 className="mb-2 text-[16px] font-semibold text-[#111]">State Auto-Renewal Laws</h3>
-              <p className="text-[14px] leading-[1.7] text-[#5F5F5F]">
+            <div className="rounded-2xl border border-border bg-background p-8">
+              <Clock className="mb-4 h-6 w-6 text-foreground" />
+              <h3 className="mb-2 text-[16px] font-semibold text-foreground">State Auto-Renewal Laws</h3>
+              <p className="text-[14px] leading-[1.7] text-muted-foreground">
                 California&apos;s ARL (AB 2863), New York&apos;s GBL &sect; 527-a,
                 and similar state statutes impose additional requirements
                 on auto-renewal disclosures and cancellation rights. We
@@ -603,7 +603,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
             </div>
           </div>
 
-          <p className="mt-8 text-center text-[12px] text-[#8A8A8A]">
+          <p className="mt-8 text-center text-[12px] text-muted-foreground">
             This is general information about these statutes, not legal advice.
             Verify current law with official sources.
           </p>
@@ -613,23 +613,23 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FAQ                                                         */}
       {/* ============================================================ */}
-      <section id="faq" className="border-t border-[#E8E8E5] px-6 py-20 sm:py-24">
+      <section id="faq" className="border-t border-border px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl">
-          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-3 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             FAQ
           </p>
-          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-[#111] sm:text-[32px]">
+          <h2 className="mb-12 text-center text-[28px] font-semibold tracking-tight text-foreground sm:text-[32px]">
             Common questions
           </h2>
 
           <div className="space-y-3">
             {FAQS.map((faq, i) => (
-              <details key={i} className="group rounded-2xl border border-[#E8E8E5] bg-white">
-                <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-[15px] font-semibold text-[#111]">
+              <details key={i} className="group rounded-2xl border border-border bg-white">
+                <summary className="flex cursor-pointer items-center justify-between px-6 py-5 text-[15px] font-semibold text-foreground">
                   {faq.q}
-                  <ChevronRight className="h-4 w-4 shrink-0 text-[#8A8A8A] transition-transform group-open:rotate-90" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-90" />
                 </summary>
-                <p className="px-6 pb-5 text-[14px] leading-[1.7] text-[#5F5F5F]">
+                <p className="px-6 pb-5 text-[14px] leading-[1.7] text-muted-foreground">
                   {faq.a}
                 </p>
               </details>
@@ -641,25 +641,25 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FINAL CTA                                                   */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] bg-white px-6 py-24 text-center sm:py-32">
+      <section className="border-t border-border bg-white px-6 py-24 text-center sm:py-32">
         <div className="mx-auto max-w-xl">
-          <h2 className="text-[32px] font-semibold tracking-tight text-[#111] sm:text-[40px]">
+          <h2 className="text-[32px] font-semibold tracking-tight text-foreground sm:text-[40px]">
             Stop asking nicely.
             <br />
-            <span className="text-[#5F5F5F]">Cite the law.</span>
+            <span className="text-muted-foreground">Cite the law.</span>
           </h2>
-          <p className="mt-6 text-[16px] leading-[1.7] text-[#5F5F5F]">
+          <p className="mt-6 text-[16px] leading-[1.7] text-muted-foreground">
             Companies count on you giving up. A polite request gets ignored.
             A documented demand citing federal consumer protection law gets
             a response. The tool is free. The emails take 5 minutes.
           </p>
           <Link
             href="/new?wedge=subscription"
-            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-[#111] px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-[#222] active:scale-[0.98]"
+            className="mt-10 inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
           >
             Generate Your Free Emails <ArrowRight className="h-4 w-4" />
           </Link>
-          <p className="mt-6 text-[12px] text-[#8A8A8A]">
+          <p className="mt-6 text-[12px] text-muted-foreground">
             No card required. No signup fee. Takes about 5 minutes.
           </p>
         </div>
@@ -668,28 +668,28 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  ALSO FROM RESOLVAIO                                         */}
       {/* ============================================================ */}
-      <section className="border-t border-[#E8E8E5] px-6 py-16">
+      <section className="border-t border-border px-6 py-16">
         <div className="mx-auto max-w-4xl">
-          <p className="mb-8 text-center text-[13px] font-medium uppercase tracking-widest text-[#8A8A8A]">
+          <p className="mb-8 text-center text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
             Also from Resolvaio
           </p>
-          <div className="rounded-2xl border border-[#E8E8E5] bg-white p-8 sm:flex sm:items-center sm:justify-between sm:gap-8">
+          <div className="rounded-2xl border border-border bg-white p-8 sm:flex sm:items-center sm:justify-between sm:gap-8">
             <div>
-              <h3 className="text-[18px] font-semibold text-[#111]">
+              <h3 className="text-[18px] font-semibold text-foreground">
                 Security Deposit Recovery
               </h3>
-              <p className="mt-2 text-[14px] leading-[1.7] text-[#5F5F5F]">
+              <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
                 Landlord didn&apos;t return your deposit? Generate a demand letter
                 grounded in your state&apos;s landlord-tenant statutes with an
                 itemized rebuttal table and escalation packet.
               </p>
-              <p className="mt-2 text-[13px] text-[#8A8A8A]">
+              <p className="mt-2 text-[13px] text-muted-foreground">
                 CA, TX, NY, FL &middot; $49 per case
               </p>
             </div>
             <Link
               href="/new?wedge=deposit"
-              className="mt-4 inline-flex shrink-0 items-center gap-2 rounded-lg border border-[#E8E8E5] px-6 py-3 text-[14px] font-semibold text-[#111] transition-all hover:border-[#111]/20 hover:bg-[#F7F7F5] active:scale-[0.98] sm:mt-0"
+              className="mt-4 inline-flex shrink-0 items-center gap-2 rounded-lg border border-border px-6 py-3 text-[14px] font-semibold text-foreground transition-all hover:border-foreground/20 hover:bg-background active:scale-[0.98] sm:mt-0"
             >
               Learn More <ArrowRight className="h-4 w-4" />
             </Link>
@@ -700,44 +700,44 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
       {/* ============================================================ */}
       {/*  FOOTER                                                      */}
       {/* ============================================================ */}
-      <footer className="border-t border-[#E8E8E5] px-6 py-12">
+      <footer className="border-t border-border px-6 py-12">
         <div className="mx-auto max-w-4xl">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <Link href="/" className="text-[15px] font-semibold text-[#111]">
+              <Link href="/" className="text-[15px] font-semibold text-foreground">
                 Resolvaio
               </Link>
-              <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-[#8A8A8A]">
+              <p className="mt-2 max-w-xs text-[13px] leading-relaxed text-muted-foreground">
                 Demand letters and cancellation emails grounded in verified
                 consumer protection law. Writing assistance, not legal advice.
               </p>
             </div>
-            <div className="flex gap-10 text-[13px] text-[#8A8A8A]">
+            <div className="flex gap-10 text-[13px] text-muted-foreground">
               <div className="space-y-2.5">
-                <p className="font-semibold text-[#5F5F5F]">Tools</p>
-                <Link href="/tools/cancel-subscription" className="block transition-colors hover:text-[#111]">Cancel Subscription</Link>
-                <Link href="/tools/deposit-deadline" className="block transition-colors hover:text-[#111]">Deposit Deadline Calculator</Link>
-                <Link href="/" className="block transition-colors hover:text-[#111]">Home</Link>
+                <p className="font-semibold text-muted-foreground">Tools</p>
+                <Link href="/tools/cancel-subscription" className="block transition-colors hover:text-foreground">Cancel Subscription</Link>
+                <Link href="/tools/deposit-deadline" className="block transition-colors hover:text-foreground">Deposit Deadline Calculator</Link>
+                <Link href="/" className="block transition-colors hover:text-foreground">Home</Link>
               </div>
               <div className="space-y-2.5">
-                <p className="font-semibold text-[#5F5F5F]">Account</p>
-                <Link href="/new" className="block transition-colors hover:text-[#111]">Start Diagnostic</Link>
-                <Link href="/login" className="block transition-colors hover:text-[#111]">Sign In</Link>
-                <Link href="/about" className="block transition-colors hover:text-[#111]">About</Link>
+                <p className="font-semibold text-muted-foreground">Account</p>
+                <Link href="/new" className="block transition-colors hover:text-foreground">Start Diagnostic</Link>
+                <Link href="/login" className="block transition-colors hover:text-foreground">Sign In</Link>
+                <Link href="/about" className="block transition-colors hover:text-foreground">About</Link>
               </div>
               <div className="space-y-2.5">
-                <p className="font-semibold text-[#5F5F5F]">Legal</p>
-                <Link href="/legal/terms" className="block transition-colors hover:text-[#111]">Terms of Service</Link>
-                <Link href="/legal/privacy" className="block transition-colors hover:text-[#111]">Privacy Policy</Link>
-                <Link href="/legal/cookies" className="block transition-colors hover:text-[#111]">Cookie Policy</Link>
-                <Link href="/legal/acceptable-use" className="block transition-colors hover:text-[#111]">Acceptable Use</Link>
-                <Link href="/legal/ai-disclosure" className="block transition-colors hover:text-[#111]">AI Disclosure</Link>
-                <Link href="/legal/accessibility" className="block transition-colors hover:text-[#111]">Accessibility</Link>
+                <p className="font-semibold text-muted-foreground">Legal</p>
+                <Link href="/legal/terms" className="block transition-colors hover:text-foreground">Terms of Service</Link>
+                <Link href="/legal/privacy" className="block transition-colors hover:text-foreground">Privacy Policy</Link>
+                <Link href="/legal/cookies" className="block transition-colors hover:text-foreground">Cookie Policy</Link>
+                <Link href="/legal/acceptable-use" className="block transition-colors hover:text-foreground">Acceptable Use</Link>
+                <Link href="/legal/ai-disclosure" className="block transition-colors hover:text-foreground">AI Disclosure</Link>
+                <Link href="/legal/accessibility" className="block transition-colors hover:text-foreground">Accessibility</Link>
               </div>
             </div>
           </div>
 
-          <div className="mt-10 border-t border-[#E8E8E5] pt-8 text-center text-[12px] leading-relaxed text-[#8A8A8A]">
+          <div className="mt-10 border-t border-border pt-8 text-center text-[12px] leading-relaxed text-muted-foreground">
             <p>
               Resolvaio provides writing assistance and general information about
               consumer disputes. It does not provide legal advice, does not

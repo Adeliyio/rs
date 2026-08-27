@@ -106,7 +106,7 @@ export default async function CountyDepositPage({
         <div className="mt-8">
           <Link
             href="/new?wedge=deposit"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#3B4CCA] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#2C3AA8]"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
           >
             Start your {j.name} demand letter <ArrowRight className="h-4 w-4" />
           </Link>
@@ -115,17 +115,17 @@ export default async function CountyDepositPage({
         {/* County-specific facts — the unique value that makes this not a doorway page */}
         <div className="mt-12 grid gap-5 sm:grid-cols-3">
           <div className="rounded-xl border border-neutral-200 p-5">
-            <Clock className="h-5 w-5 text-[#3B4CCA]" />
+            <Clock className="h-5 w-5 text-primary" />
             <p className="mt-3 text-sm font-semibold text-neutral-900">Return deadline</p>
             <p className="mt-1 text-sm text-neutral-600">{j.returnDeadlineDays} days ({j.statuteCitation})</p>
           </div>
           <div className="rounded-xl border border-neutral-200 p-5">
-            <Building2 className="h-5 w-5 text-[#3B4CCA]" />
+            <Building2 className="h-5 w-5 text-primary" />
             <p className="mt-3 text-sm font-semibold text-neutral-900">Small claims court</p>
             <p className="mt-1 text-sm text-neutral-600">{c.courtName}</p>
           </div>
           <div className="rounded-xl border border-neutral-200 p-5">
-            <Scale className="h-5 w-5 text-[#3B4CCA]" />
+            <Scale className="h-5 w-5 text-primary" />
             <p className="mt-3 text-sm font-semibold text-neutral-900">Filing fee</p>
             <p className="mt-1 text-sm text-neutral-600">
               {c.filingFee} · claims up to {j.smallClaimsLimit}
@@ -145,7 +145,7 @@ export default async function CountyDepositPage({
             href={c.courtUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#3B4CCA] hover:underline"
+            className="text-primary hover:underline"
           >
             {c.name} small claims court — official site →
           </a>

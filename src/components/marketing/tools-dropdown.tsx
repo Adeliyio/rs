@@ -54,25 +54,25 @@ export function ToolsDropdown() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-1 text-[13px] text-[#5F5F5F] transition-colors hover:text-[#111]"
+        className="inline-flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
       >
         Tools
         <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
-        <div className="absolute left-1/2 top-full z-50 mt-2 w-64 -translate-x-1/2 rounded-xl border border-[#E8E8E5] bg-white p-2 shadow-premium-lg">
+        <div className="absolute left-1/2 top-full z-50 mt-2 w-64 -translate-x-1/2 rounded-xl border border-border bg-white p-2 shadow-premium-lg">
           {TOOLS.map((tool) => (
             <Link
               key={tool.href}
               href={tool.href}
               onClick={() => setOpen(false)}
-              className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-[#F7F7F5]"
+              className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-background"
             >
-              <tool.icon className="mt-0.5 h-4 w-4 shrink-0 text-[#8A8A8A]" />
+              <tool.icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
               <div>
-                <p className="text-[13px] font-medium text-[#111]">{tool.name}</p>
-                <p className="text-[11px] text-[#8A8A8A]">{tool.description}</p>
+                <p className="text-[13px] font-medium text-foreground">{tool.name}</p>
+                <p className="text-[11px] text-muted-foreground">{tool.description}</p>
               </div>
             </Link>
           ))}

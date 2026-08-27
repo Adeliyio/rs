@@ -64,11 +64,11 @@ const WEDGE_LABELS: Record<Wedge, string> = {
 /* All status pills in blue/neutral family — unified, calm */
 function getStatusColor(status: CaseStatus): string {
   const colors: Record<CaseStatus, string> = {
-    intake: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    generated: 'bg-blue-500/15 text-blue-300 border-blue-500/25',
-    sent: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
-    awaiting: 'bg-blue-500/15 text-blue-300 border-blue-500/20',
-    escalation_drafted: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
+    intake: 'bg-primary/20 text-primary border-primary/30',
+    generated: 'bg-primary/15 text-primary border-primary/25',
+    sent: 'bg-primary/15 text-primary border-primary/20',
+    awaiting: 'bg-primary/15 text-primary border-primary/20',
+    escalation_drafted: 'bg-primary/20 text-primary border-primary/30',
     resolved: 'bg-gray-500/15 text-gray-400 border-gray-500/20',
     closed: 'bg-gray-500/15 text-gray-400 border-gray-500/20',
   };
@@ -254,7 +254,7 @@ export function Sidebar({
           Settings
         </Link>
         <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-[12px] font-medium text-blue-300">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-[12px] font-medium text-primary">
             {userName?.[0]?.toUpperCase() ?? 'U'}
           </div>
           <div className="min-w-0 flex-1">

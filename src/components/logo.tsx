@@ -43,7 +43,7 @@ export function Logo({ className = '' }: { className?: string }) {
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       <LogoIcon className="h-8 w-8" />
-      <span className="text-lg font-semibold tracking-tight text-[#111]">
+      <span className="text-lg font-semibold tracking-tight text-foreground">
         Resolvaio
       </span>
     </div>
