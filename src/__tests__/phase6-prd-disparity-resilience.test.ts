@@ -1045,8 +1045,9 @@ describe('6c/6d: Generate route — deposit gates moved to POST handler', () => 
     const postIdx = source.indexOf('export async function POST');
     const postSource = source.slice(postIdx);
 
-    // Payment check must appear BEFORE circuit breaker
-    const paymentCheckIdx = postSource.indexOf("payment_status !== 'paid'");
+    // Payment check must appear BEFORE circuit breaker. The gate now accepts a
+    // per-case payment OR an active subscription; anchor on the stable 402 message.
+    const paymentCheckIdx = postSource.indexOf('Payment required before letter generation');
     const circuitBreakerIdx = postSource.indexOf('CIRCUIT_BREAKER_THRESHOLD');
 
     expect(paymentCheckIdx).toBeGreaterThan(-1);
@@ -1079,6 +1080,16 @@ describe('6c/6d: Generate route — deposit gates moved to POST handler', () => 
     const postIdx = source.indexOf('export async function POST');
     const postSource = source.slice(postIdx);
     expect(postSource).toContain('processAutoRefundIfNeeded');
+  });
+
+  // M1: an active "Unlimited" subscription waives the per-case $49 deposit charge.
+  it('deposit payment gate accepts an active subscription (Unlimited waiver)', () => {
+    const postIdx = source.indexOf('export async function POST');
+    const postSource = source.slice(postIdx);
+    // The gate queries the user's active subscription and only 402s when there
+    // is neither a paid case NOR an active subscription.
+    expect(postSource).toContain('api.subscriptions.currentMine');
+    expect(postSource).toContain('!isPaid && !activeSubscription');
   });
 });
 

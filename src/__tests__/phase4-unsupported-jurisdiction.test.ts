@@ -464,7 +464,9 @@ describe('4c: Auto-refund in generate route', () => {
   });
 
   it('jurisdiction check is after payment gate', () => {
-    const paymentGate = generateSource.indexOf("payment_status !== 'paid'");
+    // The payment gate accepts a per-case payment OR an active subscription
+    // ("Unlimited" waiver); anchor on the 402 error message, which is stable.
+    const paymentGate = generateSource.indexOf('Payment required before letter generation');
     const jurisdictionGate = generateSource.indexOf('DEPOSIT_JURISDICTION.includes');
     expect(paymentGate).toBeGreaterThan(-1);
     expect(jurisdictionGate).toBeGreaterThan(paymentGate);

@@ -40,6 +40,8 @@ interface DiagnosticShellProps {
   caseId: string;
   wedge: Wedge;
   onComplete?: () => void;
+  /** Active "Unlimited" subscriber — the deposit payment node is skipped. */
+  hasActiveSubscription?: boolean;
 }
 
 /* ------------------------------------------------------------------ */
@@ -94,10 +96,12 @@ function NodeRenderer({
   node,
   onAnswer,
   state,
+  hasActiveSubscription = false,
 }: {
   node: NonNullable<ReturnType<typeof useDiagnostic>['currentNode']>;
   onAnswer: (value: unknown) => void;
   state: NonNullable<ReturnType<typeof useDiagnostic>['state']>;
+  hasActiveSubscription?: boolean;
 }): React.JSX.Element {
   const prev = state.answers?.[node.id];
 
@@ -138,7 +142,14 @@ function NodeRenderer({
     case 'preview':
       return <PreviewNodeComponent node={node} onAnswer={onAnswer} caseId={state.case_id} />;
     case 'payment':
-      return <PaymentNodeComponent node={node} onAnswer={onAnswer} caseId={state.case_id} />;
+      return (
+        <PaymentNodeComponent
+          node={node}
+          onAnswer={onAnswer}
+          caseId={state.case_id}
+          hasActiveSubscription={hasActiveSubscription}
+        />
+      );
     default:
       return (
         <div className="rounded-lg border bg-card px-4 py-4">
@@ -165,6 +176,7 @@ export default function DiagnosticShell({
   caseId,
   wedge,
   onComplete,
+  hasActiveSubscription = false,
 }: DiagnosticShellProps): React.JSX.Element {
   const {
     currentNode,
@@ -254,6 +266,7 @@ export default function DiagnosticShell({
           node={currentNode}
           onAnswer={handleAnswer}
           state={state}
+          hasActiveSubscription={hasActiveSubscription}
         />
       </div>
     </div>

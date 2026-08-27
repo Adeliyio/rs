@@ -12,7 +12,7 @@
  * payment_status transitions to 'paid' asynchronously via webhook.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 import { DisclaimerAcknowledgment } from '@/components/disclaimer-acknowledgment';
 import { PaddleCheckout } from '@/features/checkout/components/paddle-checkout';
@@ -27,6 +27,11 @@ interface PaymentNodeProps {
   node: DiagnosticNode;
   onAnswer: (value: unknown) => void;
   caseId: string;
+  /**
+   * Active "Unlimited" subscriber — the per-case payment is waived, so this node
+   * auto-advances without showing the disclaimer/checkout.
+   */
+  hasActiveSubscription?: boolean;
 }
 
 type Step = 'disclaimer' | 'checkout' | 'processing';
@@ -39,8 +44,18 @@ export default function PaymentNodeComponent({
   node: _node,
   onAnswer,
   caseId,
+  hasActiveSubscription = false,
 }: PaymentNodeProps): React.JSX.Element {
   const [step, setStep] = useState<Step>('disclaimer');
+
+  // Active subscribers owe nothing per case — advance straight past payment.
+  // The generate route independently verifies the active subscription, so no
+  // transaction id is needed (and none should be fabricated).
+  useEffect(() => {
+    if (hasActiveSubscription) {
+      onAnswer({ payment_complete: true, subscription_covered: true });
+    }
+  }, [hasActiveSubscription, onAnswer]);
 
   const handleDisclaimerAcknowledge = useCallback(() => {
     setStep('checkout');
@@ -59,6 +74,19 @@ export default function PaymentNodeComponent({
   const handlePaymentCancel = useCallback(() => {
     // Stay on checkout step — user can retry
   }, []);
+
+  // Active subscriber: render a brief covered-by-plan state while the effect
+  // above advances the diagnostic. Never show the checkout to them.
+  if (hasActiveSubscription) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <p className="text-sm font-medium text-foreground">
+          Covered by your Unlimited plan — preparing your letter...
+        </p>
+      </div>
+    );
+  }
 
   if (step === 'disclaimer') {
     return (

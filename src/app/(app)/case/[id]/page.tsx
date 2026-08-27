@@ -183,9 +183,17 @@ export default async function CasePage({
   /* ================================================================ */
 
   if (status === 'intake') {
+    // An active subscription ("Unlimited") waives the per-case deposit payment,
+    // so the client skips payment polling and generates directly.
+    const activeSubscription =
+      wedge === 'deposit' ? await q(api.subscriptions.currentMine, {}) : null;
     return (
       <div className="page-enter">
-        <IntakeClient caseId={caseId} wedge={wedge} />
+        <IntakeClient
+          caseId={caseId}
+          wedge={wedge}
+          hasActiveSubscription={Boolean(activeSubscription)}
+        />
       </div>
     );
   }

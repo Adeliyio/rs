@@ -489,7 +489,14 @@ export async function POST(
 
     /* ---- Deposit-specific gates (must run before enqueue) ---- */
     if (wedge === 'deposit') {
-      if (caseRow.payment_status !== 'paid') {
+      // A case is payable either by a per-case Paddle payment OR by an active
+      // subscription (the "Unlimited" plan waives the per-case $49). Without the
+      // subscription branch, a paying Unlimited subscriber would still be charged
+      // per case. `currentMine` is scoped to the requesting user and returns a
+      // subscription only when status is 'active'/'past_due'.
+      const activeSubscription = await q(api.subscriptions.currentMine, {});
+      const isPaid = caseRow.payment_status === 'paid';
+      if (!isPaid && !activeSubscription) {
         return NextResponse.json(
           { error: 'Payment required before letter generation.' },
           { status: 402 },

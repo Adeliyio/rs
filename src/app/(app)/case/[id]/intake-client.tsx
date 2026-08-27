@@ -20,6 +20,12 @@ import type { Wedge } from '@/types/enums';
 interface IntakeClientProps {
   caseId: string;
   wedge: Wedge;
+  /**
+   * True when the user has an active subscription (the "Unlimited" plan). For a
+   * deposit case, an active subscriber owes no per-case payment, so we skip the
+   * payment-confirmation polling and generate directly.
+   */
+  hasActiveSubscription?: boolean;
 }
 
 const PAYMENT_POLL_INTERVAL = 2000; // 2 seconds
@@ -28,6 +34,7 @@ const PAYMENT_POLL_MAX_ATTEMPTS = 30; // 60 seconds max
 export default function IntakeClient({
   caseId,
   wedge,
+  hasActiveSubscription = false,
 }: IntakeClientProps): React.JSX.Element {
   const router = useRouter();
   const [isAdvancing, setIsAdvancing] = useState(false);
@@ -81,17 +88,20 @@ export default function IntakeClient({
         const ok = await handleGenerateResponse(genResponse);
         if (!ok) { setIsAdvancing(false); pollingRef.current = false; return; }
       } else {
-        // Deposit — payment happened in the diagnostic flow.
-        // Poll for the Paddle webhook to confirm payment_status=paid,
-        // then trigger generation.
-        setAdvanceMessage('Confirming payment...');
-        const paid = await pollForPayment();
+        // Deposit. An active subscriber ("Unlimited") owes no per-case payment,
+        // so there is nothing to poll for — generate directly. Otherwise, payment
+        // happened in the diagnostic flow; poll for the Paddle webhook to confirm
+        // payment_status=paid before generating.
+        if (!hasActiveSubscription) {
+          setAdvanceMessage('Confirming payment...');
+          const paid = await pollForPayment();
 
-        if (!paid) {
-          throw new Error(
-            'Payment confirmation is taking longer than expected. ' +
-            'Please refresh the page — if your payment completed, your letter will be generated automatically.',
-          );
+          if (!paid) {
+            throw new Error(
+              'Payment confirmation is taking longer than expected. ' +
+              'Please refresh the page — if your payment completed, your letter will be generated automatically.',
+            );
+          }
         }
 
         setAdvanceMessage('Generating your demand letter...');
@@ -111,7 +121,7 @@ export default function IntakeClient({
       setIsAdvancing(false);
       pollingRef.current = false;
     }
-  }, [caseId, wedge, router, isAdvancing, pollForPayment, handleGenerateResponse]);
+  }, [caseId, wedge, router, isAdvancing, pollForPayment, handleGenerateResponse, hasActiveSubscription]);
 
   /* A7: refusal → compassionate decline screen (reachable at end of intake). */
   if (refusal) {
@@ -129,6 +139,7 @@ export default function IntakeClient({
         caseId={caseId}
         wedge={wedge}
         onComplete={handleComplete}
+        hasActiveSubscription={hasActiveSubscription}
       />
       {isAdvancing && (
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
