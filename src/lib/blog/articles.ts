@@ -799,6 +799,130 @@ export const ARTICLES: BlogArticle[] = [
       },
     ],
   },
+
+  /* ---- 22. Illegal & Wrongful Deductions ---- */
+  {
+    slug: 'illegal-security-deposit-deductions',
+    title: 'Illegal Security Deposit Deductions: What Your Landlord Can’t Charge You For',
+    description: 'Landlords routinely deduct for things the law doesn’t allow. Here’s what counts as a wrongful deduction, how normal wear and tear is defined, and how to challenge charges you didn’t agree to.',
+    category: 'deposit-general',
+    publishedAt: '2026-08-28',
+    ctaHref: '/new?wedge=deposit',
+    ctaText: 'Generate a statute-cited demand letter',
+    sections: [
+      {
+        body: 'Most security deposit disputes come down to a single question: was the deduction legal? Landlords keep money for “cleaning,” “painting,” and “wear” that the law often does not let them charge for. This guide explains the line between a legitimate deduction and a wrongful one — and what to do when your landlord crosses it.',
+      },
+      {
+        heading: 'The Core Rule: Damage vs. Normal Wear and Tear',
+        body: 'Across every state, the same principle governs deductions: a landlord can charge you for damage, but not for normal wear and tear. Damage is harm beyond what ordinary, careful use would cause — a cracked window, a pet-stained carpet, a hole punched in a wall. Normal wear and tear is the gradual, expected decline that happens simply from living somewhere: faded paint, minor carpet wear in walkways, small nail holes from hanging pictures.\n\nThe distinction matters because it decides who pays. Fixing damage is your responsibility; absorbing normal wear is the landlord’s cost of doing business.',
+      },
+      {
+        heading: 'Deductions That Are Usually Illegal',
+        body: 'These are the charges tenants most often see — and most often should not accept:\n\n• Repainting for normal fading or scuffs after a typical tenancy.\n• Replacing carpet worn only in high-traffic paths (as opposed to torn, burned, or stained carpet).\n• Routine cleaning to the same condition every tenant leaves — as opposed to cleaning up genuine filth.\n• “Wear” on fixtures and appliances that simply aged during your tenancy.\n• Charges with no itemization or no receipts, where the law requires them.\n• Deductions that exceed the actual cost of the repair.\n• Fees invented by the landlord that aren’t tied to real damage or unpaid rent.',
+      },
+      {
+        heading: 'Deductions That Are Usually Legal',
+        body: 'To be fair to the other side, these are the deductions the law generally does allow:\n\n• Unpaid rent or unpaid utilities you were responsible for.\n• Repair of actual damage beyond normal wear and tear.\n• Cleaning needed to return the unit to its move-in condition — not a higher standard.\n• Restoration or replacement specifically permitted by your lease.\n\nEven a legal deduction must usually be itemized and, in several states, backed by receipts.',
+      },
+      {
+        heading: 'What the Law Requires by State',
+        body: 'The documentation rules that make a deduction stand or fall vary:\n\n• California (Cal. Civ. Code § 1950.5) — deductions limited to four statutory categories; receipts required for anything over $125; before-and-after photos required since April 2025.\n• Texas (Tex. Prop. Code § 92.104) — itemized list of deductions required; no charge for normal wear and tear.\n• New York (Gen. Oblig. Law § 7-108) — itemized statement required; deductions limited to unpaid rent and damage beyond ordinary wear.\n• Florida (Fla. Stat. § 83.49) — the landlord must state the specific reasons for the claim in a certified-mail notice, and you have 15 days to object in writing.\n\nWhen a landlord skips the required itemization or receipts, the deduction is on shaky ground even before you argue the merits.',
+      },
+      {
+        heading: 'How to Challenge a Wrongful Deduction',
+        body: 'Start by requesting the itemized statement and receipts if you didn’t get them — in most states the landlord is required to provide them. Compare each line against the damage-vs-wear rule above. For anything that’s really normal wear, an unreceipted charge, or an invented fee, write a demand letter that objects to each improper deduction specifically and cites your state’s statute.\n\nGeneric complaints get ignored. A letter that says “the $400 repainting charge is a deduction for normal wear and tear, which is not permitted under [statute]” is much harder to brush aside — and it becomes your evidence if the dispute reaches small claims court.',
+      },
+      {
+        heading: 'Document Everything Before You Move Out',
+        body: 'The best defense against a wrongful deduction is proof of condition. Take dated, time-stamped photos and video of every room the day you move out, after cleaning. If your landlord later claims damage that was never there — or that existed at move-in — your own record is often the deciding evidence. In California, landlords now have their own photo obligation, but relying on the other side’s documentation is a mistake — keep your own record.',
+      },
+      {
+        heading: 'When to Push Back',
+        body: 'If your landlord has kept money for normal wear, failed to itemize, or can’t produce receipts the law requires, you have solid grounds to demand it back. Resolvaio generates a demand letter that rebuts each deduction in the correct legal terms and cites the statute and penalty for your state — every citation validated against primary legal sources. It is a writing and research assistance tool, not a law firm; you decide what to send.',
+      },
+    ],
+  },
+
+  /* ---- 23. Demand Letter vs. Lawyer ---- */
+  {
+    slug: 'demand-letter-vs-lawyer-security-deposit',
+    title: 'Demand Letter vs. Hiring a Lawyer: What a Tenant Actually Needs',
+    description: 'For a withheld security deposit, do you need a lawyer — or is a demand letter enough? A practical breakdown of cost, when each makes sense, and why small claims court doesn’t usually involve attorneys.',
+    category: 'deposit-general',
+    publishedAt: '2026-08-28',
+    ctaHref: '/new?wedge=deposit',
+    ctaText: 'Generate a statute-cited demand letter',
+    sections: [
+      {
+        body: 'When a landlord keeps your deposit, the instinct is often to “get a lawyer.” For most security deposit disputes, that’s more firepower than the situation needs — and it can cost more than the deposit itself. Here’s an honest look at when a demand letter is enough, when a lawyer makes sense, and why the two aren’t really competing.',
+      },
+      {
+        heading: 'The Math Problem With Hiring a Lawyer',
+        body: 'Most withheld deposits are a few hundred to a couple thousand dollars. A lawyer’s hourly rate can equal or exceed that before they’ve done much at all. Unless your dispute is large or unusually complex, paying an attorney to recover a $1,200 deposit rarely pencils out — you could win and still come out behind.\n\nThat’s exactly why the system has a lower-cost path built in: small claims court, where you represent yourself.',
+      },
+      {
+        heading: 'Small Claims Court Is Built for This',
+        body: 'Security deposit disputes are one of the most common small claims cases in the country. The process is designed for people without lawyers: simplified forms, low filing fees, and a judge who’s used to hearing directly from tenants and landlords. In some states — California, for one — lawyers generally aren’t even allowed to represent parties in small claims court. So for the venue where most deposit cases are actually decided, “hire a lawyer” often isn’t an option anyway.',
+      },
+      {
+        heading: 'What a Demand Letter Does',
+        body: 'A well-written demand letter resolves a large share of disputes before court is ever needed. It puts the landlord on formal notice, cites the specific statute and penalty they’re facing, and sets a deadline. Many landlords pay at this stage because it’s cheaper than losing in court and owing a statutory penalty on top.\n\nAnd if it doesn’t work, the letter isn’t wasted — it becomes evidence that you tried to resolve things in good faith, which is exactly what a small claims judge wants to see.',
+      },
+      {
+        heading: 'When You Actually Do Want a Lawyer',
+        body: 'A demand letter isn’t always enough. Consider talking to an attorney when:\n\n• The amount at stake is large — beyond the small claims limit in your state.\n• The dispute is entangled with something bigger: an eviction, a habitability claim, a counterclaim, or a lawsuit already in progress.\n• The landlord has a lawyer and the matter has escalated past a simple deposit return.\n• You’re facing retaliation or a complex lease dispute, not just a withheld deposit.\n\nIn those situations, the stakes justify the cost — and a tool that only helps with the letter isn’t the right fit. Many areas also have free legal aid and tenant clinics for exactly these cases.',
+      },
+      {
+        heading: 'The Practical Answer for Most Tenants',
+        body: 'For a straightforward withheld deposit, the sequence that works is: a statute-cited demand letter first, and small claims court if that’s ignored — no lawyer required for either. The letter is the pressure; the court is the backstop.\n\nResolvaio handles the letter: it generates one with the correct citations, an itemized rebuttal of each deduction, and the penalty language for your state, validated against primary legal sources. It is a writing and research assistance tool, not a law firm — so if your case turns out to be one of the complex ones above, it will point you toward the right resources rather than pretend to replace an attorney.',
+      },
+    ],
+  },
+
+  /* ---- 24. California vs. Texas Tenant Rights ---- */
+  {
+    slug: 'california-vs-texas-tenant-rights-security-deposit',
+    title: 'California vs. Texas Tenant Rights: Security Deposits Compared',
+    description: 'How security deposit law differs between California and Texas — return deadlines, deposit caps, penalties, and the one Texas rule that trips up most tenants.',
+    category: 'deposit-general',
+    publishedAt: '2026-08-28',
+    ctaHref: '/new?wedge=deposit',
+    ctaText: 'Generate your demand letter',
+    sections: [
+      {
+        body: 'California and Texas are two of the largest rental markets in the country, and their security deposit laws are strikingly different. If you’ve rented in one and moved to the other, the rules you relied on may no longer apply. Here’s how the two states compare on the things that actually decide a deposit dispute.',
+      },
+      {
+        heading: 'Return Deadline',
+        body: 'California gives landlords 21 calendar days after move-out to return the deposit or provide an itemized statement (Cal. Civ. Code § 1950.5). Texas gives 30 days — but with a crucial catch covered below (Tex. Prop. Code § 92.103).\n\nCalifornia’s clock starts automatically when you vacate. Texas’s clock does not start until you take a specific action.',
+      },
+      {
+        heading: 'The Texas Forwarding-Address Rule (Most-Missed Difference)',
+        body: 'This is the single biggest difference tenants overlook. In Texas, the landlord has no obligation to return the deposit until you provide a written forwarding address (Tex. Prop. Code § 92.107). No forwarding address, no deadline — the 30 days never start.\n\nCalifornia has no such precondition. This one rule explains why so many Texas tenants wait indefinitely and assume the landlord is stalling, when the clock simply never started. Always send your forwarding address in writing and keep proof.',
+      },
+      {
+        heading: 'Deposit Caps',
+        body: 'California limits most security deposits to one month’s rent as of AB 12 (2024). Texas has no statutory cap at all — a landlord can ask for whatever the market will bear. If you’re moving from California to Texas, a larger deposit request isn’t necessarily illegal there; if you’re moving the other way, the cap now protects you.',
+      },
+      {
+        heading: 'Penalties for Wrongful Retention',
+        body: 'Both states have real teeth, but they’re structured differently:\n\n• California — up to twice the deposit for bad-faith retention, on top of actual damages (§ 1950.5(l)).\n• Texas — $100, plus three times the portion of the deposit wrongfully withheld in bad faith, plus reasonable attorney’s fees (§ 92.109).\n\nTexas’s treble-damages structure can produce a larger award on a small deposit; California’s doubling is simpler and applies broadly to bad-faith retention.',
+      },
+      {
+        heading: 'Where You File',
+        body: 'California small claims court handles individual deposit disputes up to $12,500. In Texas, deposit cases go to the Justice of the Peace (small claims) courts, which handle disputes up to $20,000. Neither state requires a lawyer — and California generally doesn’t allow one in small claims court at all.',
+      },
+      {
+        heading: 'Side-by-Side Summary',
+        body: '• Return deadline: California 21 days · Texas 30 days (after written forwarding address)\n• Clock starts: California on move-out · Texas only after forwarding address\n• Deposit cap: California one month’s rent · Texas no cap\n• Bad-faith penalty: California up to 2× deposit · Texas $100 + 3× withheld + fees\n• Small claims limit: California $12,500 · Texas $20,000\n• Primary statute: California Cal. Civ. Code § 1950.5 · Texas Tex. Prop. Code § 92.103',
+      },
+      {
+        heading: 'Getting Your Deposit Back in Either State',
+        body: 'The winning move is the same in both: a demand letter that cites the correct statute and penalty for that state, sent with proof of delivery, followed by small claims court if it’s ignored. The citations differ, and in Texas the forwarding-address step comes first. Resolvaio generates a demand letter with the right citations for whichever state your rental is in — a writing and research assistance tool, not a law firm.',
+      },
+    ],
+  },
 ];
 
 /* ------------------------------------------------------------------ */
