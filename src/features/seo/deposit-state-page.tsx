@@ -3,6 +3,7 @@ import { ArrowRight, Scale, Clock, FileText, MapPin } from 'lucide-react';
 
 import { safeJsonLd } from '@/lib/safe-json-ld';
 import { JURISDICTIONS, shippableCounties } from '@/lib/seo/config';
+import { DEPOSIT_FAQS } from '@/lib/seo/deposit-faqs';
 import {
   breadcrumbSchema,
   depositServiceSchema,
@@ -30,6 +31,7 @@ export function DepositStatePage({
   const jurisdiction = JURISDICTIONS.find((j) => j.code === stateCode);
   const counties = jurisdiction ? shippableCounties(jurisdiction) : [];
   const statePath = jurisdiction?.page.path ?? `/deposit/${stateName.toLowerCase()}`;
+  const faqs = DEPOSIT_FAQS[stateCode] ?? [];
 
   const breadcrumb = breadcrumbSchema([
     { name: 'Home', path: '/' },
@@ -201,6 +203,38 @@ export function DepositStatePage({
                 </li>
               ))}
             </ul>
+          </div>
+        </section>
+      )}
+
+      {/* FAQ — visible Q&A copy targeting "People Also Ask" / AI Overviews.
+          Answers are statute-cited and drawn from the same verified facts as the
+          KB and the demand-letter generator. No FAQPage schema (retired for rich
+          results); the visible copy is what AI search extracts. */}
+      {faqs.length > 0 && (
+        <section className="border-t border-neutral-100 bg-neutral-50 py-16">
+          <div className="mx-auto max-w-3xl px-6">
+            <h2 className="text-2xl font-bold text-neutral-900">
+              {stateName} security deposit — common questions
+            </h2>
+            <dl className="mt-8 space-y-6">
+              {faqs.map((faq) => (
+                <div
+                  key={faq.question}
+                  className="rounded-lg border border-neutral-200 bg-white p-5"
+                >
+                  <dt className="font-semibold text-neutral-900">{faq.question}</dt>
+                  <dd className="mt-2 text-neutral-600 leading-relaxed">
+                    {faq.answer}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-6 text-xs text-neutral-500">
+              General information about {stateName} law. Resolvaio is a writing
+              and research assistance tool, not a law firm. Verify current
+              statutes with official sources before acting.
+            </p>
           </div>
         </section>
       )}
