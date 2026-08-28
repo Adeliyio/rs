@@ -4,6 +4,8 @@ import { Inter, Fraunces } from 'next/font/google';
 import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
 
 import { siteUrl } from '@/lib/seo/site';
+import { safeJsonLd } from '@/lib/safe-json-ld';
+import { organizationSchema, websiteSchema } from '@/lib/seo/schema';
 import { CookieConsent } from '@/components/cookie-consent';
 import { PlausibleAnalytics } from '@/components/analytics';
 import { ConvexClientProvider } from '@/components/convex-provider';
@@ -77,6 +79,12 @@ export default function RootLayout({
     <ConvexAuthNextjsServerProvider>
       <html lang="en-US" suppressHydrationWarning>
         <body className={`${inter.variable} ${fraunces.variable} font-sans antialiased`}>
+          {/* Site-wide Organization + WebSite entities. Emitted once here so
+              every page carries them and every #organization @id reference
+              (Service provider, WebSite publisher) resolves — not just on the
+              state pages that used to emit them locally. */}
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema()) }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema()) }} />
           <ConvexClientProvider>
             {children}
             <CookieConsent />

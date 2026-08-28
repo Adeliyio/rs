@@ -17,6 +17,7 @@ import {
 const PUBLIC_ROUTES = [
   '/',
   '/about',
+  '/how-accurate',
   '/pricing',
   '/login',
   '/register',
@@ -36,6 +37,10 @@ const PUBLIC_PREFIXES = [
   '/cancel',
   '/tools',
   '/blog',
+  // Legal pages (terms, privacy, cookies, acceptable-use, ai-disclosure,
+  // accessibility) are linked from every marketing footer and listed in the
+  // sitemap — they must be crawlable, not redirected to /login.
+  '/legal',
   '/api/webhooks/',
   '/api/trust/',
   '/api/waitlist',

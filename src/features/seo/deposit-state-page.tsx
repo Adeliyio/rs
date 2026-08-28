@@ -7,8 +7,6 @@ import { DEPOSIT_FAQS } from '@/lib/seo/deposit-faqs';
 import {
   breadcrumbSchema,
   depositServiceSchema,
-  organizationSchema,
-  websiteSchema,
 } from '@/lib/seo/schema';
 
 interface DepositStatePageProps {
@@ -239,10 +237,9 @@ export function DepositStatePage({
         </section>
       )}
 
-      {/* JSON-LD structured data — all derived from seo/config (single source of
-          truth), so it can't drift from the visible page or hardcode the domain. */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema()) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema()) }} />
+      {/* JSON-LD — page-specific entities only. Organization + WebSite are now
+          emitted site-wide in the root layout, so the Service's #organization
+          @id reference resolves here without re-emitting them. */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(service) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumb) }} />
 

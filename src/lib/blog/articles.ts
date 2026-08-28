@@ -759,7 +759,7 @@ export const ARTICLES: BlogArticle[] = [
   /* ---- 21. DIY Demand Letter to Landlord ---- */
   {
     slug: 'diy-demand-letter-landlord-security-deposit',
-    title: 'How to Write a DIY Demand Letter to Your Landlord (That Actually Works)',
+    title: 'How to Write a DIY Demand Letter to Your Landlord',
     description: 'A step-by-step guide to writing a security deposit demand letter yourself: what to include, the statute to cite, how to send it, and the mistakes that get letters ignored.',
     category: 'deposit-general',
     publishedAt: '2026-08-28',
@@ -803,7 +803,7 @@ export const ARTICLES: BlogArticle[] = [
   /* ---- 22. Illegal & Wrongful Deductions ---- */
   {
     slug: 'illegal-security-deposit-deductions',
-    title: 'Illegal Security Deposit Deductions: What Your Landlord Can’t Charge You For',
+    title: 'Illegal Security Deposit Deductions: What Landlords Can’t Charge',
     description: 'Landlords routinely deduct for things the law doesn’t allow. Here’s what counts as a wrongful deduction, how normal wear and tear is defined, and how to challenge charges you didn’t agree to.',
     category: 'deposit-general',
     publishedAt: '2026-08-28',

@@ -14,7 +14,7 @@ import { buildMetadata } from '@/lib/seo/metadata';
 export const metadata: Metadata = buildMetadata({
   title: 'How Accurate Are AI-Generated Demand Letters?',
   description:
-    'How Resolvaio keeps AI-generated demand letters accurate: every statute citation is checked against verified legal sources, and anything unverified is removed before you ever see it.',
+    'How Resolvaio keeps AI demand letters accurate: every statute citation is checked against verified legal sources, and anything unverified is removed.',
   path: '/how-accurate',
 });
 
