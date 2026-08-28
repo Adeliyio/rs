@@ -25,7 +25,7 @@
 
 import { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useResolvaioAuth } from '@/lib/convex/use-auth';
@@ -67,9 +67,20 @@ export function EmailCaptureStep({
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Live password-rule checks, shown as the visitor types.
+  const rules = [
+    { label: 'At least 8 characters', met: password.length >= 8 },
+    { label: 'One uppercase letter', met: /[A-Z]/.test(password) },
+    { label: 'One number', met: /[0-9]/.test(password) },
+  ];
+  const passwordsMatch =
+    confirmPassword.length > 0 && password === confirmPassword;
 
   /* ---- Create the case + hydrate the collected answers, then continue ---- */
   const hydrateAndContinue = useCallback(async (): Promise<void> => {
@@ -149,6 +160,10 @@ export function EmailCaptureStep({
       setError('Password must be at least 8 characters with an uppercase letter and a number.');
       return;
     }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
 
     setBusy(true);
     const result = await auth.register(fullName.trim(), email.trim(), password);
@@ -161,7 +176,7 @@ export function EmailCaptureStep({
     if (result.pending) {
       setPhase('otp');
     }
-  }, [auth, fullName, email, password]);
+  }, [auth, fullName, email, password, confirmPassword]);
 
   /* ---- Step 2: verify OTP, then hydrate ---- */
   const handleVerify = useCallback(async (): Promise<void> => {
@@ -286,17 +301,80 @@ export function EmailCaptureStep({
               <label htmlFor="cap-password" className="text-[13px] font-medium">
                 Create a password
               </label>
+              <div className="relative">
+                <input
+                  id="cap-password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password"
+                  className={`${inputClass} pr-11`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((s) => !s)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
+                  className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-r-lg"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+              {/* Live password-rule hints */}
+              <ul className="mt-0.5 flex flex-col gap-1">
+                {rules.map((rule) => (
+                  <li
+                    key={rule.label}
+                    className={`flex items-center gap-1.5 text-[12px] transition-colors ${
+                      rule.met ? 'text-emerald-600' : 'text-muted-foreground/70'
+                    }`}
+                  >
+                    <Check
+                      className={`h-3 w-3 shrink-0 ${
+                        rule.met ? 'opacity-100' : 'opacity-40'
+                      }`}
+                    />
+                    {rule.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="cap-confirm" className="text-[13px] font-medium">
+                Confirm password
+              </label>
               <input
-                id="cap-password"
-                type="password"
+                id="cap-confirm"
+                type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 required
                 minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="8+ chars, 1 uppercase, 1 number"
-                className={inputClass}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Re-enter your password"
+                className={`${inputClass} ${
+                  confirmPassword.length > 0 && !passwordsMatch
+                    ? 'border-destructive focus-visible:ring-destructive'
+                    : ''
+                }`}
               />
+              {confirmPassword.length > 0 && !passwordsMatch && (
+                <p className="text-[12px] text-destructive">
+                  Passwords do not match.
+                </p>
+              )}
+              {passwordsMatch && (
+                <p className="flex items-center gap-1.5 text-[12px] text-emerald-600">
+                  <Check className="h-3 w-3" /> Passwords match
+                </p>
+              )}
             </div>
             <Button type="submit" size="lg" disabled={busy} className="w-full gap-2">
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
