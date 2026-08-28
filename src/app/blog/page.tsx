@@ -9,9 +9,10 @@ import { safeJsonLd } from '@/lib/safe-json-ld';
 import { breadcrumbSchema } from '@/lib/seo/schema';
 
 export const metadata: Metadata = {
-  title: 'Blog — US Security Deposit Law, Subscription Cancellation, and Consumer Rights',
+  // Template appends "| Resolvaio", so keep the base title short enough to fit.
+  title: 'Security Deposit & Subscription Cancellation Guides',
   description:
-    'Guides grounded in real US statutes: security deposit law for California, Texas, New York, and Florida. Subscription cancellation rights under ROSCA. Demand letter writing and small claims court procedures.',
+    'Guides grounded in real US statutes: security deposit law for CA, TX, NY, and FL, subscription cancellation under ROSCA, and small claims procedures.',
   openGraph: {
     title: 'Resolvaio Blog — US Consumer Rights Guides',
     description: 'Consumer rights guides backed by verified US statute citations. Security deposit law by state, subscription cancellation, and small claims court.',

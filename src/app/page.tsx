@@ -26,9 +26,13 @@ const APP_BASE = process.env.NEXT_PUBLIC_APP_URL
   : 'https://app.resolvaio.com';
 
 export const metadata: Metadata = {
-  title: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation | US Consumer Protection',
+  // `absolute` bypasses the root layout's "%s | Resolvaio" template so the brand
+  // isn't appended a second time (this title already leads with it).
+  title: {
+    absolute: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation',
+  },
   description:
-    'Get your security deposit back with demand letters grounded in California, Texas, New York, and Florida landlord-tenant law. Cancel unwanted subscriptions citing ROSCA and state consumer protection statutes. Free diagnostic.',
+    'Get your security deposit back with demand letters grounded in CA, TX, NY, and FL landlord-tenant law. Cancel unwanted subscriptions citing ROSCA. Free diagnostic.',
   openGraph: {
     title: 'Resolvaio — Demand Letters & Cancellation Emails Grounded in US Law',
     description:
@@ -957,24 +961,9 @@ export default function HomePage(): React.JSX.Element {
         }}
       />
 
-      {/* JSON-LD: FAQPage */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: safeJsonLd({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: FAQS.map((faq) => ({
-              '@type': 'Question',
-              name: faq.q,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: faq.a,
-              },
-            })),
-          }),
-        }}
-      />
+      {/* No FAQPage JSON-LD: Google retired FAQ rich results for all sites in
+          2026, so we ship the visible Q&A copy without the schema — consistent
+          with the state pages and the schema-hygiene policy in seo/schema.ts. */}
     </main>
   );
 }
