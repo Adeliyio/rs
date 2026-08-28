@@ -120,10 +120,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       month: 'long',
       day: 'numeric',
     });
+    // The template engine returns citations as Citation objects
+    // ({ statute_id, citation_text, ... }), but the anonymous wire contract
+    // (parseCancellationResponse) and the result UI both expect display
+    // strings. Flatten to citation_text at the boundary so the client's Zod
+    // parse and `citations.join(...)` both work.
     const steps = result.sequence.steps.map((step) => ({
       ...step,
       subject: fillDatePlaceholder(step.subject, today),
       body: fillDatePlaceholder(step.body, today),
+      citations: step.citations.map((c) => c.citation_text),
     }));
 
     return NextResponse.json(

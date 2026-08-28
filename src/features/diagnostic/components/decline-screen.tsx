@@ -299,7 +299,7 @@ export default function DeclineScreen({
       ) : (
         <div className="mt-6 text-center">
           <Button variant="outline" asChild>
-            <Link href="/dashboard">Return to home</Link>
+            <Link href="/">Return to home</Link>
           </Button>
         </div>
       )}
