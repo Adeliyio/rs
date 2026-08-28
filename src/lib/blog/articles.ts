@@ -755,6 +755,50 @@ export const ARTICLES: BlogArticle[] = [
       },
     ],
   },
+
+  /* ---- 21. DIY Demand Letter to Landlord ---- */
+  {
+    slug: 'diy-demand-letter-landlord-security-deposit',
+    title: 'How to Write a DIY Demand Letter to Your Landlord (That Actually Works)',
+    description: 'A step-by-step guide to writing a security deposit demand letter yourself: what to include, the statute to cite, how to send it, and the mistakes that get letters ignored.',
+    category: 'deposit-general',
+    publishedAt: '2026-08-28',
+    ctaHref: '/new?wedge=deposit',
+    ctaText: 'Generate a statute-cited demand letter',
+    sections: [
+      {
+        body: 'A demand letter is the single most effective step you can take to get a wrongfully withheld security deposit back — and you can write one yourself. It is a formal, written request that puts your landlord on notice, cites the law they are violating, and creates a paper trail you can use in small claims court. This guide walks through exactly what to put in it, how to send it, and the mistakes that get DIY letters ignored.',
+      },
+      {
+        heading: 'Why a Demand Letter Works',
+        body: 'Most landlords who keep a deposit are betting you won’t push back. A vague email — “hey, can I get my deposit back?” — confirms that bet. A formal demand letter that cites the specific statute, the exact deadline they missed, and the penalty they now face changes the math: it signals you know what the law requires and are prepared to act.\n\nIt also does something a phone call can’t: it creates evidence. If the case ends up in small claims court, your demand letter proves you tried to resolve the dispute in good faith before filing — which judges look for.',
+      },
+      {
+        heading: 'The Seven Things Every Demand Letter Needs',
+        body: '1. Your details and the landlord’s. Full names, the rental address, and your current forwarding address (in Texas, this is legally required before the clock even starts).\n\n2. The move-out date. The statutory deadline counts from the day you vacated — state it clearly.\n\n3. The amount owed. The full deposit, minus any deductions you agree are legitimate.\n\n4. The statute. Cite the exact law: the return deadline and the penalty provision. This is what separates a letter that gets read from one that gets filed in the trash.\n\n5. A rebuttal of improper deductions. If they kept money for “cleaning” or “painting” that is really normal wear and tear, say so — and say why it isn’t deductible under your state’s law.\n\n6. A firm deadline. Give them a specific number of days (10–14 is standard) to return the money before you escalate.\n\n7. A clear statement of next steps. Name what happens if they don’t comply: a small claims filing for the deposit plus any statutory penalty.',
+      },
+      {
+        heading: 'Cite the Right Statute for Your State',
+        body: 'The citation is the part most DIY letters get wrong — they either skip it or cite the wrong thing. Each state’s security deposit law lives in a specific statute with a specific deadline and penalty:\n\n• California — Cal. Civ. Code § 1950.5: 21-day deadline, up to 2× the deposit for bad-faith retention.\n• Texas — Tex. Prop. Code §§ 92.103/92.109: 30 days after you give a written forwarding address; bad faith exposes the landlord to $100 plus 3× the wrongfully withheld amount plus attorney’s fees.\n• New York — Gen. Oblig. Law § 7-108: 14-day deadline; miss it and the landlord forfeits the right to keep any of the deposit.\n• Florida — Fla. Stat. § 83.49: written notice by certified mail within 30 days, or the landlord forfeits the claim entirely.\n\nIf your state is one of these, cite the section number and the penalty provision by name. A letter that says “under § 1950.5(l), a court may award up to twice the deposit for bad-faith retention” carries far more weight than one that doesn’t.',
+      },
+      {
+        heading: 'How to Send It (This Part Matters)',
+        body: 'Send the letter by certified mail with return receipt requested. This gives you dated proof that the landlord received it — which you will need if you file in court. Keep a copy of the letter and the mailing receipt.\n\nIn Florida, certified mail isn’t just good practice: the statute itself is built around a certified-mail notice requirement, and email alone may not satisfy it. When in doubt, use certified mail and keep everything.',
+      },
+      {
+        heading: 'The Mistakes That Get DIY Letters Ignored',
+        body: '• No statute cited. “Please return my deposit” reads as a request, not a demand. Cite the law.\n• An emotional tone. Anger is understandable, but a calm, factual letter is harder to dismiss and reads better in court.\n• No deadline. Without a firm date, there’s no pressure and no trigger for your next step.\n• Sent by regular mail or text. If you can’t prove they received it, it barely happened. Certified mail fixes this.\n• Wrong or vague amount. Be exact: the deposit figure, the deductions you dispute, and the total you’re demanding.\n• Threats you won’t follow through on. Don’t threaten “legal action” in the abstract — name the specific small claims court and the penalty statute.',
+      },
+      {
+        heading: 'What Happens After You Send It',
+        body: 'Many landlords pay once they receive a properly written demand letter — it’s cheaper than losing in court and owing a statutory penalty on top. If yours doesn’t respond by your deadline, the letter becomes Exhibit A when you file in small claims court. Filing limits and fees vary by state and county, but you don’t need a lawyer, and your documented demand letter is exactly the kind of evidence these courts want to see.',
+      },
+      {
+        heading: 'Writing It Yourself vs. Generating One',
+        body: 'You can absolutely write this letter by hand — everything above is what you need. The hard parts are getting the statute citation exactly right, rebutting each deduction in the correct legal terms, and making sure the penalty provision you cite actually applies to your situation.\n\nResolvaio does those parts for you: it asks about your specific situation, then generates a demand letter with the correct citations for your state, an itemized rebuttal of each deduction, and the penalty language — every citation validated against primary legal sources. It is a writing and research assistance tool, not a law firm, so you stay in control of what you send. Whether you write it yourself or generate it, the letter is the step that gets deposits back.',
+      },
+    ],
+  },
 ];
 
 /* ------------------------------------------------------------------ */
