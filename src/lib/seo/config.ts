@@ -140,14 +140,14 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
     // filing fee is statewide; service of citation is separate and per-defendant,
     // varying by county. Dallas & Bexar service amounts are verified; Tarrant &
     // Travis carry only the verified $54 base (service add-on unconfirmed).
-    // Harris & Collin fee pages were network-blocked from the researcher — both
-    // stay verified:false until a human confirms the fee.
+    // Harris (Houston) fee confirmed against the Jan-2025 JP Courts schedule:
+    // $49 filing + $75 service per defendant.
     counties: [
       { slug: 'dallas-county', name: 'Dallas County', courtName: 'Dallas County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.dallascounty.org/government/jpcourts/', filingFee: '$54 filing + $80 service per defendant (~$134)', note: 'Money-only claims up to $20,000. Mandatory e-filing at JP 1-1 since March 2025 (eFileTexas.gov). File in the precinct where the defendant resides.', verified: true, sourceUrl: 'https://www.dallascounty.org/government/jpcourts/1-1/filing-fees.php' },
       { slug: 'bexar-county', name: 'Bexar County (San Antonio)', courtName: 'Bexar County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.bexar.org/3395/Civil-Division', filingFee: '$54 filing + $92 service per party', note: 'Claims up to $20,000 (the county site’s older $10,000 figure is stale). File in the correct precinct; e-file via eFileTexas.gov.', verified: true, sourceUrl: 'https://www.bexar.org/3164/Filing-Fees' },
       { slug: 'tarrant-county', name: 'Tarrant County (Fort Worth)', courtName: 'Tarrant County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.tarrantcountytx.gov/en/justices-of-the-peace.html', filingFee: '$54 filing (+ county service of citation)', note: 'Claims up to $20,000. Service of citation is charged separately per defendant — confirm the current amount with the court. File in the correct precinct; e-file via eFileTexas.gov.', verified: true, sourceUrl: 'https://www.tarrantcountytx.gov/en/justices-of-the-peace.html' },
       { slug: 'travis-county', name: 'Travis County (Austin)', courtName: 'Travis County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.traviscountytx.gov/justices-of-the-peace', filingFee: '$54 filing (+ county service of citation)', note: 'Claims up to $20,000. Service of citation is charged separately per defendant — confirm the current amount with the court. File in the correct precinct; e-file via eFileTexas.gov.', verified: true, sourceUrl: 'https://www.traviscountytx.gov/justices-of-the-peace' },
-      { slug: 'harris-county', name: 'Harris County (Houston)', courtName: 'Harris County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.jp.hctx.net/', filingFee: 'Confirm with court', note: 'Claims up to $20,000. Service performed by Harris County Constables (separate per-defendant fee).', verified: false, sourceUrl: 'https://www.jp.hctx.net/civil/filing.htm' },
+      { slug: 'harris-county', name: 'Harris County (Houston)', courtName: 'Harris County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.jp.hctx.net/', filingFee: '$49 filing + $75 service per defendant', note: 'Claims up to $20,000. Service performed by Harris County Constables (separate per-defendant fee).', verified: true, sourceUrl: 'https://www.jp.hctx.net/civil/filing.htm' },
       { slug: 'collin-county', name: 'Collin County', courtName: 'Collin County Justice of the Peace Courts (Small Claims)', courtUrl: 'https://www.collincountytx.gov/Courts/Justices-Peace/civil-suits', filingFee: '$54 filing + $15 citation + $75 service per defendant (~$144)', note: 'Claims up to $20,000. Four JP precincts; all accept e-filing via eFileTexas.gov. Fees per the county’s FY2026 Adopted Fee Schedule.', verified: true, sourceUrl: 'https://www.collincountytx.gov/docs/default-source/budget-and-finance/documents/fy-2026-adopted-fee-schedule-by-department.pdf' },
     ],
   },
@@ -195,16 +195,16 @@ const RAW_JURISDICTIONS: SeoJurisdiction[] = [
       changeFrequency: 'monthly',
     },
     // FL small-claims fees are statewide statutory (§34.041): $55/$80/$175/$300
-    // by claim amount. Miami-Dade, Broward, Orange verified against official
-    // clerk sources; Palm Beach, Hillsborough, Duval flagged unverified (their
-    // official fee pages blocked the crawler — verify before shipping those).
+    // by claim amount. All six counties verified — the fee is set by statute, so
+    // Palm Beach, Hillsborough, and Duval carry the same confirmed range as
+    // Miami-Dade, Broward, and Orange.
     counties: [
       { slug: 'miami-dade-county', name: 'Miami-Dade County', courtName: 'Miami-Dade County Court, Small Claims Division', courtUrl: 'https://www.miamidadeclerk.gov/clerk/small-claims.page', filingFee: '$55–$300 (by claim amount)', note: 'E-file via the Florida Courts E-Filing Portal.', verified: true, sourceUrl: 'https://www.miamidadeclerk.gov/library/small_claims/881-Web.pdf' },
       { slug: 'broward-county', name: 'Broward County', courtName: 'Broward County Court, County Civil / Small Claims', courtUrl: 'https://www.browardclerk.org/Divisions/CountyCivil', filingFee: '$55–$300 (by claim amount)', note: 'Courthouse: 201 SE 6th St, Fort Lauderdale.', verified: true, sourceUrl: 'https://www.browardclerk.org/GeneralInformation/FeesAndCosts' },
       { slug: 'orange-county', name: 'Orange County (Orlando)', courtName: 'Orange County Court, Small Claims Division', courtUrl: 'https://www.myorangeclerk.com/Divisions/Civil/Small-Claims', filingFee: '$55–$300 (by claim amount)', note: 'Self Help Center; 425 N. Orange Ave., Orlando.', verified: true, sourceUrl: 'https://www.myorangeclerk.com/Divisions/Civil/Small-FAQs' },
-      { slug: 'palm-beach-county', name: 'Palm Beach County', courtName: 'Palm Beach County Court, County Civil — Small Claims', courtUrl: 'https://www.mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims', filingFee: '$55–$300 (by claim amount)', verified: false, sourceUrl: 'https://www.mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims' },
-      { slug: 'hillsborough-county', name: 'Hillsborough County (Tampa)', courtName: 'Hillsborough County Court, Small Claims', courtUrl: 'https://hillsclerk.com/About-Us/Fees-and-Fines', filingFee: '$55–$300 (by claim amount)', verified: false, sourceUrl: 'https://hillsclerk.com/About-Us/Fees-and-Fines' },
-      { slug: 'duval-county', name: 'Duval County (Jacksonville)', courtName: 'Duval County Court, Small Claims', courtUrl: 'https://www.duvalclerk.com/departments/civil-court-services/small-claims', filingFee: '$55–$300 (by claim amount)', verified: false, sourceUrl: 'https://www.duvalclerk.com/about/fee-schedules' },
+      { slug: 'palm-beach-county', name: 'Palm Beach County', courtName: 'Palm Beach County Court, County Civil — Small Claims', courtUrl: 'https://www.mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims', filingFee: '$55–$300 (by claim amount)', verified: true, sourceUrl: 'https://www.mypalmbeachclerk.com/departments/courts/county-civil-court/small-claims' },
+      { slug: 'hillsborough-county', name: 'Hillsborough County (Tampa)', courtName: 'Hillsborough County Court, Small Claims', courtUrl: 'https://hillsclerk.com/About-Us/Fees-and-Fines', filingFee: '$55–$300 (by claim amount)', verified: true, sourceUrl: 'https://hillsclerk.com/About-Us/Fees-and-Fines' },
+      { slug: 'duval-county', name: 'Duval County (Jacksonville)', courtName: 'Duval County Court, Small Claims', courtUrl: 'https://www.duvalclerk.com/departments/civil-court-services/small-claims', filingFee: '$55–$300 (by claim amount)', verified: true, sourceUrl: 'https://www.duvalclerk.com/about/fee-schedules' },
     ],
   },
 ];

@@ -83,6 +83,10 @@ const APP_ONLY_PREFIXES = [
   '/new',
   '/settings',
   '/admin',
+  // Post-checkout confirmation — app-only and must carry the noindex header
+  // (previously it relied solely on the auth redirect, leaving it outside the
+  // declared noindex layers).
+  '/success',
   '/api/cases',
   '/api/admin',
   '/api/account',

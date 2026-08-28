@@ -2,12 +2,16 @@ import type { Metadata } from 'next';
 
 import { AnonymousFlow } from '@/features/diagnostic/anonymous/anonymous-flow';
 import { WEDGE, type Wedge } from '@/types/enums';
+import { buildMetadata } from '@/lib/seo/metadata';
 
-export const metadata: Metadata = {
+// Self-referential canonical to /start collapses the crawlable query-string
+// variants (?wedge=deposit|subscription, ?plan=…) into one indexed URL.
+export const metadata: Metadata = buildMetadata({
   title: 'Start Your Free Diagnostic',
   description:
     'See what your state’s law says about your security deposit or subscription cancellation — free, no account needed to start.',
-};
+  path: '/start',
+});
 
 /**
  * Value-first funnel entry (SPEC.md M3). PUBLIC route (added to middleware

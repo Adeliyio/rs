@@ -18,7 +18,7 @@ export default function NewYorkDepositPage() {
       returnDeadline="14 days"
       primaryStatute="N.Y. Gen. Oblig. Law §7-108"
       statuteSummary="Requires landlords to return security deposits within 14 days of move-out, along with an itemized statement of deductions."
-      penaltyNote="Reasonable attorney fees may be awarded if deposit is wrongfully withheld."
+      penaltyNote="Miss the 14-day deadline and the landlord forfeits the right to keep any of the deposit. Courts may also award punitive damages and attorney's fees for a willful violation."
     />
   );
 }

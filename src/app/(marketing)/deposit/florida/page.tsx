@@ -18,7 +18,7 @@ export default function FloridaDepositPage() {
       returnDeadline="15 days (no claim) or 30 days (with claim)"
       primaryStatute="Fla. Stat. §83.49"
       statuteSummary="Requires landlords to return deposits within 15 days if no claim, or 30 days with an itemized claim sent via certified mail."
-      penaltyNote="Deposit amount plus interest if landlord fails to comply."
+      penaltyNote="If the landlord misses the 30-day certified-mail notice, they forfeit the right to keep any of the deposit — plus you may recover attorney's fees and court costs."
     />
   );
 }

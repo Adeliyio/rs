@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ToolsDropdown } from '@/components/marketing/tools-dropdown';
 import { DeadlineCalculator } from './calculator';
 import { safeJsonLd } from '@/lib/safe-json-ld';
+import { absoluteUrl } from '@/lib/seo/site';
 import { Logo } from '@/components/logo';
 
 /* ------------------------------------------------------------------ */
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
   title: 'Security Deposit Deadline Calculator — Free, All 50 States',
   description:
     'Enter your state and move-out date. See the exact deadline your landlord has to return your deposit, the statute that requires it, and the penalty if they miss it. Free.',
+  // Self-referential canonical so the calculator isn't crawled as duplicate
+  // query-string variants.
+  alternates: { canonical: absoluteUrl('/tools/deposit-deadline') },
   openGraph: {
     title: 'Security Deposit Deadline Calculator | Resolvaio',
     description:
