@@ -138,7 +138,7 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
       <UnsupportedJurisdictionScreen
         state={unsupportedState}
         stateResources={resources}
-        genericLetterUrl="/kb/unsupported/generic-demand-letter.md"
+        genericLetterUrl="/api/kb/generic-demand-letter"
         onBack={handleBackFromUnsupported}
       />
     );

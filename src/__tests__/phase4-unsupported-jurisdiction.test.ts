@@ -230,7 +230,9 @@ describe('4b (cont): Empty-state — unsupported jurisdiction flow', () => {
   });
 
   it('passes generic letter URL to the screen', () => {
-    expect(emptyStateSource).toContain('generic-demand-letter.md');
+    // Served via an API route that reads the KB file server-side — a raw
+    // /kb/*.md link 404s in production (kb/ is not a served static asset).
+    expect(emptyStateSource).toContain('/api/kb/generic-demand-letter');
   });
 
   it('has back handler to return to main screen', () => {

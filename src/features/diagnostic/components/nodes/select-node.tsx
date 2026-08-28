@@ -11,6 +11,7 @@ import { useState, useMemo } from 'react';
 
 import { cn } from '@/lib/utils';
 import { ALL_US_STATES } from '@/lib/kb/us-states';
+import { DEPOSIT_JURISDICTION } from '@/types/enums';
 import type { SelectNode, DiagnosticOption } from '@/types/diagnostic.types';
 
 /* ------------------------------------------------------------------ */
@@ -30,22 +31,31 @@ interface SelectNodeProps {
 function StateDropdown({
   onSelect,
   previousAnswer,
+  excludeCodes,
 }: {
   onSelect: (code: string) => void;
   previousAnswer?: string;
+  /** State codes to omit — e.g. the supported states in an "another state" list. */
+  excludeCodes?: readonly string[];
 }): React.JSX.Element {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(previousAnswer ?? null);
 
+  const states = useMemo(() => {
+    if (!excludeCodes || excludeCodes.length === 0) return ALL_US_STATES;
+    const exclude = new Set(excludeCodes);
+    return ALL_US_STATES.filter((s) => !exclude.has(s.code));
+  }, [excludeCodes]);
+
   const filtered = useMemo(() => {
-    if (!query) return ALL_US_STATES;
+    if (!query) return states;
     const q = query.toLowerCase();
-    return ALL_US_STATES.filter(
+    return states.filter(
       (s) =>
         s.name.toLowerCase().includes(q) ||
         s.code.toLowerCase().includes(q),
     );
-  }, [query]);
+  }, [query, states]);
 
   return (
     <div className="space-y-3">
@@ -164,7 +174,13 @@ export default function SelectNodeComponent({
   onAnswer,
   previousAnswer,
 }: SelectNodeProps): React.JSX.Element {
-  const isStateSelect = node.options_source === 'all_us_states';
+  // Both state-list sources render the searchable dropdown (51 items are
+  // unwieldy as cards). "us_states_minus_supported" additionally hides the
+  // states we already cover, so the "another state" list only offers states
+  // that route to the unsupported-jurisdiction flow.
+  const isAllStates = node.options_source === 'all_us_states';
+  const isUnsupportedStates = node.options_source === 'us_states_minus_supported';
+  const isStateSelect = isAllStates || isUnsupportedStates;
 
   return (
     <div className="space-y-4">
@@ -183,7 +199,11 @@ export default function SelectNodeComponent({
       )}
 
       {isStateSelect ? (
-        <StateDropdown onSelect={(code) => onAnswer(code)} previousAnswer={previousAnswer} />
+        <StateDropdown
+          onSelect={(code) => onAnswer(code)}
+          previousAnswer={previousAnswer}
+          excludeCodes={isUnsupportedStates ? DEPOSIT_JURISDICTION : undefined}
+        />
       ) : node.options ? (
         <OptionCards
           options={node.options}

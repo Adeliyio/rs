@@ -40,6 +40,10 @@ const PUBLIC_PREFIXES = [
   '/api/trust/',
   '/api/waitlist',
   '/api/keep-alive',
+  // The free generic demand-letter template served to unsupported-jurisdiction
+  // visitors — a static, non-personalized KB document, shown alongside the
+  // (already-public) waitlist form, so it must be reachable with no account.
+  '/api/kb/',
   // Value-first funnel (M3): the anonymous diagnostic preview is a deterministic,
   // no-cost, no-write KB read — public so a visitor sees their result before any
   // account. Note this is more specific than the app-only '/api/diagnostic'

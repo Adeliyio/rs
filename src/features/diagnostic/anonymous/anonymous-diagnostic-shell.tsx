@@ -21,6 +21,8 @@ import type { DiagnosticNode, DiagnosticState } from '@/types/diagnostic.types';
 import { useAnonymousDiagnostic } from '@/features/diagnostic/hooks/use-anonymous-diagnostic';
 import { NodeRenderer } from '@/features/diagnostic/components/node-renderer';
 import DeclineScreen from '@/features/diagnostic/components/decline-screen';
+import { UnsupportedJurisdictionScreen } from '@/components/dashboard/unsupported-jurisdiction-screen';
+import { STATE_RESOURCES } from '@/lib/kb/state-resources';
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
@@ -134,7 +136,31 @@ export function AnonymousDiagnosticShell({
     );
   }
 
-  /* ---- Terminal refusal / unsupported jurisdiction ---- */
+  /* ---- Terminal: unsupported jurisdiction ---- */
+  // This is NOT a refusal — the visitor did everything right, we just don't
+  // cover their state yet. Show the "Coming Soon" screen with a free generic
+  // template, that state's official resources, and a waitlist — not the
+  // compassionate-decline screen (which also has no copy for this case).
+  if (
+    terminal &&
+    terminal.node.type === 'terminal' &&
+    terminal.node.terminal_type === 'unsupported_jurisdiction'
+  ) {
+    const stateCode =
+      typeof state?.answers['jurisdiction_state_other'] === 'string'
+        ? (state.answers['jurisdiction_state_other'] as string)
+        : '';
+    return (
+      <UnsupportedJurisdictionScreen
+        state={stateCode}
+        stateResources={STATE_RESOURCES[stateCode] ?? null}
+        genericLetterUrl="/api/kb/generic-demand-letter"
+        onBack={goBack}
+      />
+    );
+  }
+
+  /* ---- Terminal refusal (out-of-scope cases) ---- */
   if (terminal) {
     const node = terminal.node;
     const ruleId =
