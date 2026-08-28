@@ -232,9 +232,33 @@ function effectiveDatePhrase(situation: UserSituation): string {
   return 'effective immediately, with all recurring charges to stop';
 }
 
-/** Joins non-empty lines with the given separator, trimming blanks. */
+/**
+ * Joins body blocks into a professionally-spaced letter.
+ *
+ * Each non-empty block is a paragraph and is separated from the next by a blank
+ * line (`\n\n`) — the standard business-letter look. The builders also push
+ * empty-string markers between blocks; these are now redundant (every block is
+ * already its own paragraph) but harmless — they collapse away here.
+ *
+ * The salutation ("Dear …,") and the sign-off lines ("Sincerely," / name /
+ * email / date) are the exception: those must sit on their own single-spaced
+ * lines within their block, not spread into separate paragraphs. Builders keep
+ * the salutation as one block and the sign-off arrives as a single pre-joined
+ * block (see `signOff`), so paragraph-per-block spacing is correct throughout.
+ *
+ * The previous implementation dropped every blank AND joined with a single
+ * "\n", collapsing the whole letter into a single-spaced wall of text — the
+ * "tardy" formatting this replaces.
+ */
 function joinLines(lines: string[]): string {
-  return lines.filter((l) => l.length > 0).join('\n');
+  return lines
+    .map((l) => l.trimEnd())
+    .filter((l) => l.length > 0)
+    .join('\n\n')
+    // Collapse a doubled sentence period that occurs when a user-supplied value
+    // already ends in "." (e.g. "Acme Inc." + template's ".") — but leave an
+    // ellipsis ("...") intact. Matches exactly ".." followed by space/newline/end.
+    .replace(/(?<!\.)\.\.(?=\s|$)/g, '.');
 }
 
 /* ------------------------------------------------------------------ */
@@ -504,11 +528,12 @@ function buildChargesSinceLine(situation: UserSituation): string {
 /* ------------------------------------------------------------------ */
 
 function signOff(): string[] {
+  // The signature is ONE block: "Sincerely," and the placeholder lines stack
+  // tightly (single line breaks), separated from the letter body by the usual
+  // paragraph gap that joinLines adds around this block. Returning them as
+  // separate blocks would scatter the signature into four spaced-out paragraphs.
   return [
-    'Sincerely,',
-    PLACEHOLDER_NAME,
-    PLACEHOLDER_EMAIL,
-    PLACEHOLDER_DATE,
+    ['Sincerely,', PLACEHOLDER_NAME, PLACEHOLDER_EMAIL, PLACEHOLDER_DATE].join('\n'),
   ];
 }
 
