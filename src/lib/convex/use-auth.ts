@@ -48,8 +48,27 @@ export function useResolvaioAuth() {
       try {
         await signIn('password', { email, password, fullName, flow: 'signUp' });
         return { pending: true };
-      } catch {
-        return { error: 'We could not create your account. The email may already be registered.' };
+      } catch (err) {
+        // Surface the real cause instead of masking every failure as
+        // "email already registered". Convex Auth throws a variety of errors
+        // (misconfigured provider, OTP/email send failure, validation) that all
+        // arrive here — logging + inspecting the message is the only way to tell.
+        const message = err instanceof Error ? err.message : String(err);
+        // eslint-disable-next-line no-console
+        console.error('[auth] signUp failed:', message, err);
+
+        const lower = message.toLowerCase();
+        if (lower.includes('already') || lower.includes('exists') || lower.includes('duplicate')) {
+          return { error: 'That email is already registered. Try signing in instead.' };
+        }
+        if (lower.includes('password')) {
+          return { error: 'Password does not meet the requirements. Use 8+ characters with an uppercase letter and a number.' };
+        }
+        // Unknown failure — show enough to diagnose rather than a misleading guess.
+        return {
+          error:
+            'We could not create your account right now. Please try again in a moment.',
+        };
       }
     },
 
