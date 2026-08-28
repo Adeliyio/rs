@@ -42,6 +42,11 @@ export default function AboutPage() {
             <li>Compliance scanning ensures no prohibited language</li>
             <li>You review, customize, and send</li>
           </ul>
+          <p>
+            <Link href="/how-accurate" className="text-foreground underline underline-offset-4">
+              How accurate are the demand letters? &rarr;
+            </Link>
+          </p>
 
           <h2 className="text-[20px] font-semibold text-foreground">Coverage</h2>
           <p>

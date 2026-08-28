@@ -230,6 +230,7 @@ export const STATIC_PAGES: SeoPage[] = z.array(pageSchema).parse([
   { path: '/tools/cancel-subscription', title: 'Free subscription cancellation letter generator', description: 'Generate a free, citation-backed cancellation email for any subscription. Grounded in the FTC ROSCA rule and state consumer-protection law.', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/tools/deposit-deadline', title: 'Security deposit return deadline calculator by state', description: 'Find out exactly when your landlord must return your deposit — the statutory deadline for California, Texas, New York, and Florida.', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/about', title: 'How our verified-statute writing assistance works', description: 'How we draft demand letters and cancellation emails grounded in verified primary legal sources, not generative guesses.', priority: 0.6, changeFrequency: 'monthly' },
+  { path: '/how-accurate', title: 'How accurate are AI-generated demand letters?', description: 'Every statute citation is validated against verified legal sources, and anything unverified is removed before the letter is finalized.', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/blog', title: 'Security deposit and subscription cancellation guides', description: 'Plain-English guides to getting your deposit back and cancelling subscriptions, grounded in the statutes that actually apply.', priority: 0.8, changeFrequency: 'weekly' },
 ]);
 
