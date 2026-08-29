@@ -349,10 +349,14 @@ function normalizeDepositAnswers(
     }
   }
 
-  // Map renamed node-id keys to the generator's expected field names.
+  // Map renamed node-id keys to the generator's expected field names. The
+  // boolean node `forwarding_address` stores under its own id but the generator
+  // reads `forwarding_address_provided` (its field) — critical for the Texas
+  // forwarding-address rule, which otherwise reads undefined.
   const renames: Record<string, string> = {
     deposit_amount: 'original_deposit_amount',
     partial_amount_received: 'amount_returned',
+    forwarding_address: 'forwarding_address_provided',
   };
   for (const [from, to] of Object.entries(renames)) {
     if (out[to] === undefined && answers[from] !== undefined) {

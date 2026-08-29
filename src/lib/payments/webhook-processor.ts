@@ -132,17 +132,18 @@ export async function handleOrderPaid(
   // product could unlock the $49 letter. totalAmount is in cents; the minimum
   // valid deposit price is $49 (4900). A/B variants only ever cost MORE, so a
   // floor check is safe and doesn't false-reject a legitimate variant.
+  // Fail CLOSED: reject if the amount is missing/non-numeric OR below the floor.
   const MIN_DEPOSIT_LETTER_CENTS = 4900;
-  if (typeof order.totalAmount === 'number' && order.totalAmount < MIN_DEPOSIT_LETTER_CENTS) {
+  if (typeof order.totalAmount !== 'number' || order.totalAmount < MIN_DEPOSIT_LETTER_CENTS) {
     // eslint-disable-next-line no-console
     console.error(
-      `[Webhook] order ${order.id} amount ${order.totalAmount}c is below the ` +
-        `deposit-letter floor (${MIN_DEPOSIT_LETTER_CENTS}c). NOT granting entitlement.`,
+      `[Webhook] order ${order.id} amount ${String(order.totalAmount)}c is missing or below ` +
+        `the deposit-letter floor (${MIN_DEPOSIT_LETTER_CENTS}c). NOT granting entitlement.`,
     );
     return {
       ok: false,
       event_type: eventType,
-      error: `Order amount below expected deposit-letter price`,
+      error: `Order amount missing or below expected deposit-letter price`,
     };
   }
 

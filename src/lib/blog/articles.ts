@@ -35,7 +35,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'California landlords have 21 days to return your deposit or provide an itemized statement. Here\u2019s what the law says, what penalties exist, and how to write a demand letter that cites the right statute.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your California demand letter',
     sections: [
       {
@@ -79,7 +79,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Texas landlords have 30 days to return your deposit \u2014 but only after you provide a written forwarding address. The penalty for bad faith: $100 + 3\u00D7 the amount withheld + attorney\u2019s fees.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your Texas demand letter',
     sections: [
       {
@@ -119,7 +119,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'New York gives landlords just 14 days to return your deposit. The HSTPA caps deposits at one month\u2019s rent and bans pet deposits. Here\u2019s the full breakdown.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your New York demand letter',
     sections: [
       {
@@ -159,7 +159,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Florida has a unique two-tier deposit return process. If your landlord doesn\u2019t send a certified mail notice within 30 days, they forfeit their right to keep any of your deposit.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your Florida demand letter',
     sections: [
       {
@@ -199,7 +199,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Your California landlord missed the 21-day deadline. Here\u2019s what Cal. Civ. Code \u00A7 1950.5 says about bad faith penalties, how to write a demand letter, and when to file in small claims court.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your demand letter for free diagnostic',
     sections: [
       {
@@ -235,7 +235,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Texas Property Code \u00A7 92.104 prohibits deductions for normal wear and tear. Here\u2019s what counts, what doesn\u2019t, and what the 3\u00D7 penalty means for wrongful retention.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your Texas demand letter',
     sections: [
       {
@@ -271,7 +271,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'A step-by-step guide to writing an effective security deposit demand letter in California, including which sections of Civil Code \u00A7 1950.5 to cite and how to structure the letter.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your California demand letter',
     sections: [
       {
@@ -307,7 +307,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'New York\u2019s HSTPA limits deposits to one month\u2019s rent and bans pet fees. Here\u2019s what landlords can legally deduct under Gen. Oblig. Law \u00A7 7-108.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your New York demand letter',
     sections: [
       {
@@ -343,7 +343,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'A practical guide to filing a security deposit case in LA County Small Claims Court: which courthouse, how to file, what to bring, and what to expect.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your California demand letter',
     sections: [
       {
@@ -383,7 +383,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Return deadlines, penalty provisions, deposit caps, and deduction rules compared across California, Texas, New York, and Florida.',
     category: 'deposit-state',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Start your deposit case',
     sections: [
       {
@@ -423,7 +423,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Landlords deduct for painting, carpet, and cleaning \u2014 but the law distinguishes normal wear from actual damage. Here\u2019s where the line falls in CA, TX, NY, and FL.',
     category: 'deposit-general',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your demand letter',
     sections: [
       {
@@ -459,7 +459,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Return deadlines range from 14 days (New York) to 60 days (some states). Here are the exact deadlines for CA, TX, NY, FL, and what happens when landlords miss them.',
     category: 'deposit-general',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Start your deposit case',
     sections: [
       {
@@ -491,7 +491,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'You sent the letter. They didn\u2019t respond. Here\u2019s the escalation path: small claims court, AG complaints, and what evidence to prepare.',
     category: 'deposit-general',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your demand letter and escalation packet',
     sections: [
       {
@@ -527,7 +527,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'When a landlord makes deductions, they must provide an itemized statement. Here\u2019s what each state requires, what counts as sufficient, and what to do when they don\u2019t provide one.',
     category: 'deposit-general',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your demand letter',
     sections: [
       {
@@ -563,7 +563,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Repainting is one of the most disputed deductions. Here\u2019s when it\u2019s legitimate, when it\u2019s normal wear, and what the statute says in each state.',
     category: 'deposit-general',
     publishedAt: '2026-05-27',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your demand letter',
     sections: [
       {
@@ -763,7 +763,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'A step-by-step guide to writing a security deposit demand letter yourself: what to include, the statute to cite, how to send it, and the mistakes that get letters ignored.',
     category: 'deposit-general',
     publishedAt: '2026-08-28',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate a statute-cited demand letter',
     sections: [
       {
@@ -807,7 +807,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'Landlords routinely deduct for things the law doesn’t allow. Here’s what counts as a wrongful deduction, how normal wear and tear is defined, and how to challenge charges you didn’t agree to.',
     category: 'deposit-general',
     publishedAt: '2026-08-28',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate a statute-cited demand letter',
     sections: [
       {
@@ -851,7 +851,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'For a withheld security deposit, do you need a lawyer — or is a demand letter enough? A practical breakdown of cost, when each makes sense, and why small claims court doesn’t usually involve attorneys.',
     category: 'deposit-general',
     publishedAt: '2026-08-28',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate a statute-cited demand letter',
     sections: [
       {
@@ -887,7 +887,7 @@ export const ARTICLES: BlogArticle[] = [
     description: 'How security deposit law differs between California and Texas — return deadlines, deposit caps, penalties, and the one Texas rule that trips up most tenants.',
     category: 'deposit-general',
     publishedAt: '2026-08-28',
-    ctaHref: '/new?wedge=deposit',
+    ctaHref: '/start?wedge=deposit',
     ctaText: 'Generate your demand letter',
     sections: [
       {
