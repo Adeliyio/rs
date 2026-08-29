@@ -8,6 +8,19 @@
 #   CONVEX_CLOUD_ORIGIN = https://convex.resolvaio.com        (backend :3210)
 #   CONVEX_SITE_ORIGIN  = https://convex-site.resolvaio.com   (backend :3211)
 #
+# AND these auth/app vars — they MUST be listed in the backend `environment:`
+# block below (as ${VAR}) or Docker Compose will NOT inject them into the
+# container, even if they're set in the Coolify UI. This was the cause of the
+# "Missing environment variable SITE_URL" auth failure: the var was in the UI
+# but not passed through by compose.
+#   SITE_URL              = https://app.resolvaio.com   (public app origin — NOT the convex url)
+#   JWT_PRIVATE_KEY       = (from `node generateKeys.mjs`)
+#   JWKS                  = (from `node generateKeys.mjs`)
+#   AUTH_RESEND_KEY       = (same value as RESEND_API_KEY)
+#   EMAIL_FROM            = Resolvaio <onboarding@resolvaio.com>  (verified sender)
+#   CONVEX_SERVICE_SECRET = (shared secret, must match the Next.js app)
+#   AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET = (only if using Google login)
+#
 # Set the DOMAINS in Coolify per service (Domains field):
 #   backend   → convex.resolvaio.com       mapped to container port 3210
 #   backend   → convex-site.resolvaio.com  mapped to container port 3211
@@ -27,6 +40,17 @@ services:
       - 'CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN}'
       - 'CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN}'
       - DISABLE_BEACON=true
+      # --- Auth + app env: MUST be passed through here (compose only injects
+      #     what's listed), or the backend can't read them. This is what fixes
+      #     the "Missing environment variable SITE_URL" auth failure. ---
+      - 'SITE_URL=${SITE_URL}'
+      - 'JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}'
+      - 'JWKS=${JWKS}'
+      - 'AUTH_RESEND_KEY=${AUTH_RESEND_KEY}'
+      - 'EMAIL_FROM=${EMAIL_FROM}'
+      - 'CONVEX_SERVICE_SECRET=${CONVEX_SERVICE_SECRET}'
+      - 'AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}'
+      - 'AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}'
     volumes:
       - 'convex_data:/convex/data'
     healthcheck:
