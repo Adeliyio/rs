@@ -73,6 +73,7 @@ interface CaseRow {
   jurisdiction: string;
   diagnostic_state: Record<string, unknown> | null;
   payment_status: string;
+  polar_order_id?: string | null;
 }
 
 /* ------------------------------------------------------------------ */
@@ -588,11 +589,37 @@ export async function POST(
         // eslint-disable-next-line no-console
         console.error('[generate] Failed to close refused case:', closeErr);
       }
+
+      // If the case was already PAID (e.g. answers edited post-payment to add an
+      // active-litigation trigger), the charge must not be stranded. Attempt an
+      // auto-refund and tell the user, rather than closing silently with money held.
+      const wasPaid = caseRow.payment_status === 'paid';
+      let refundInitiated = false;
+      if (wasPaid && caseRow.polar_order_id) {
+        try {
+          const refund = await processAutoRefundIfNeeded(caseId, caseRow.polar_order_id);
+          refundInitiated = refund.refunded;
+        } catch (refundErr) {
+          // eslint-disable-next-line no-console
+          console.error('[generate] paid+refused case: refund attempt failed:', refundErr);
+        }
+        if (!refundInitiated) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `[generate] PAID case ${caseId} hard-blocked (${trigger}) but refund not ` +
+              `confirmed — needs manual review so the customer isn't charged for nothing.`,
+          );
+        }
+      }
+
       return NextResponse.json(
         {
-          error: 'This case cannot proceed with generation.',
+          error: wasPaid
+            ? 'This case cannot proceed. If you were charged, a refund has been initiated.'
+            : 'This case cannot proceed with generation.',
           refusal_trigger: trigger,
           decline_reason: refusalResult.rule?.decline_reason,
+          refund_initiated: refundInitiated,
         },
         { status: 422 },
       );

@@ -23,6 +23,11 @@ import { Button } from '@/components/ui/button';
 function SuccessInner(): React.JSX.Element {
   const params = useSearchParams();
   const checkoutId = params.get('checkout_id') ?? params.get('checkoutId');
+  // If the success URL carried the case id, deep-link straight to that case so
+  // the intake-client resumes polling for the webhook there (instead of dumping
+  // the user on the dashboard to hunt for their case).
+  const caseId = params.get('caseId') ?? params.get('case_id');
+  const continueHref = caseId ? `/case/${caseId}` : '/new';
 
   return (
     <div className="mx-auto max-w-lg py-10 text-center">
@@ -42,8 +47,8 @@ function SuccessInner(): React.JSX.Element {
 
       <div className="mt-8 flex flex-col items-center gap-3">
         <Button asChild className="gap-2">
-          <Link href="/new">
-            Go to my cases
+          <Link href={continueHref}>
+            {caseId ? 'Continue to my case' : 'Go to my cases'}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </Button>

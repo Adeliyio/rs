@@ -101,19 +101,46 @@ function isGrounded(
 ): boolean {
   const normalized = normalizeCitation(candidate);
 
-  // Direct match
+  // Direct match — the only fully-trusted case.
   if (groundingIndex.has(normalized)) {
     return true;
   }
 
-  // Check if any grounding entry contains the candidate or vice versa
+  // Partial match, but SAFELY. The old bidirectional `includes` let a short
+  // grounding token (e.g. "1950") mark an unrelated fabricated citation
+  // ("§1950.99") as grounded. Require: (a) a substantial overlap length so tiny
+  // fragments can't match, and (b) a token-BOUNDARY match — the shorter string
+  // must appear in the longer one delimited by a non-alphanumeric char (or the
+  // string edge), not as a mid-token substring.
+  const MIN_OVERLAP = 6;
   for (const entry of groundingIndex) {
-    if (entry.includes(normalized) || normalized.includes(entry)) {
-      return true;
-    }
+    const [longer, shorter] =
+      entry.length >= normalized.length ? [entry, normalized] : [normalized, entry];
+    if (shorter.length < MIN_OVERLAP) continue;
+    if (isTokenBoundaryMatch(longer, shorter)) return true;
   }
 
   return false;
+}
+
+/**
+ * True if `needle` appears in `haystack` bounded by non-alphanumeric characters
+ * (or the string edges) on both sides — so "1950.5" matches "civ 1950.5" but a
+ * fabricated "1950.599" does not match grounding "1950.5".
+ */
+function isTokenBoundaryMatch(haystack: string, needle: string): boolean {
+  let from = 0;
+  for (;;) {
+    const idx = haystack.indexOf(needle, from);
+    if (idx === -1) return false;
+    const before = idx === 0 ? '' : haystack[idx - 1]!;
+    const afterIdx = idx + needle.length;
+    const after = afterIdx >= haystack.length ? '' : haystack[afterIdx]!;
+    const boundaryBefore = before === '' || !/[a-z0-9]/i.test(before);
+    const boundaryAfter = after === '' || !/[a-z0-9]/i.test(after);
+    if (boundaryBefore && boundaryAfter) return true;
+    from = idx + 1;
+  }
 }
 
 /** Deduplicate citation strings */

@@ -16,6 +16,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { q, m, currentUser, api } from '@/lib/convex/server';
 import { loadDiagnosticGraph, loadDisclaimers } from '@/lib/kb/loader';
 import { encryptAnswersPii, decryptAnswersPii } from '@/lib/crypto';
+import { ALL_US_STATES } from '@/lib/kb/us-states';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import type { Wedge } from '@/types/enums';
 import type { Id } from '@convex/dataModel';
@@ -101,8 +102,16 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // If the diagnostic collected a jurisdiction answer, sync it to the case.
-    const jurisdictionAnswer = body.state.answers?.jurisdiction as string | undefined;
+    // If the diagnostic collected a jurisdiction answer, sync it to the case —
+    // but ONLY if it's a valid US state code. The client could otherwise
+    // override the case jurisdiction with arbitrary text (bypassing the enum
+    // check done at case creation), affecting KB load and deadline calc.
+    const rawJurisdiction = body.state.answers?.jurisdiction;
+    const validStateCodes = new Set(ALL_US_STATES.map((s) => s.code));
+    const jurisdictionAnswer =
+      typeof rawJurisdiction === 'string' && validStateCodes.has(rawJurisdiction.toUpperCase())
+        ? rawJurisdiction.toUpperCase()
+        : undefined;
 
     // Encrypt PII fields before saving (VULN-02).
     const encryptedState: DiagnosticState = body.state.answers

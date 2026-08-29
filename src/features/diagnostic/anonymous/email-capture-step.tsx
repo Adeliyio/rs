@@ -125,14 +125,30 @@ export function EmailCaptureStep({
       completedNodes,
     });
 
-    await fetch('/api/diagnostic/state', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ caseId, state }),
-    }).catch(() => {
-      // Non-fatal: the shell will fall back to a fresh state if this drops. The
-      // visitor keeps their case; worst case they re-confirm a couple of answers.
-    });
+    // Persist the collected answers. This is NOT cosmetic: if it drops, the
+    // authenticated shell falls back to a FRESH state and the visitor re-answers
+    // the ENTIRE diagnostic. Retry once, and log a failure so it's observable
+    // rather than a silent loss (the old .catch swallowed everything).
+    let hydrated = false;
+    for (let attempt = 0; attempt < 2 && !hydrated; attempt++) {
+      try {
+        const res = await fetch('/api/diagnostic/state', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ caseId, state }),
+        });
+        hydrated = res.ok;
+      } catch {
+        hydrated = false;
+      }
+    }
+    if (!hydrated) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[email-capture] hydrate failed for case ${caseId ?? '(none)'} — the ` +
+          `visitor may need to re-confirm answers on resume.`,
+      );
+    }
 
     // 3. Resume the existing paid flow.
     router.push(`/case/${caseId}`);
