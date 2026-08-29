@@ -49,14 +49,14 @@ export default function BlogIndexPage() {
             <Link href="/blog" className="text-foreground font-medium">Blog</Link>
             <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <Link
-              href="/new"
+              href="/start"
               className="rounded-lg bg-foreground px-4 py-2 font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Start Free Diagnostic
             </Link>
           </div>
           <Link
-            href="/new"
+            href="/start"
             className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98] sm:hidden"
           >
             Start Free
@@ -125,7 +125,7 @@ export default function BlogIndexPage() {
               Cancel a Subscription — Free
             </Link>
             <Link
-              href="/new?wedge=deposit"
+              href="/start?wedge=deposit"
               className="inline-flex items-center gap-2 rounded-lg border border-border px-6 py-3 text-[14px] font-semibold text-foreground transition-all hover:bg-background active:scale-[0.98]"
             >
               Start Deposit Case

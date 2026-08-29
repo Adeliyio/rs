@@ -93,17 +93,24 @@ export const create = mutation({
   },
 });
 
-/** Patch owned-case fields. Only whitelisted fields are writable by the owner. */
+/**
+ * Patch owned-case fields. Only NON-privileged fields are writable by the owner.
+ *
+ * SECURITY: `status`, `paymentStatus`, and `polarOrderId` are deliberately NOT
+ * here. Letting the owner write `paymentStatus:'paid'` was a payment bypass — a
+ * user could self-mark their case paid and generate the $49 letter for free.
+ * Payment status is set only by the Polar webhook (service-gated
+ * `payments.setPaymentStatusInternal`); status transitions go through the
+ * `caseStatus` state machine; the Polar order link is set via the service-gated
+ * `service.patchCase`. None are owner-writable.
+ */
 export const updateMine = mutation({
   args: {
     caseId: v.id('cases'),
     patch: v.object({
-      status: v.optional(v.string()),
-      paymentStatus: v.optional(v.string()),
       diagnosticState: v.optional(v.any()),
       previewShownAt: v.optional(v.number()),
       refusalTrigger: v.optional(v.string()),
-      polarOrderId: v.optional(v.string()),
     }),
   },
   handler: async (ctx, { caseId, patch }) => {

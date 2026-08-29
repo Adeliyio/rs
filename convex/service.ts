@@ -332,6 +332,7 @@ export const getSubscriptionByPolarId = query({
 export const createSubscription = mutation({
   args: {
     ...secretArg,
+    userId: v.optional(v.id('users')),
     polarCustomerId: v.optional(v.string()),
     polarSubscriptionId: v.string(),
     plan: v.string(),
@@ -342,6 +343,15 @@ export const createSubscription = mutation({
   handler: async (ctx, { secret, ...a }): Promise<any> => {
     assertSecret(secret);
     return ctx.runMutation(internal.subscriptions.createInternal, a);
+  },
+});
+
+/** Resolve a user id by email — for linking a Polar subscription to its owner. */
+export const userIdByEmail = query({
+  args: { ...secretArg, email: v.string() },
+  handler: async (ctx, { secret, email }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.users.userIdByEmailInternal, { email });
   },
 });
 

@@ -185,14 +185,14 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
             <Link href="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Blog</Link>
             <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <Link
-              href="/new?wedge=subscription"
+              href="/start?wedge=subscription"
               className="rounded-lg bg-foreground px-4 py-2 font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Free Emails
             </Link>
           </div>
           <Link
-            href="/new?wedge=subscription"
+            href="/start?wedge=subscription"
             className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98] sm:hidden"
           >
             Generate Free Emails
@@ -222,7 +222,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/new?wedge=subscription"
+              href="/start?wedge=subscription"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Your Free Emails <ArrowRight className="h-4 w-4" />
@@ -470,7 +470,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
 
           <div className="mt-8 text-center">
             <Link
-              href="/new?wedge=subscription"
+              href="/start?wedge=subscription"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Yours Free <ArrowRight className="h-4 w-4" />
@@ -655,7 +655,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
             a response. The tool is free. The emails take 5 minutes.
           </p>
           <Link
-            href="/new?wedge=subscription"
+            href="/start?wedge=subscription"
             className="mt-10 inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
           >
             Generate Your Free Emails <ArrowRight className="h-4 w-4" />
@@ -689,7 +689,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
               </p>
             </div>
             <Link
-              href="/new?wedge=deposit"
+              href="/start?wedge=deposit"
               className="mt-4 inline-flex shrink-0 items-center gap-2 rounded-lg border border-border px-6 py-3 text-[14px] font-semibold text-foreground transition-all hover:border-foreground/20 hover:bg-background active:scale-[0.98] sm:mt-0"
             >
               Learn More <ArrowRight className="h-4 w-4" />
@@ -722,7 +722,7 @@ export default function CancelSubscriptionToolPage(): React.JSX.Element {
               </div>
               <div className="space-y-2.5">
                 <p className="font-semibold text-muted-foreground">Account</p>
-                <Link href="/new" className="block transition-colors hover:text-foreground">Start Diagnostic</Link>
+                <Link href="/start" className="block transition-colors hover:text-foreground">Start Diagnostic</Link>
                 <Link href="/login" className="block transition-colors hover:text-foreground">Sign In</Link>
                 <Link href="/about" className="block transition-colors hover:text-foreground">About</Link>
               </div>

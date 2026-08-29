@@ -85,14 +85,14 @@ export function VerticalCancelPage({ data }: { data: VerticalPageData }) {
             <Link href="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Blog</Link>
             <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <Link
-              href="/new?wedge=subscription"
+              href="/start?wedge=subscription"
               className="rounded-lg bg-foreground px-4 py-2 font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Cancel Free
             </Link>
           </div>
           <Link
-            href="/new?wedge=subscription"
+            href="/start?wedge=subscription"
             className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98] sm:hidden"
           >
             Cancel Free
@@ -119,7 +119,7 @@ export function VerticalCancelPage({ data }: { data: VerticalPageData }) {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              href="/new?wedge=subscription"
+              href="/start?wedge=subscription"
               className="inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Generate Your Free Emails <ArrowRight className="h-4 w-4" />
@@ -283,7 +283,7 @@ export function VerticalCancelPage({ data }: { data: VerticalPageData }) {
             It&apos;s free. No card required.
           </p>
           <Link
-            href="/new?wedge=subscription"
+            href="/start?wedge=subscription"
             className="mt-10 inline-flex items-center gap-2 rounded-lg bg-foreground px-8 py-3.5 text-[15px] font-semibold text-white shadow-sm transition-all hover:bg-foreground/90 active:scale-[0.98]"
           >
             Generate Your Free Emails <ArrowRight className="h-4 w-4" />

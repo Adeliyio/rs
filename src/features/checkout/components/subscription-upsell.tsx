@@ -10,8 +10,10 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useQuery } from 'convex/react';
 import { Check, Zap } from 'lucide-react';
 
+import { api } from '@convex/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { PolarCheckout } from './polar-checkout';
@@ -21,7 +23,8 @@ import { PolarCheckout } from './polar-checkout';
 /* ------------------------------------------------------------------ */
 
 interface SubscriptionUpsellProps {
-  userEmail: string;
+  /** Optional email prefill; falls back to the signed-in user's email. */
+  userEmail?: string;
   onDismiss: () => void;
 }
 
@@ -37,6 +40,13 @@ export function SubscriptionUpsell({
 }: SubscriptionUpsellProps) {
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan>(null);
   const [showCheckout, setShowCheckout] = useState(false);
+
+  // Resolve the signed-in user so the subscription checkout can carry userId in
+  // metadata — without it, subscription.active can't link the subscription to
+  // its owner and the Unlimited tier grants no entitlement.
+  const me = useQuery(api.users.me, {});
+  const resolvedUserId = me?.id ?? undefined;
+  const resolvedEmail = userEmail || me?.email || undefined;
 
   const monthlyProductId =
     process.env.NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY ?? '';
@@ -62,7 +72,8 @@ export function SubscriptionUpsell({
     return (
       <PolarCheckout
         productId={productId}
-        userEmail={userEmail}
+        userId={resolvedUserId}
+        userEmail={resolvedEmail}
         productName={planName}
       />
     );

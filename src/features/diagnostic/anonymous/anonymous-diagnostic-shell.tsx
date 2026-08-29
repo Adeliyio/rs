@@ -146,9 +146,13 @@ export function AnonymousDiagnosticShell({
     terminal.node.type === 'terminal' &&
     terminal.node.terminal_type === 'unsupported_jurisdiction'
   ) {
+    // Answers are keyed by NODE ID; the "which state?" node's id is
+    // `unsupported_state` (its field is `jurisdiction_state_other`). Read the
+    // node id — reading the field key left this empty, so the screen showed no
+    // state name and null resources.
     const stateCode =
-      typeof state?.answers['jurisdiction_state_other'] === 'string'
-        ? (state.answers['jurisdiction_state_other'] as string)
+      typeof state?.answers['unsupported_state'] === 'string'
+        ? (state.answers['unsupported_state'] as string)
         : '';
     return (
       <UnsupportedJurisdictionScreen

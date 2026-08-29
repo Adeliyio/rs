@@ -26,6 +26,25 @@ export const me = query({
   },
 });
 
+/**
+ * Resolve a user id by email — used to link a Polar subscription to its owner
+ * when the checkout metadata didn't carry the userId. The Convex Auth `users`
+ * table has no email index, so this filters; it runs only on the low-frequency
+ * subscription.active webhook, so a scan is acceptable. Case-insensitive.
+ */
+export const userIdByEmailInternal = internalQuery({
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
+    const target = email.trim().toLowerCase();
+    if (!target) return null;
+    const user = await ctx.db
+      .query('users')
+      .filter((q) => q.eq(q.field('email'), target))
+      .first();
+    return user?._id ?? null;
+  },
+});
+
 /** Resolve a user's email by id (replaces auth.admin.getUserById → email). */
 export const emailByIdInternal = internalQuery({
   args: { userId: v.id('users') },

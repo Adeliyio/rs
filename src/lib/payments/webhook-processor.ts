@@ -246,7 +246,42 @@ export async function handleSubscriptionActive(
   });
   if (existing) return { ok: true, event_type: eventType };
 
+  // CRITICAL: resolve and persist the owner's userId. Without it, currentMine
+  // (which filters by userId) can never find the subscription, so the entire
+  // Unlimited tier grants nothing and subscribers are re-charged/blocked.
+  // Prefer the userId carried in checkout metadata; fall back to the customer
+  // email. If neither resolves, still create the row (so revoke/cancel events
+  // reconcile) but log loudly — an unlinked subscription is a support case.
+  const metaUserId =
+    typeof sub.metadata?.userId === 'string' && sub.metadata.userId.length > 0
+      ? sub.metadata.userId
+      : undefined;
+
+  let userId = metaUserId;
+  if (!userId) {
+    const email = sub.customer?.email ?? undefined;
+    if (email) {
+      const resolved = await workerConvex.query(api.service.userIdByEmail, {
+        email,
+      });
+      userId = resolved ?? undefined;
+    }
+  }
+
+  if (!userId) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[webhook] subscription.active ${sub.id}: could not resolve userId ` +
+        `(metadata.userId + customer.email both missed). Subscription created ` +
+        `UNLINKED — the customer will not get entitlement until linked.`,
+    );
+  }
+
   await workerConvex.mutation(api.service.createSubscription, {
+    // userId is a validated id string from metadata/email lookup; the Convex arg
+    // is typed Id<'users'>. Cast at this untyped-client boundary (same pattern as
+    // handleOrderPaid). The service mutation re-validates it as v.id('users').
+    userId: userId ? (userId as Id<'users'>) : undefined,
     polarCustomerId: sub.customerId ?? undefined,
     polarSubscriptionId: sub.id,
     plan,

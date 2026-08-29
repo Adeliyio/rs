@@ -60,6 +60,13 @@ export const polarSubscriptionSchema = z
     cancelAtPeriodEnd: z.boolean().optional().default(false),
     recurringInterval: z.string().nullable().optional(),
     metadata: z.record(z.unknown()).optional().default({}),
+    // Customer email — the fallback for linking a subscription to its owner when
+    // metadata.userId isn't present. Polar nests it under `customer`.
+    customer: z
+      .object({ email: z.string().nullable().optional() })
+      .passthrough()
+      .nullable()
+      .optional(),
     product: z
       .object({ name: z.string().optional() })
       .passthrough()

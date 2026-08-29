@@ -317,15 +317,64 @@ async function recoverPaidDepositFailure(
   }
 }
 
+/**
+ * Normalize diagnostic answers for the deposit letter generator.
+ *
+ * The diagnostic engine keys answers by NODE ID, and GROUP nodes store a nested
+ * object of their sub-fields. So `landlord_name` lives at
+ * `answers.landlord_info.landlord_name`, not `answers.landlord_name`, and the
+ * deposit amount is under the node id `deposit_amount`, not the generator's
+ * `original_deposit_amount`. Reading the flat keys directly produced letters
+ * addressed to "[LANDLORD NAME]" demanding "$0" — a broken paid deliverable.
+ *
+ * This flattens the known group nodes to top-level field keys and maps the
+ * renamed keys, WITHOUT clobbering any value already present at the target key
+ * (e.g. from document extraction). Returns a new object; the original is left
+ * intact and still spread last for anything not covered here.
+ */
+function normalizeDepositAnswers(
+  answers: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...answers };
+
+  // Flatten group-node answers ({ [nodeId]: { field: value } }) to top level.
+  const groups = ['landlord_info', 'lease_dates', 'forwarding_address_details'];
+  for (const g of groups) {
+    const grp = answers[g];
+    if (grp && typeof grp === 'object' && !Array.isArray(grp)) {
+      for (const [k, val] of Object.entries(grp as Record<string, unknown>)) {
+        if (out[k] === undefined) out[k] = val;
+      }
+    }
+  }
+
+  // Map renamed node-id keys to the generator's expected field names.
+  const renames: Record<string, string> = {
+    deposit_amount: 'original_deposit_amount',
+    partial_amount_received: 'amount_returned',
+  };
+  for (const [from, to] of Object.entries(renames)) {
+    if (out[to] === undefined && answers[from] !== undefined) {
+      out[to] = answers[from];
+    }
+  }
+
+  return out;
+}
+
 async function handleDepositGeneration(
   convex: ServiceConvex,
   caseId: string,
   caseRow: CaseRow,
-  answers: Record<string, unknown>,
+  rawAnswers: Record<string, unknown>,
   userId: string,
 ) {
   // Payment and jurisdiction gates are enforced in the POST handler
   // before routing here. This function handles generation only.
+
+  // Flatten group nodes + map renamed keys so the generator reads the real
+  // landlord name / deposit amount instead of falling back to placeholders.
+  const answers = normalizeDepositAnswers(rawAnswers);
 
   const diagnosticAnswers: DepositDiagnosticAnswers = {
     wedge: 'deposit',

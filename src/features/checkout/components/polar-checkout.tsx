@@ -25,6 +25,12 @@ interface PolarCheckoutProps {
   productName: string;
   /** Optional case id — echoed to the webhook via checkout metadata as {caseId}. */
   caseId?: string;
+  /**
+   * Optional user id — echoed via checkout metadata as {userId}. REQUIRED for
+   * subscription checkouts so subscription.active can link the subscription to
+   * its owner (without it, the Unlimited tier grants no entitlement).
+   */
+  userId?: string;
   /** Optional email prefill for the Polar checkout. */
   userEmail?: string;
 }
@@ -37,17 +43,23 @@ interface PolarCheckoutProps {
 function buildCheckoutUrl({
   productId,
   caseId,
+  userId,
   userEmail,
 }: {
   productId: string;
   caseId?: string;
+  userId?: string;
   userEmail?: string;
 }): string {
   const params = new URLSearchParams();
   params.set('products', productId);
-  if (caseId) {
-    // Polar echoes this metadata back on the order.paid webhook (order.metadata).
-    params.set('metadata', JSON.stringify({ caseId }));
+  // Polar echoes this metadata back on the webhook (order.metadata /
+  // subscription.metadata). userId is what links a subscription to its owner.
+  const metadata: Record<string, string> = {};
+  if (caseId) metadata.caseId = caseId;
+  if (userId) metadata.userId = userId;
+  if (Object.keys(metadata).length > 0) {
+    params.set('metadata', JSON.stringify(metadata));
   }
   if (userEmail) {
     params.set('customerEmail', userEmail);
@@ -63,6 +75,7 @@ export function PolarCheckout({
   productId,
   productName,
   caseId,
+  userId,
   userEmail,
 }: PolarCheckoutProps): React.JSX.Element {
   const [isRedirecting, setIsRedirecting] = useState(false);
@@ -75,8 +88,8 @@ export function PolarCheckout({
     }
     setIsRedirecting(true);
     setError(null);
-    window.location.href = buildCheckoutUrl({ productId, caseId, userEmail });
-  }, [productId, caseId, userEmail]);
+    window.location.href = buildCheckoutUrl({ productId, caseId, userId, userEmail });
+  }, [productId, caseId, userId, userEmail]);
 
   return (
     <div className="space-y-4">

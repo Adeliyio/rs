@@ -47,7 +47,7 @@ export default function DepositLandingPage() {
         </p>
         <div className="mt-8">
           <Link
-            href="/new?wedge=deposit"
+            href="/start?wedge=deposit"
             className="inline-flex items-center gap-2 rounded-lg bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
           >
             Start Your Letter

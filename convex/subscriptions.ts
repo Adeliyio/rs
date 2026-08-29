@@ -41,6 +41,7 @@ export const getByPolarIdInternal = internalQuery({
 
 export const createInternal = internalMutation({
   args: {
+    userId: v.optional(v.id('users')),
     polarCustomerId: v.optional(v.string()),
     polarSubscriptionId: v.string(),
     plan: v.string(),
@@ -49,17 +50,26 @@ export const createInternal = internalMutation({
     currentPeriodEnd: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Idempotency: skip if it already exists.
+    // Idempotency: skip if it already exists — but if it exists WITHOUT a userId
+    // and we now have one, backfill the link so entitlement starts working.
     const existing = await ctx.db
       .query('subscriptions')
       .withIndex('by_polar_subscription_id', (q) =>
         q.eq('polarSubscriptionId', args.polarSubscriptionId),
       )
       .unique();
-    if (existing) return serializeSubscription(existing);
+    if (existing) {
+      if (!existing.userId && args.userId) {
+        await ctx.db.patch(existing._id, { userId: args.userId, updatedAt: Date.now() });
+        const patched = await ctx.db.get(existing._id);
+        return serializeSubscription(patched!);
+      }
+      return serializeSubscription(existing);
+    }
 
     const now = Date.now();
     const id = await ctx.db.insert('subscriptions', {
+      userId: args.userId,
       polarCustomerId: args.polarCustomerId,
       polarSubscriptionId: args.polarSubscriptionId,
       plan: args.plan,

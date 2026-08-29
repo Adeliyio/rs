@@ -173,39 +173,54 @@ export async function checkRateLimit(
     return checkRateLimitInMemory(category, identifier);
   }
 
-  // Use a pipeline for atomicity
-  const pipeline = redis.pipeline();
+  // RESILIENCE: the shared ioredis connection uses maxRetriesPerRequest:null
+  // (required by BullMQ), so a DEGRADED Redis makes commands HANG rather than
+  // error. An uncaught hang here previously froze the auth form, and still sits
+  // on the generate route and the Polar webhook. Wrap the whole Redis body in a
+  // timeout + try/catch: on any failure, fall back to the in-memory limiter
+  // (which fails CLOSED for FAIL_CLOSED_CATEGORIES and open otherwise) instead
+  // of hanging or throwing into the caller.
+  const REDIS_OP_TIMEOUT_MS = 1000;
+  try {
+    const pipeline = redis.pipeline();
+    pipeline.zremrangebyscore(key, 0, windowStart); // remove expired entries
+    pipeline.zcard(key); // count current entries
+    pipeline.zadd(key, now, `${now}-${Math.random()}`); // add current request
+    pipeline.expire(key, config.windowSeconds + 1); // TTL so keys don't linger
 
-  // Remove expired entries
-  pipeline.zremrangebyscore(key, 0, windowStart);
+    const results = await withTimeout(pipeline.exec(), REDIS_OP_TIMEOUT_MS);
 
-  // Count current entries
-  pipeline.zcard(key);
+    // zcard result is at index 1
+    const currentCount = (results?.[1]?.[1] as number) ?? 0;
+    const allowed = currentCount < config.max;
+    const remaining = Math.max(0, config.max - currentCount - 1);
 
-  // Add current request
-  pipeline.zadd(key, now, `${now}-${Math.random()}`);
+    if (!allowed) {
+      // Remove the entry we just added since the request is rejected.
+      await withTimeout(redis.zremrangebyscore(key, now, now + 1), REDIS_OP_TIMEOUT_MS);
+    }
 
-  // Set TTL so keys don't linger forever
-  pipeline.expire(key, config.windowSeconds + 1);
-
-  const results = await pipeline.exec();
-
-  // zcard result is at index 1
-  const currentCount = (results?.[1]?.[1] as number) ?? 0;
-  const allowed = currentCount < config.max;
-  const remaining = Math.max(0, config.max - currentCount - 1);
-
-  if (!allowed) {
-    // Remove the entry we just added since the request is rejected
-    await redis.zremrangebyscore(key, now, now + 1);
+    return {
+      allowed,
+      remaining: allowed ? remaining : 0,
+      resetAt: new Date(now + config.windowSeconds * 1000),
+      limit: config.max,
+    };
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`[rate-limit] Redis op failed for ${category}; using in-memory fallback:`, err);
+    return checkRateLimitInMemory(category, identifier);
   }
+}
 
-  return {
-    allowed,
-    remaining: allowed ? remaining : 0,
-    resetAt: new Date(now + config.windowSeconds * 1000),
-    limit: config.max,
-  };
+/** Reject a promise that doesn't settle within `ms` (guards against Redis hangs). */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`Redis op timed out after ${ms}ms`)), ms),
+    ),
+  ]);
 }
 
 /**

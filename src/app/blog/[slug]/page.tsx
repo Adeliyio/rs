@@ -95,14 +95,14 @@ export default async function BlogArticlePage({
             <Link href="/blog" className="text-muted-foreground transition-colors hover:text-foreground">Blog</Link>
             <Link href="/login" className="text-muted-foreground transition-colors hover:text-foreground">Sign In</Link>
             <Link
-              href="/new"
+              href="/start"
               className="rounded-lg bg-foreground px-4 py-2 font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
             >
               Start Free Diagnostic
             </Link>
           </div>
           <Link
-            href="/new"
+            href="/start"
             className="rounded-lg bg-foreground px-4 py-2 text-sm font-medium text-white transition-all hover:bg-foreground/90 active:scale-[0.98] sm:hidden"
           >
             Start Free

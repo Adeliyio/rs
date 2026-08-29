@@ -474,7 +474,6 @@ export default function LetterView({
       {/* Subscription upsell */}
       {showUpsell && (
         <SubscriptionUpsell
-          userEmail=""
           onDismiss={() => setShowUpsell(false)}
         />
       )}

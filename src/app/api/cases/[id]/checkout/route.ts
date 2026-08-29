@@ -11,7 +11,7 @@
 
 import { NextResponse } from 'next/server';
 
-import { q, m, currentUser, api } from '@/lib/convex/server';
+import { q, currentUser, api } from '@/lib/convex/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { assignPriceVariant } from '@/lib/pricing/ab-pricing';
 import { DEPOSIT_JURISDICTION } from '@/types/enums';
@@ -61,10 +61,16 @@ export async function POST(
       );
     }
 
-    await m(api.cases.updateMine, {
-      caseId: caseId as Id<'cases'>,
-      patch: { polarOrderId: transactionId },
-    });
+    // polarOrderId is privileged (it links a case to a payment) and is no longer
+    // owner-writable via updateMine — set it through the service-gated path.
+    {
+      const convex = createServiceConvexClient();
+      await convex.mutation(api.service.patchCase, {
+        secret: serviceSecret(),
+        caseId: caseId as Id<'cases'>,
+        patch: { polarOrderId: transactionId },
+      });
+    }
 
     /* ---- Log A/B price variant (best-effort) ---- */
     try {

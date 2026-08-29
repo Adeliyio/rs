@@ -440,7 +440,7 @@ export function DeadlineCalculator() {
                 penalty provision is the standard next step.
               </p>
               <Link
-                href="/new?wedge=deposit"
+                href="/start?wedge=deposit"
                 className="mt-6 inline-flex items-center gap-2 rounded-lg bg-foreground px-6 py-3 text-[14px] font-semibold text-white transition-all hover:bg-foreground/90 active:scale-[0.98]"
               >
                 Start Deposit Case — $49 <ArrowRight className="h-4 w-4" />

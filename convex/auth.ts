@@ -1,6 +1,7 @@
 import Google from '@auth/core/providers/google';
 import { Password } from '@convex-dev/auth/providers/Password';
 import { convexAuth } from '@convex-dev/auth/server';
+import { ConvexError } from 'convex/values';
 
 import { ResendOTP } from './otp/ResendOTP';
 import { ResendOTPPasswordReset } from './otp/ResendOTPPasswordReset';
@@ -26,6 +27,21 @@ const CustomPassword = Password<DataModel>({
       email: params.email as string,
       name: (params.fullName as string | undefined) ?? undefined,
     };
+  },
+  // SECURITY: enforce the password policy on the SERVER. The 8-char/uppercase/
+  // number rule previously lived only in the React forms, so a scripted client
+  // calling signIn('password', … flow:'signUp') directly could register a
+  // 1-character password. This closes that bypass.
+  validatePasswordRequirements: (password: string) => {
+    if (
+      password.length < 8 ||
+      !/[A-Z]/.test(password) ||
+      !/[0-9]/.test(password)
+    ) {
+      throw new ConvexError(
+        'Password must be at least 8 characters and include an uppercase letter and a number.',
+      );
+    }
   },
   verify: ResendOTP,
   reset: ResendOTPPasswordReset,

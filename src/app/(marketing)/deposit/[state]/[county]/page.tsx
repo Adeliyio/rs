@@ -105,7 +105,7 @@ export default async function CountyDepositPage({
 
         <div className="mt-8">
           <Link
-            href="/new?wedge=deposit"
+            href="/start?wedge=deposit"
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
           >
             Start your {j.name} demand letter <ArrowRight className="h-4 w-4" />
