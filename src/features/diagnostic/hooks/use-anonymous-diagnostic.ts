@@ -64,6 +64,13 @@ const CANCELLATION_BOUNDARY_TYPES = new Set<DiagnosticNode['type']>([
   'generation',
   'delivery',
   'tracking',
+  // file_upload + summary sit before generation in the subscription graph, but
+  // the anonymous cancellation flow can't use them (upload POSTs to an
+  // auth-gated route; the summary is a redundant review). Treat them as
+  // boundaries so the anonymous flow stops at generation instead of rendering
+  // two broken/dead screens before the free result.
+  'file_upload',
+  'summary',
 ]);
 
 function boundaryTypesFor(wedge: Wedge): Set<DiagnosticNode['type']> {

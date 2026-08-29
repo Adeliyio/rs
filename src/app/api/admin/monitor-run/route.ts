@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, job_id: jobId });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

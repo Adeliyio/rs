@@ -53,6 +53,8 @@ export async function GET(
     const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console
     console.error('GET /api/cases/[id]/letter error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

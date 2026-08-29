@@ -30,6 +30,37 @@ function sanitiseFilename(name: string): string {
   return name.replace(/[/\\:*?"<>|]/g, '_').replace(/\s+/g, '_').slice(0, 200);
 }
 
+/**
+ * Sniff the actual file type from the leading bytes (magic numbers). Returns the
+ * detected content type, or null if the bytes don't match a supported type — the
+ * real defense against a client that lies about `file.type`.
+ */
+function sniffFileType(b: Uint8Array): string | null {
+  if (b.length < 12) return null;
+  // PDF: "%PDF"
+  if (b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46) {
+    return 'application/pdf';
+  }
+  // JPEG: FF D8 FF
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return 'image/jpeg';
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 &&
+    b[4] === 0x0d && b[5] === 0x0a && b[6] === 0x1a && b[7] === 0x0a
+  ) {
+    return 'image/png';
+  }
+  // HEIC/HEIF: bytes 4-7 are "ftyp", brand at 8-11 (heic/heif/mif1/msf1/heix/hevc)
+  if (b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70) {
+    // the early length >= 12 check ensures bytes 8-11 exist.
+    const brand = String.fromCharCode(b[8]!, b[9]!, b[10]!, b[11]!).toLowerCase();
+    if (['heic', 'heif', 'mif1', 'msf1', 'heix', 'hevc', 'heim', 'heis'].includes(brand)) {
+      return 'image/heic';
+    }
+  }
+  return null;
+}
+
 // This route calls Convex at request time; force-dynamic so Next does not
 // evaluate it during build-time page-data collection (fails without runtime env).
 export const dynamic = 'force-dynamic';
@@ -77,6 +108,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'File exceeds the 10 MB size limit.' }, { status: 400 });
     }
 
+    /* ---- SECURITY: verify the file's actual bytes match its claimed type ----
+       The client-supplied MIME type is attacker-controlled, so arbitrary bytes
+       (HTML, SVG-with-script, polyglots) could be uploaded labeled application/pdf
+       and reach the vision extractor / PDF pipeline. Sniff the magic bytes. */
+    const bytes = await file.arrayBuffer();
+    const sniffed = sniffFileType(new Uint8Array(bytes));
+    if (!sniffed) {
+      return NextResponse.json(
+        { error: 'File content does not match a supported type (PDF, JPEG, PNG, HEIC).' },
+        { status: 400 },
+      );
+    }
+
     /* ---- Verify the case belongs to the user ---- */
     const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
     if (!caseRow) {
@@ -86,7 +130,6 @@ export async function POST(request: Request) {
     /* ---- Upload to R2 under {userId}/{caseId}/{ts}_{name} ---- */
     const safeName = sanitiseFilename(file.name);
     const storageKey = `${user.id}/${caseId}/${String(Date.now())}_${safeName}`;
-    const bytes = await file.arrayBuffer();
 
     const convex = createServiceConvexClient();
     const secret = serviceSecret();
@@ -113,6 +156,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ document_id: doc.id, file_path: doc.file_path });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

@@ -100,6 +100,8 @@ export async function POST(
     const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console
     console.error('POST /api/cases/[id]/checkout error:', message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

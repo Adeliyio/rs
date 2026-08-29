@@ -6,9 +6,26 @@
  */
 
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
 import { q, m, currentUser, api } from '@/lib/convex/server';
 import type { Id } from '@convex/dataModel';
+
+/**
+ * Outcome body — Zod-validated so a user can't inject an unbounded
+ * `recovered_amount` (which feeds the public "total recovered" stat). Cap at
+ * $1,000,000 (in the same unit the app stores) and a strict consent shape.
+ */
+const outcomeBodySchema = z.object({
+  outcome_category: z.string().min(1).max(64),
+  stage: z.string().min(1).max(64),
+  recovered_amount: z.number().min(0).max(1_000_000).optional(),
+  testimonial: z.string().max(2000).optional(),
+  consent: z
+    .object({ share_outcome: z.boolean().optional() })
+    .passthrough()
+    .optional(),
+});
 // Calls Convex — never cache (Next 14 caches GET route handlers by default).
 export const dynamic = 'force-dynamic';
 
@@ -32,17 +49,12 @@ export async function GET(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
 
-interface OutcomeBody {
-  outcome_category: string;
-  stage: string;
-  recovered_amount?: number;
-  testimonial?: string;
-  consent?: unknown;
-}
 
 export async function POST(
   request: Request,
@@ -55,19 +67,29 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = (await request.json()) as OutcomeBody;
-    if (!body.outcome_category || !body.stage) {
-      return NextResponse.json({ error: 'Missing outcome_category or stage' }, { status: 400 });
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
+    const parsed = outcomeBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsed.error.flatten().fieldErrors },
+        { status: 400 },
+      );
+    }
+    const data = parsed.data;
 
     try {
       const outcome = await m(api.outcomes.upsertMine, {
         caseId: caseId as Id<'cases'>,
-        stage: body.stage,
-        outcomeCategory: body.outcome_category,
-        recoveredAmount: body.recovered_amount,
-        testimonial: body.testimonial,
-        consent: body.consent,
+        stage: data.stage,
+        outcomeCategory: data.outcome_category,
+        recoveredAmount: data.recovered_amount,
+        testimonial: data.testimonial,
+        consent: data.consent,
       });
       return NextResponse.json({ outcome });
     } catch (err) {
@@ -79,6 +101,8 @@ export async function POST(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

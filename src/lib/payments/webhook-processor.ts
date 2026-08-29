@@ -127,6 +127,25 @@ export async function handleOrderPaid(
     return { ok: true, event_type: eventType };
   }
 
+  // SECURITY: verify the order actually paid at least the deposit-letter price
+  // before granting. Without this, a checkout crafted with a cheaper/foreign
+  // product could unlock the $49 letter. totalAmount is in cents; the minimum
+  // valid deposit price is $49 (4900). A/B variants only ever cost MORE, so a
+  // floor check is safe and doesn't false-reject a legitimate variant.
+  const MIN_DEPOSIT_LETTER_CENTS = 4900;
+  if (typeof order.totalAmount === 'number' && order.totalAmount < MIN_DEPOSIT_LETTER_CENTS) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[Webhook] order ${order.id} amount ${order.totalAmount}c is below the ` +
+        `deposit-letter floor (${MIN_DEPOSIT_LETTER_CENTS}c). NOT granting entitlement.`,
+    );
+    return {
+      ok: false,
+      event_type: eventType,
+      error: `Order amount below expected deposit-letter price`,
+    };
+  }
+
   await workerConvex.mutation(api.service.setPaymentStatus, {
     caseId: caseRow.id as Id<'cases'>,
     paymentStatus: 'paid',

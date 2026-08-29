@@ -76,12 +76,26 @@ export function useResolvaioAuth() {
     },
 
     async verifyEmail(email: string, code: string): Promise<{ error?: string }> {
+      // Rate-limit code submission (per-IP+email via the 'login' bucket) so the
+      // 8-digit OTP can't be brute-forced for account takeover.
+      const rl = await checkAuthRateLimit('login');
+      if (!rl.allowed) return { error: 'Too many attempts. Please try again in a few minutes.' };
       try {
         await signIn('password', { email, code, flow: 'email-verification' });
         router.push('/new');
         return {};
-      } catch {
-        return { error: 'That code was invalid or expired. Please try again.' };
+      } catch (err) {
+        // Distinguish a genuinely bad code from a backend/config failure instead
+        // of always blaming the user (which sends them to request another code
+        // that would also fail).
+        const message = err instanceof Error ? err.message : String(err);
+        // eslint-disable-next-line no-console
+        console.error('[auth] verifyEmail failed:', message, err);
+        const lower = message.toLowerCase();
+        if (lower.includes('code') || lower.includes('expired') || lower.includes('invalid') || lower.includes('verif')) {
+          return { error: 'That code was invalid or expired. Please try again.' };
+        }
+        return { error: 'We could not confirm your code right now. Please try again in a moment.' };
       }
     },
 
@@ -101,12 +115,26 @@ export function useResolvaioAuth() {
       code: string,
       newPassword: string,
     ): Promise<{ error?: string }> {
+      // Rate-limit reset-code submission (per-IP+email) so the reset OTP can't be
+      // brute-forced into an account takeover.
+      const rl = await checkAuthRateLimit('reset');
+      if (!rl.allowed) return { error: 'Too many attempts. Please try again in a few minutes.' };
       try {
         await signIn('password', { email, code, newPassword, flow: 'reset-verification' });
         router.push('/login?message=Your password has been reset. Please sign in.');
         return {};
-      } catch {
-        return { error: 'That code was invalid or expired. Please request a new one.' };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        // eslint-disable-next-line no-console
+        console.error('[auth] confirmReset failed:', message, err);
+        const lower = message.toLowerCase();
+        if (lower.includes('code') || lower.includes('expired') || lower.includes('invalid')) {
+          return { error: 'That code was invalid or expired. Please request a new one.' };
+        }
+        if (lower.includes('password')) {
+          return { error: 'Password does not meet the requirements. Use 8+ characters with an uppercase letter and a number.' };
+        }
+        return { error: 'We could not reset your password right now. Please try again in a moment.' };
       }
     },
 

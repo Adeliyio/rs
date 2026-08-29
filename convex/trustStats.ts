@@ -26,8 +26,14 @@ export const statsInternal = internalQuery({
     );
 
     const outcomes = await ctx.db.query('outcomes').collect();
+    // SECURITY: the public "total recovered" figure must count ONLY
+    // admin-verified outcomes, not self-served consent — otherwise a user could
+    // POST recovered_amount: 99999999 on their own case to inflate the public
+    // social-proof number (a false-advertising exposure for a legal product).
     const consented = outcomes.filter(
-      (o) => (o.consent as { share_outcome?: boolean } | null)?.share_outcome === true,
+      (o) =>
+        o.outcomeVerified === true &&
+        (o.consent as { share_outcome?: boolean } | null)?.share_outcome === true,
     );
 
     let totalRecovered = 0;

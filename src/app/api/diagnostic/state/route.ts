@@ -70,7 +70,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ graph, state: decryptedState });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }
 
@@ -124,6 +126,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
-    return NextResponse.json({ error: message }, { status: 500 });
+    // eslint-disable-next-line no-console
+    console.error('[api]', message);
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
   }
 }

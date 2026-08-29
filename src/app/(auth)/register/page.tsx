@@ -13,10 +13,12 @@ export default function RegisterPage() {
   const auth = useResolvaioAuth();
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   // After account creation, we switch to the OTP-code step.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData): Promise<void> {
+    if (busy) return;
     const fullName = ((formData.get('fullName') as string | null) ?? '').trim();
     const email = (formData.get('email') as string | null) ?? '';
     const password = formData.get('password') as string | null;
@@ -46,20 +48,37 @@ export default function RegisterPage() {
 
     setPasswordMismatch(false);
     setFormError(null);
-    const result = await auth.register(fullName, email, password);
-    if (result.error) {
-      setFormError(result.error);
-    } else if (result.pending) {
-      setPendingEmail(email);
+    setBusy(true);
+    try {
+      const result = await auth.register(fullName, email, password);
+      if (result.error) {
+        setFormError(result.error);
+      } else if (result.pending) {
+        setPendingEmail(email);
+      }
+    } catch {
+      // Backstop: register() returns errors, but if anything upstream throws
+      // (e.g. the rate-limit action), never leave the form frozen with no message.
+      setFormError('Something went wrong creating your account. Please try again.');
+    } finally {
+      setBusy(false);
     }
   }
 
   async function handleVerify(formData: FormData): Promise<void> {
+    if (busy) return;
     setFormError(null);
     const email = (formData.get('email') as string | null) ?? '';
     const code = (formData.get('code') as string | null) ?? '';
-    const result = await auth.verifyEmail(email, code);
-    if (result.error) setFormError(result.error);
+    setBusy(true);
+    try {
+      const result = await auth.verifyEmail(email, code);
+      if (result.error) setFormError(result.error);
+    } catch {
+      setFormError('Something went wrong confirming your code. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   const errorMessage = formError;
@@ -99,8 +118,8 @@ export default function RegisterPage() {
                 className="flex h-11 w-full rounded-lg border border-input bg-background px-4 py-2 text-[14px] tracking-[0.3em] ring-offset-background placeholder:text-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-shadow"
               />
             </div>
-            <Button type="submit" size="lg" className="w-full">
-              Confirm &amp; continue
+            <Button type="submit" size="lg" className="w-full" disabled={busy}>
+              {busy ? 'Confirming…' : 'Confirm & continue'}
             </Button>
           </form>
         </div>
@@ -220,8 +239,8 @@ export default function RegisterPage() {
             )}
           </div>
 
-          <Button type="submit" size="lg" className="w-full">
-            Create Account
+          <Button type="submit" size="lg" className="w-full" disabled={busy}>
+            {busy ? 'Creating account…' : 'Create Account'}
           </Button>
         </form>
 
