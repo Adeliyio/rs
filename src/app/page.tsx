@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   // `absolute` bypasses the root layout's "%s | Resolvaio" template so the brand
   // isn't appended a second time (this title already leads with it).
   title: {
-    absolute: 'Resolvaio — Security Deposit Recovery & Subscription Cancellation',
+    absolute: 'Resolvaio | Security Deposit Recovery & Subscription Cancellation',
   },
   description:
     'Get your security deposit back with demand letters grounded in CA, TX, NY, and FL landlord-tenant law. Cancel unwanted subscriptions citing ROSCA. Free diagnostic.',
@@ -209,12 +209,21 @@ export default function HomePage(): React.JSX.Element {
               Start Free Diagnostic
             </a>
           </div>
-          <a
-            href="/start"
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-all hover:bg-primary/90 active:scale-[0.98] sm:hidden"
-          >
-            Start Free Diagnostic
-          </a>
+          {/* Mobile: Sign In + Start, so returning users can log in on mobile. */}
+          <div className="flex items-center gap-2 sm:hidden">
+            <Link
+              href="/login"
+              className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Sign In
+            </Link>
+            <a
+              href="/start"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-all hover:bg-primary/90 active:scale-[0.98]"
+            >
+              Start Free
+            </a>
+          </div>
         </div>
       </nav>
 
