@@ -71,6 +71,7 @@ export function EmailCaptureStep({
   const [showPassword, setShowPassword] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [alreadyExists, setAlreadyExists] = useState(false);
   const [busy, setBusy] = useState(false);
 
   // Live password-rule checks, shown as the visitor types.
@@ -147,6 +148,7 @@ export function EmailCaptureStep({
   /* ---- Step 1: register ---- */
   const handleRegister = useCallback(async (): Promise<void> => {
     setError(null);
+    setAlreadyExists(false);
 
     if (!fullName.trim()) {
       setError('Please enter your name.');
@@ -166,15 +168,27 @@ export function EmailCaptureStep({
     }
 
     setBusy(true);
-    const result = await auth.register(fullName.trim(), email.trim(), password);
-    setBusy(false);
-
-    if (result.error) {
-      setError(result.error);
-      return;
-    }
-    if (result.pending) {
-      setPhase('otp');
+    try {
+      const result = await auth.register(fullName.trim(), email.trim(), password);
+      if (result.alreadyExists) {
+        setAlreadyExists(true);
+        setError(result.error ?? 'An account with that email already exists.');
+        return;
+      }
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      if (result.pending) {
+        setPhase('otp');
+      }
+    } catch {
+      // Backstop: no auth failure should ever leave the form frozen with no
+      // message. register() is designed to return errors, not throw, but if
+      // anything upstream does, the user still sees a clear next step.
+      setError('Something went wrong creating your account. Please try again.');
+    } finally {
+      setBusy(false);
     }
   }, [auth, fullName, email, password, confirmPassword]);
 
@@ -226,7 +240,16 @@ export function EmailCaptureStep({
 
       {error && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
+          <p>{error}</p>
+          {alreadyExists && (
+            <button
+              type="button"
+              onClick={() => router.push(`/login?next=/start%3Fwedge%3Ddeposit`)}
+              className="mt-1.5 font-medium underline underline-offset-2 hover:no-underline"
+            >
+              Sign in instead
+            </button>
+          )}
         </div>
       )}
 

@@ -42,7 +42,7 @@ export function useResolvaioAuth() {
       fullName: string,
       email: string,
       password: string,
-    ): Promise<{ error?: string; pending?: boolean }> {
+    ): Promise<{ error?: string; pending?: boolean; alreadyExists?: boolean }> {
       const rl = await checkAuthRateLimit('signup');
       if (!rl.allowed) return { error: 'Too many registration attempts. Please try again in a few minutes.' };
       try {
@@ -59,7 +59,10 @@ export function useResolvaioAuth() {
 
         const lower = message.toLowerCase();
         if (lower.includes('already') || lower.includes('exists') || lower.includes('duplicate')) {
-          return { error: 'That email is already registered. Try signing in instead.' };
+          return {
+            error: 'An account with that email already exists.',
+            alreadyExists: true,
+          };
         }
         if (lower.includes('password')) {
           return { error: 'Password does not meet the requirements. Use 8+ characters with an uppercase letter and a number.' };

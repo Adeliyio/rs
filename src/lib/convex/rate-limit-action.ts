@@ -18,6 +18,14 @@ export async function checkAuthRateLimit(
   const fwd = h.get('x-forwarded-for');
   const ip = cf ?? (fwd ? fwd.split(',')[0]!.trim() : h.get('x-real-ip') ?? 'unknown');
 
-  const result = await checkRateLimit('auth', `${bucket}:${ip}`);
-  return { allowed: result.allowed };
+  try {
+    const result = await checkRateLimit('auth', `${bucket}:${ip}`);
+    return { allowed: result.allowed };
+  } catch {
+    // Fail OPEN: if the rate limiter (Redis) is unavailable, never block a
+    // legitimate signup/login over an infrastructure blip. A thrown error here
+    // used to escape the client auth call entirely, leaving the form frozen
+    // with no message. The auth provider still enforces its own protections.
+    return { allowed: true };
+  }
 }
