@@ -135,6 +135,9 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: https: blob:",
               "font-src 'self' data:",
+              // manifest.json is same-origin; without manifest-src it falls back
+              // to default-src and gets blocked (the console error on /login).
+              "manifest-src 'self'",
               `connect-src 'self' ${convexConnectSrc} ${devConnect} https://*.resolvaio.com wss://*.resolvaio.com https://api.openai.com https://api.tavily.com https://api.polar.sh https://sandbox-api.polar.sh https://plausible.io`,
               "object-src 'none'",
               "base-uri 'self'",
