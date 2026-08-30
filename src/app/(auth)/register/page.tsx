@@ -14,8 +14,12 @@ export default function RegisterPage() {
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // After account creation, we switch to the OTP-code step.
+  const [resendNote, setResendNote] = useState<string | null>(null);
+  // After account creation, we switch to the OTP-code step. We keep the
+  // credentials so the "Resend code" button can re-trigger the signUp flow.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [pendingName, setPendingName] = useState('');
+  const [pendingPassword, setPendingPassword] = useState('');
 
   async function handleSubmit(formData: FormData): Promise<void> {
     if (busy) return;
@@ -54,12 +58,30 @@ export default function RegisterPage() {
       if (result.error) {
         setFormError(result.error);
       } else if (result.pending) {
+        setPendingName(fullName);
+        setPendingPassword(password);
         setPendingEmail(email);
       }
     } catch {
       // Backstop: register() returns errors, but if anything upstream throws
       // (e.g. the rate-limit action), never leave the form frozen with no message.
       setFormError('Something went wrong creating your account. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleResend(): Promise<void> {
+    if (busy || !pendingEmail) return;
+    setFormError(null);
+    setResendNote(null);
+    setBusy(true);
+    try {
+      const result = await auth.resendCode(pendingName, pendingEmail, pendingPassword);
+      if (result.error) setFormError(result.error);
+      else setResendNote('A new code is on its way. Check your inbox (and spam).');
+    } catch {
+      setFormError('Could not resend the code. Please try again.');
     } finally {
       setBusy(false);
     }
@@ -121,6 +143,20 @@ export default function RegisterPage() {
             <Button type="submit" size="lg" className="w-full" disabled={busy}>
               {busy ? 'Confirming…' : 'Confirm & continue'}
             </Button>
+            <div className="text-center text-[13px] text-muted-foreground">
+              Didn&apos;t get the code?{' '}
+              <button
+                type="button"
+                onClick={() => void handleResend()}
+                disabled={busy}
+                className="font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+              >
+                Resend code
+              </button>
+            </div>
+            {resendNote && (
+              <p className="text-center text-[12px] text-emerald-600">{resendNote}</p>
+            )}
           </form>
         </div>
         <p className="text-center text-[11px] leading-relaxed text-muted-foreground/70">

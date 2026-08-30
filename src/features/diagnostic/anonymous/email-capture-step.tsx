@@ -208,6 +208,23 @@ export function EmailCaptureStep({
     }
   }, [auth, fullName, email, password, confirmPassword]);
 
+  /* ---- Resend the verification code ---- */
+  const [resendNote, setResendNote] = useState<string | null>(null);
+  const handleResend = useCallback(async (): Promise<void> => {
+    setError(null);
+    setResendNote(null);
+    setBusy(true);
+    try {
+      const result = await auth.resendCode(fullName.trim(), email.trim(), password);
+      if (result.error) setError(result.error);
+      else setResendNote('A new code is on its way. Check your inbox (and spam).');
+    } catch {
+      setError('Could not resend the code. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }, [auth, fullName, email, password]);
+
   /* ---- Step 2: verify OTP, then hydrate ---- */
   const handleVerify = useCallback(async (): Promise<void> => {
     setError(null);
@@ -297,6 +314,20 @@ export function EmailCaptureStep({
               {busy && <Loader2 className="h-4 w-4 animate-spin" />}
               Confirm &amp; continue
             </Button>
+            <div className="text-center text-[13px] text-muted-foreground">
+              Didn&apos;t get the code?{' '}
+              <button
+                type="button"
+                onClick={() => void handleResend()}
+                disabled={busy}
+                className="font-medium text-primary underline underline-offset-2 hover:no-underline disabled:opacity-50"
+              >
+                Resend code
+              </button>
+            </div>
+            {resendNote && (
+              <p className="text-center text-[12px] text-emerald-600">{resendNote}</p>
+            )}
           </form>
         ) : (
           <form

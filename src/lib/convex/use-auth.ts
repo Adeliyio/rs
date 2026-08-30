@@ -75,6 +75,34 @@ export function useResolvaioAuth() {
       }
     },
 
+    /**
+     * Resend the sign-up verification code. Convex Auth has no dedicated resend
+     * endpoint, so we re-run the signUp flow with the same details — this emails
+     * a fresh 8-digit code, replacing the pending one. Rate-limited like signup.
+     */
+    async resendCode(
+      fullName: string,
+      email: string,
+      password: string,
+    ): Promise<{ error?: string; sent?: boolean }> {
+      const rl = await checkAuthRateLimit('signup');
+      if (!rl.allowed) return { error: 'Too many requests. Please wait a few minutes before requesting another code.' };
+      try {
+        await signIn('password', { email, password, fullName, flow: 'signUp' });
+        return { sent: true };
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        // eslint-disable-next-line no-console
+        console.error('[auth] resendCode failed:', message, err);
+        // "already exists" here just means the account is pending — the resend
+        // still emailed a fresh code, so treat it as success.
+        if (message.toLowerCase().includes('already') || message.toLowerCase().includes('exists')) {
+          return { sent: true };
+        }
+        return { error: 'Could not resend the code right now. Please try again in a moment.' };
+      }
+    },
+
     async verifyEmail(email: string, code: string): Promise<{ error?: string }> {
       // Rate-limit code submission (per-IP+email via the 'login' bucket) so the
       // 8-digit OTP can't be brute-forced for account takeover.

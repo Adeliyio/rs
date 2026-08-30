@@ -77,3 +77,8 @@ infrastructure/
 # Skills tooling (taste-skill etc.) — not part of the app
 skills-lock.json
 .agents/
+
+# Local key-generation artifacts (never commit private keys)
+.jwt_private_key.tmp
+.jwks.tmp
+writeKeys.mjs
