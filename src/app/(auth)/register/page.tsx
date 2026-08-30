@@ -15,6 +15,8 @@ export default function RegisterPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resendNote, setResendNote] = useState<string | null>(null);
+  const [alreadyExists, setAlreadyExists] = useState(false);
+  const [resendEmail, setResendEmail] = useState('');
   // After account creation, we switch to the OTP-code step. We keep the
   // credentials so the "Resend code" button can re-trigger the signUp flow.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
@@ -52,14 +54,23 @@ export default function RegisterPage() {
 
     setPasswordMismatch(false);
     setFormError(null);
+    setAlreadyExists(false);
+    setResendNote(null);
+    // Keep the credentials so "resend" works whether we go to OTP or hit the
+    // "already exists" recovery path.
+    setPendingName(fullName);
+    setPendingPassword(password);
+
     setBusy(true);
     try {
       const result = await auth.register(fullName, email, password);
-      if (result.error) {
+      if (result.alreadyExists) {
+        setAlreadyExists(true);
+        setResendEmail(email);
+        setFormError(result.error ?? 'An account with that email already exists.');
+      } else if (result.error) {
         setFormError(result.error);
       } else if (result.pending) {
-        setPendingName(fullName);
-        setPendingPassword(password);
         setPendingEmail(email);
       }
     } catch {
@@ -72,14 +83,22 @@ export default function RegisterPage() {
   }
 
   async function handleResend(): Promise<void> {
-    if (busy || !pendingEmail) return;
+    const targetEmail = pendingEmail ?? resendEmail;
+    if (busy || !targetEmail) return;
     setFormError(null);
     setResendNote(null);
     setBusy(true);
     try {
-      const result = await auth.resendCode(pendingName, pendingEmail, pendingPassword);
-      if (result.error) setFormError(result.error);
-      else setResendNote('A new code is on its way. Check your inbox (and spam).');
+      const result = await auth.resendCode(pendingName, targetEmail, pendingPassword);
+      if (result.error) {
+        setFormError(result.error);
+      } else {
+        // Move into the code-entry step (covers the "already exists but pending"
+        // recovery: the user gets a fresh code and can finish confirming).
+        setPendingEmail(targetEmail);
+        setAlreadyExists(false);
+        setResendNote('A new code is on its way. Check your inbox (and spam).');
+      }
     } catch {
       setFormError('Could not resend the code. Please try again.');
     } finally {
@@ -186,8 +205,29 @@ export default function RegisterPage() {
         {/* Error message */}
         {errorMessage && (
           <div className="mb-5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-[14px] text-destructive">
-            {errorMessage}
+            <p>{errorMessage}</p>
+            {alreadyExists && (
+              <div className="mt-2 flex flex-col gap-1.5">
+                {/* Recovery for an account that already exists — it may be
+                    verified (sign in) or still pending confirmation (needs a
+                    fresh code), so offer both. */}
+                <Link href="/login" className="font-medium underline underline-offset-2 hover:no-underline">
+                  Sign in instead
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => void handleResend()}
+                  disabled={busy}
+                  className="text-left font-medium underline underline-offset-2 hover:no-underline disabled:opacity-50"
+                >
+                  Didn&apos;t finish confirming? Send me a new code
+                </button>
+              </div>
+            )}
           </div>
+        )}
+        {resendNote && !pendingEmail && (
+          <p className="mb-4 text-center text-[13px] text-emerald-600">{resendNote}</p>
         )}
 
         {/* Registration Form */}

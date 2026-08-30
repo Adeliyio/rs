@@ -275,13 +275,30 @@ export function EmailCaptureStep({
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           <p>{error}</p>
           {alreadyExists && (
-            <button
-              type="button"
-              onClick={() => router.push(`/login?next=/start%3Fwedge%3Ddeposit`)}
-              className="mt-1.5 font-medium underline underline-offset-2 hover:no-underline"
-            >
-              Sign in instead
-            </button>
+            <div className="mt-2 flex flex-col gap-1.5">
+              {/* An "already exists" account may be VERIFIED (sign in) or PENDING
+                  confirmation (needs the code). Offer both so a user who got
+                  stuck mid-verification isn't in limbo. */}
+              <button
+                type="button"
+                onClick={() => router.push(`/login?next=/start%3Fwedge%3Ddeposit`)}
+                className="text-left font-medium underline underline-offset-2 hover:no-underline"
+              >
+                Sign in instead
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  // Move to the code step and send a fresh code, for accounts
+                  // still pending email confirmation.
+                  setPhase('otp');
+                  void handleResend();
+                }}
+                className="text-left font-medium underline underline-offset-2 hover:no-underline"
+              >
+                Didn&apos;t finish confirming? Send me a new code
+              </button>
+            </div>
           )}
         </div>
       )}
