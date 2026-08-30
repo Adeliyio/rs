@@ -76,29 +76,30 @@ export function useResolvaioAuth() {
     },
 
     /**
-     * Resend the sign-up verification code. Convex Auth has no dedicated resend
-     * endpoint, so we re-run the signUp flow with the same details — this emails
-     * a fresh 8-digit code, replacing the pending one. Rate-limited like signup.
+     * Resend the verification code to a PENDING account.
+     *
+     * The correct mechanism is the Password provider's `email-verification`
+     * flow with NO `code`: it looks up the existing account by email and calls
+     * the Resend OTP provider's send, emailing a FRESH code. (Re-running the
+     * `signUp` flow does NOT work here — for an account that already exists it
+     * throws before sending anything, which is why the old resend silently did
+     * nothing.) fullName/password are unused but kept for a stable signature.
      */
     async resendCode(
-      fullName: string,
+      _fullName: string,
       email: string,
-      password: string,
+      _password: string,
     ): Promise<{ error?: string; sent?: boolean }> {
       const rl = await checkAuthRateLimit('signup');
       if (!rl.allowed) return { error: 'Too many requests. Please wait a few minutes before requesting another code.' };
       try {
-        await signIn('password', { email, password, fullName, flow: 'signUp' });
+        // No `code` → the provider sends a fresh verification code.
+        await signIn('password', { email, flow: 'email-verification' });
         return { sent: true };
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         // eslint-disable-next-line no-console
         console.error('[auth] resendCode failed:', message, err);
-        // "already exists" here just means the account is pending — the resend
-        // still emailed a fresh code, so treat it as success.
-        if (message.toLowerCase().includes('already') || message.toLowerCase().includes('exists')) {
-          return { sent: true };
-        }
         return { error: 'Could not resend the code right now. Please try again in a moment.' };
       }
     },
