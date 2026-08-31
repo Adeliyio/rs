@@ -111,7 +111,7 @@ export function Sidebar({
   );
 
   return (
-    <aside className="flex h-screen w-72 flex-col bg-sidebar-background text-sidebar-foreground">
+    <aside className="flex h-screen w-60 flex-col bg-sidebar-background text-sidebar-foreground">
       {/* Brand mark */}
       <div className="flex h-16 items-center gap-3 px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
