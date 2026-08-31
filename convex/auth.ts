@@ -228,6 +228,14 @@ const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       // email-verification gate). The emailOTP plugin sends the code.
       requireEmailVerification: true,
     },
+    emailVerification: {
+      // After the OTP is verified, establish a session immediately so the user
+      // lands authenticated on /new instead of being bounced to /login. Without
+      // this, verify-email marks the address verified but creates NO session, so
+      // the very first post-signup step forces the user through password login —
+      // the one path most exposed to duplicate-signup / stale-hash failures.
+      autoSignInAfterVerification: true,
+    },
     socialProviders: {
       google: {
         clientId: process.env.AUTH_GOOGLE_ID ?? '',

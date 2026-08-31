@@ -75,7 +75,17 @@ export function useResolvaioAuth() {
           error: 'We could not create your account right now. Please try again in a moment.',
         };
       }
-      // Account created; the email-verification OTP was sent automatically.
+      // NOTE on duplicate emails: with requireEmailVerification, Better Auth's
+      // anti-enumeration path returns a FAKE success ({ token: null, user }) for
+      // an already-registered email and does NOT update the stored password
+      // (sign-up.mjs:203). We deliberately do NOT branch on `token` to detect
+      // this: a GENUINE new signup ALSO returns token:null here (sign-up.mjs:252,
+      // because shouldSkipAutoSignIn is true under requireEmailVerification), so
+      // the two are indistinguishable on the client. Detecting a duplicate
+      // reliably would need a server-side pre-check (findUserByEmail) — a
+      // separate change. For now both paths continue to the OTP step; a returning
+      // user simply won't receive a NEW-account code and can use "Sign in" /
+      // "Forgot password" instead.
       return { pending: true };
     },
 

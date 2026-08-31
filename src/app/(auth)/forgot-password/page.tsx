@@ -73,7 +73,13 @@ export default function ForgotPasswordPage() {
               {error}
             </div>
           )}
-          <form action={handleReset} className="flex flex-col gap-5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleReset(new FormData(e.currentTarget));
+            }}
+            className="flex flex-col gap-5"
+          >
             <input type="hidden" name="email" value={email} />
             <div className="flex flex-col gap-2">
               <label htmlFor="code" className="text-[13px] font-medium leading-none">
@@ -151,7 +157,13 @@ export default function ForgotPasswordPage() {
         )}
 
         {!success && (
-          <form action={handleSubmit} className="flex flex-col gap-5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleSubmit(new FormData(e.currentTarget));
+            }}
+            className="flex flex-col gap-5"
+          >
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="email"

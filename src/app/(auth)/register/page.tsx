@@ -143,7 +143,13 @@ export default function RegisterPage() {
               {errorMessage}
             </div>
           )}
-          <form action={handleVerify} className="flex flex-col gap-5">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleVerify(new FormData(e.currentTarget));
+            }}
+            className="flex flex-col gap-5"
+          >
             <input type="hidden" name="email" value={pendingEmail} />
             <div className="flex flex-col gap-2">
               <label htmlFor="code" className="text-[13px] font-medium leading-none">
@@ -231,7 +237,16 @@ export default function RegisterPage() {
         )}
 
         {/* Registration Form */}
-        <form action={handleSubmit} className="flex flex-col gap-5">
+        {/* onSubmit, NOT `action={fn}`: function form actions require React 19;
+            on React 18.3.1 the handler never runs, so the "passwords do not
+            match" / validation errors never render. */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit(new FormData(e.currentTarget));
+          }}
+          className="flex flex-col gap-5"
+        >
           <div className="flex flex-col gap-2">
             <label
               htmlFor="fullName"

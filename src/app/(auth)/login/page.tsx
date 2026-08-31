@@ -80,7 +80,16 @@ function LoginPageContent() {
         )}
 
         {/* Email/Password Form */}
-        <form action={handleSubmit} className="flex flex-col gap-5">
+        {/* onSubmit, NOT `action={fn}`: function form actions require React 19;
+            on React 18.3.1 `<form action={fn}>` does a native browser submit and
+            the handler never runs (so validation/errors never render). */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void handleSubmit(new FormData(e.currentTarget));
+          }}
+          className="flex flex-col gap-5"
+        >
           <div className="flex flex-col gap-2">
             <label
               htmlFor="email"
