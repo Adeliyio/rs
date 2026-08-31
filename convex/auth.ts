@@ -47,6 +47,42 @@ import authConfig from './auth.config';
 const siteUrl = process.env.SITE_URL!;
 
 /**
+ * Origins auth requests are allowed from, and the cookie domain that lets the
+ * session be shared across them.
+ *
+ * UX: visitors sign up / log in on the ROOT marketing domain (resolvaio.com) and
+ * are only sent to the APP subdomain (app.resolvaio.com) AFTER login. So Better
+ * Auth must trust the root origin (else "Invalid origin" 403 on sign-up), and
+ * the session cookie must be readable on BOTH domains.
+ *
+ * Derived from SITE_URL (the app origin, e.g. https://app.resolvaio.com) so
+ * nothing is hardcoded: `app.resolvaio.com` → registrable root `resolvaio.com`,
+ * cookie domain `.resolvaio.com` (leading dot = valid for the root + every
+ * subdomain). A localhost SITE_URL yields no cross-subdomain config.
+ */
+function siteOrigins(): {
+  trustedOrigins: string[];
+  cookieDomain: string | undefined;
+} {
+  const host = new URL(siteUrl).hostname; // e.g. app.resolvaio.com
+  if (host === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    return { trustedOrigins: [siteUrl], cookieDomain: undefined };
+  }
+  const labels = host.split('.');
+  // Registrable root = last two labels (resolvaio.com). Adequate for the
+  // resolvaio.com / *.resolvaio.com setup; not a public-suffix-list parser.
+  const root = labels.slice(-2).join('.');
+  return {
+    trustedOrigins: [
+      siteUrl,
+      `https://${root}`,
+      `https://www.${root}`,
+    ],
+    cookieDomain: `.${root}`,
+  };
+}
+
+/**
  * Returns the JWKS env var ONLY if it is present and valid JSON, else undefined.
  *
  * Mirrors the identical guard in auth.config.ts. Both the `convex()` plugin here
@@ -166,11 +202,26 @@ export const authComponent = createClient<DataModel>(components.betterAuth, {
  * references (the adapter's documented pattern).
  */
 const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
+  const { trustedOrigins, cookieDomain } = siteOrigins();
   return {
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
     // Session JWTs are minted/verified with a STATIC JWKS (see auth.config.ts).
-    trustedOrigins: [siteUrl],
+    // Trust the root marketing domain (+www) as well as the app subdomain, so
+    // sign-up/login works on resolvaio.com before the post-login hand-off to
+    // app.resolvaio.com.
+    trustedOrigins,
+    // Share the session cookie across resolvaio.com ↔ app.resolvaio.com by
+    // scoping it to the registrable root (.resolvaio.com). Without this the
+    // cookie defaults to the baseURL host (app.*) and the root-domain login
+    // would set a cookie the app subdomain cannot read.
+    ...(cookieDomain
+      ? {
+          advanced: {
+            crossSubDomainCookies: { enabled: true, domain: cookieDomain },
+          },
+        }
+      : {}),
     emailAndPassword: {
       enabled: true,
       // Require the emailed OTP before the account is usable (matches the old
