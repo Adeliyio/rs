@@ -1,6 +1,5 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { authTables } from '@convex-dev/auth/server';
 
 /**
  * Convex schema — faithful translation of the former Supabase Postgres schema.
@@ -14,8 +13,12 @@ import { authTables } from '@convex-dev/auth/server';
  *   several queries order by updated_at and filter by date ranges.
  * - RLS is GONE. Row ownership is enforced in every query/mutation via the
  *   helpers in convex/lib/authz.ts. `user_id` becomes `userId: v.id('users')`.
- * - The former `auth.users` table is replaced by Convex Auth's `users` table
- *   (provided by `authTables`).
+ * - The former `auth.users` table is replaced by our own `users` table (below),
+ *   a thin app-owned MIRROR of the Better Auth component's user. Better Auth
+ *   owns its user/session/account/jwks tables INSIDE the component namespace
+ *   (convex.config.ts); the mirror row is written by the onCreate trigger in
+ *   convex/auth.ts and linked back via `setUserId`. All FKs reference this
+ *   `users` table.
  *
  * Field names use camelCase on the Convex side; the API/route layer maps to the
  * snake_case shapes the existing frontend expects.
@@ -69,9 +72,16 @@ const alertStatus = v.union(
 );
 
 export default defineSchema({
-  // Convex Auth tables (users, authAccounts, authSessions, authVerificationCodes,
-  // authRefreshTokens, authVerifiers, authRateLimits). `users` replaces auth.users.
-  ...authTables,
+  /* ---------------------------------------------------------------- */
+  /*  users — thin app-owned mirror of the Better Auth component user  */
+  /* ---------------------------------------------------------------- */
+  // Populated by the onCreate trigger in convex/auth.ts and linked back to the
+  // component user via `setUserId`. The app only reads email / name / creation
+  // time off this row; identity/sessions/passwords live in the component.
+  users: defineTable({
+    email: v.string(),
+    name: v.optional(v.string()),
+  }).index('by_email', ['email']),
 
   /* ---------------------------------------------------------------- */
   /*  cases                                                           */

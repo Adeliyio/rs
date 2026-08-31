@@ -1,7 +1,7 @@
 import { v } from 'convex/values';
 import { action, type ActionCtx } from './_generated/server';
 import { internal } from './_generated/api';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { authComponent } from './auth';
 
 /**
  * User-facing R2 storage actions (authenticated).
@@ -17,7 +17,12 @@ import { getAuthUserId } from '@convex-dev/auth/server';
  */
 
 async function assertOwnsKey(ctx: ActionCtx, key: string): Promise<string> {
-  const userId = await getAuthUserId(ctx);
+  // The current user is the Better Auth component user, which carries our app
+  // `users` id in `userId` (linked at sign-up). Object keys are namespaced by
+  // that app id — `{userId}/{caseId}/{filename}` — so a caller can only address
+  // their own namespace.
+  const authUser = await authComponent.safeGetAuthUser(ctx);
+  const userId = authUser?.userId;
   if (!userId) throw new Error('Unauthorized');
   if (!key.startsWith(`${userId}/`)) {
     throw new Error('Forbidden: key outside your namespace');

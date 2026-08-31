@@ -23,8 +23,6 @@ import type * as lib_authz from "../lib/authz.js";
 import type * as lib_envCheck from "../lib/envCheck.js";
 import type * as lib_serialize from "../lib/serialize.js";
 import type * as loginAttempts from "../loginAttempts.js";
-import type * as otp_ResendOTP from "../otp/ResendOTP.js";
-import type * as otp_ResendOTPPasswordReset from "../otp/ResendOTPPasswordReset.js";
 import type * as outcomes from "../outcomes.js";
 import type * as packets from "../packets.js";
 import type * as payments from "../payments.js";
@@ -62,8 +60,6 @@ declare const fullApi: ApiFromModules<{
   "lib/envCheck": typeof lib_envCheck;
   "lib/serialize": typeof lib_serialize;
   loginAttempts: typeof loginAttempts;
-  "otp/ResendOTP": typeof otp_ResendOTP;
-  "otp/ResendOTPPasswordReset": typeof otp_ResendOTPPasswordReset;
   outcomes: typeof outcomes;
   packets: typeof packets;
   payments: typeof payments;
@@ -108,4 +104,5 @@ export declare const internal: FilterApi<
 
 export declare const components: {
   r2: import("@convex-dev/r2/_generated/component.js").ComponentApi<"r2">;
+  betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
 };

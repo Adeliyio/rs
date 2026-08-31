@@ -7,7 +7,10 @@ import { z } from 'zod';
 const serverEnvSchema = z.object({
   // Core — Convex. REQUIRED — app will not boot without these.
   NEXT_PUBLIC_CONVEX_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_URL is required'),
-  // Convex Auth "site" URL (HTTP actions origin, port 3211 self-hosted).
+  // Convex "site" URL (HTTP actions origin, port 3211 self-hosted). Better Auth's
+  // Next.js helper (src/lib/auth-server.ts) reads the NEXT_PUBLIC_ form to proxy
+  // auth requests to the deployment's Better Auth routes; it must be present.
+  NEXT_PUBLIC_CONVEX_SITE_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_SITE_URL is required'),
   CONVEX_SITE_URL: z.string().min(1, 'CONVEX_SITE_URL is required'),
   // Shared secret for trusted server→Convex service functions (replaces the
   // Supabase service-role key). Never exposed to the browser.
@@ -46,6 +49,7 @@ export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_CONVEX_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_URL is required'),
+  NEXT_PUBLIC_CONVEX_SITE_URL: z.string().min(1, 'NEXT_PUBLIC_CONVEX_SITE_URL is required'),
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   // Polar product ids the client uses to build checkout links to the server
   // /api/checkout route. Polar's redirect checkout needs no public client token
@@ -78,6 +82,7 @@ function validateServerEnv(): ServerEnv {
 function validateClientEnv(): ClientEnv {
   const parsed = clientEnvSchema.safeParse({
     NEXT_PUBLIC_CONVEX_URL: process.env.NEXT_PUBLIC_CONVEX_URL,
+    NEXT_PUBLIC_CONVEX_SITE_URL: process.env.NEXT_PUBLIC_CONVEX_SITE_URL,
     NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
     NEXT_PUBLIC_POLAR_PRODUCT_LETTER: process.env.NEXT_PUBLIC_POLAR_PRODUCT_LETTER,
     NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY: process.env.NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY,

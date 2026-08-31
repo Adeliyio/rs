@@ -1,9 +1,12 @@
 import { v } from 'convex/values';
+import { components } from './_generated/api';
 import { query, internalQuery, internalMutation } from './_generated/server';
 import { requireUser } from './lib/authz';
 
 /**
- * Users. Convex Auth owns the `users` table. These helpers replace:
+ * Users. Our app `users` table is a thin MIRROR of the Better Auth component
+ * user (written by the onCreate trigger in convex/auth.ts). These helpers
+ * replace:
  * - `supabase.auth.getUser()` → `me` (current user for the app shell/settings)
  * - `supabase.auth.admin.getUserById(id)` → `emailByIdInternal` (workers/webhooks
  *   that need a user's email to send mail)
@@ -39,7 +42,7 @@ export const userIdByEmailInternal = internalQuery({
     if (!target) return null;
     const user = await ctx.db
       .query('users')
-      .filter((q) => q.eq(q.field('email'), target))
+      .withIndex('by_email', (q) => q.eq('email', target))
       .first();
     return user?._id ?? null;
   },
@@ -64,27 +67,34 @@ export const getByIdInternal = internalQuery({
 });
 
 /**
- * Delete the auth user row and its linked auth records. Convex Auth stores
- * accounts/sessions in authAccounts/authSessions keyed by userId; we clear them
- * so the user is fully removed (replaces auth.admin.deleteUser).
+ * Delete the user completely (GDPR erasure — replaces auth.admin.deleteUser).
+ *
+ * Better Auth owns the user / session / account records INSIDE its component,
+ * so we delete the component user via the component adapter (which cascades its
+ * sessions/accounts), then remove our app mirror row. Deleting the component
+ * user also fires the onDelete trigger in convex/auth.ts, which deletes the
+ * mirror row too — that path is a guarded no-op, so the explicit delete here is
+ * safe and idempotent whichever runs first.
  */
 export const deleteInternal = internalMutation({
   args: { userId: v.id('users') },
   handler: async (ctx, { userId }) => {
-    // Remove linked auth accounts/sessions so the user is fully removed. These
-    // tables come from authTables and index by userId.
-    const accounts = await ctx.db
-      .query('authAccounts')
-      .withIndex('userIdAndProvider', (qb) => qb.eq('userId', userId))
-      .collect();
-    for (const acc of accounts) await ctx.db.delete(acc._id);
+    // Remove the Better Auth component user linked to this app user. The `user`
+    // model carries our app id in its `userId` field (set at sign-up). A single
+    // app user maps to exactly one component user row, so one page (numItems well
+    // above 1) drains the whole match — no continuation needed.
+    await ctx.runMutation(components.betterAuth.adapter.deleteMany, {
+      input: {
+        model: 'user',
+        where: [{ field: 'userId', value: userId as string }],
+      },
+      paginationOpts: { cursor: null, numItems: 200 },
+    });
 
-    const sessions = await ctx.db
-      .query('authSessions')
-      .withIndex('userId', (qb) => qb.eq('userId', userId))
-      .collect();
-    for (const s of sessions) await ctx.db.delete(s._id);
-
-    await ctx.db.delete(userId);
+    // Remove the app mirror row (the FK target for cases / subscriptions / …).
+    const existing = await ctx.db.get(userId);
+    if (existing) {
+      await ctx.db.delete(userId);
+    }
   },
 });

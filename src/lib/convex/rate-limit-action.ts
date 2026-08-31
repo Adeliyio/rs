@@ -7,8 +7,8 @@ import { checkRateLimit } from '@/lib/rate-limit';
 /**
  * Server action wrapping the Redis auth rate limiter, callable from the
  * client-side auth flows (useResolvaioAuth). Preserves the old per-IP
- * brute-force / enumeration protection (VULN-08) even though the Convex Auth
- * signIn call itself now runs client-side.
+ * brute-force / enumeration protection (VULN-08) even though the Better Auth
+ * sign-in call itself now runs client-side.
  */
 export async function checkAuthRateLimit(
   bucket: 'login' | 'signup' | 'reset',

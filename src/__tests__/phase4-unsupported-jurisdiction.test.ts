@@ -594,9 +594,12 @@ describe('4d: Convex schema — core tables', () => {
     }
   });
 
-  it('pulls in Convex Auth tables (users, sessions, etc.)', () => {
-    // authTables provides the users table that replaced Supabase auth.users.
-    expect(schema).toContain('...authTables');
+  it('defines the app users table (Better Auth mirror)', () => {
+    // Under Better Auth, the component owns its user/session/account tables; our
+    // schema keeps a thin `users` mirror (written by the onCreate trigger) that
+    // every FK references. It replaced the former `...authTables` spread.
+    expect(schema).toContain('users: defineTable(');
+    expect(schema).not.toContain('...authTables');
   });
 });
 

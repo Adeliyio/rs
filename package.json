@@ -29,10 +29,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@auth/core": "0.41.3",
-    "@convex-dev/auth": "^0.0.95",
+    "@convex-dev/better-auth": "0.12.5",
     "@convex-dev/r2": "^0.10.2",
-    "@oslojs/crypto": "^1.0.1",
     "@polar-sh/nextjs": "^0.9.6",
     "@polar-sh/sdk": "^0.49.0",
     "@radix-ui/react-avatar": "^1.1.11",
@@ -41,6 +39,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@sentry/nextjs": "^10.53.1",
     "archiver": "^8.0.0",
+    "better-auth": "1.6.30",
     "bullmq": "^5.31.0",
     "clsx": "^2.1.1",
     "convex": "^1.44.0",

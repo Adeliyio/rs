@@ -1,4 +1,4 @@
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { authComponent } from '../auth';
 import type { QueryCtx, MutationCtx } from '../_generated/server';
 import type { Doc, Id } from '../_generated/dataModel';
 
@@ -24,11 +24,20 @@ import type { Doc, Id } from '../_generated/dataModel';
 /*  Identity                                                          */
 /* ------------------------------------------------------------------ */
 
-/** Returns the authenticated user id, or null when unauthenticated. */
+/**
+ * Returns the authenticated user id, or null when unauthenticated.
+ *
+ * Under Better Auth the current user is the component user doc, which carries
+ * our app `users` id in its `userId` field (linked by the onCreate trigger in
+ * convex/auth.ts via `setUserId`). `safeGetAuthUser` returns undefined when
+ * there is no session, so this stays null-safe for public/optional-auth paths.
+ */
 export async function getUserId(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Id<'users'> | null> {
-  return getAuthUserId(ctx);
+  const authUser = await authComponent.safeGetAuthUser(ctx);
+  const userId = authUser?.userId;
+  return userId ? (userId as Id<'users'>) : null;
 }
 
 /**
@@ -38,7 +47,7 @@ export async function getUserId(
 export async function requireUser(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Id<'users'>> {
-  const userId = await getAuthUserId(ctx);
+  const userId = await getUserId(ctx);
   if (userId === null) {
     throw new Error('Unauthorized');
   }

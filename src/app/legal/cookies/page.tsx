@@ -57,12 +57,11 @@ export default function CookiePolicyPage() {
                 <tbody className="text-muted-foreground">
                   <tr className="border-b border-border">
                     <td className="py-2.5 pr-4 font-mono text-[13px]">
-                      __convexAuth*
+                      better-auth.session_token
                     </td>
                     <td className="py-2.5 pr-4">Strictly necessary</td>
                     <td className="py-2.5 pr-4">
-                      Convex Auth authentication session. Required to keep you
-                      logged in.
+                      Authentication session. Required to keep you logged in.
                     </td>
                     <td className="py-2.5">Session</td>
                   </tr>

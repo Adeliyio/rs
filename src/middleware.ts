@@ -1,16 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import {
-  convexAuthNextjsMiddleware,
-  createRouteMatcher,
-  nextjsMiddlewareRedirect,
-} from '@convex-dev/auth/nextjs/server';
+import { getSessionCookie } from 'better-auth/cookies';
 
 /**
- * Middleware — resolves the Convex Auth session.
+ * Middleware — resolves the Better Auth session (edge-safe).
  *
- * Uses convexAuthNextjsMiddleware to resolve the Convex Auth session, then keeps
- * the app's existing subdomain routing (resolvaio.com marketing vs
- * app.resolvaio.com app) and the public/protected route policy.
+ * Uses Better Auth's `getSessionCookie` to check for a session cookie WITHOUT a
+ * network round-trip (the documented optimistic middleware pattern — the actual
+ * session is still verified server-side on every Convex call). Then keeps the
+ * app's existing subdomain routing (resolvaio.com marketing vs app.resolvaio.com
+ * app) and the public/protected route policy exactly as before.
  */
 
 /** Routes that do not require an authenticated session. */
@@ -41,6 +39,11 @@ const PUBLIC_PREFIXES = [
   // accessibility) are linked from every marketing footer and listed in the
   // sitemap — they must be crawlable, not redirected to /login.
   '/legal',
+  // Better Auth's own endpoints (sign-in, sign-up, OTP verify, OAuth callback,
+  // token, sign-out) live under /api/auth and MUST be reachable without a
+  // session — otherwise the unauthenticated login/signup POST itself would be
+  // redirected to /login, breaking auth entirely.
+  '/api/auth',
   '/api/webhooks/',
   '/api/trust/',
   '/api/waitlist',
@@ -130,14 +133,14 @@ function isLocalhost(hostname: string): boolean {
   );
 }
 
-const isProtected = createRouteMatcher(
-  // Everything that isn't a known public route/prefix is protected. We express
-  // this as "not public" inside the handler rather than a positive matcher,
-  // because the public set is large and prefix-based.
-  ['/((?!$).*)'],
-);
+// Everything that isn't a known public route/prefix is protected. We express
+// this as "not public" inside the handler; this matcher only excludes the exact
+// root path '/' (which is public anyway), matching the former createRouteMatcher.
+function isProtected(request: NextRequest): boolean {
+  return request.nextUrl.pathname !== '/';
+}
 
-export default convexAuthNextjsMiddleware(async (request: NextRequest, { convexAuth }) => {
+export default async function middleware(request: NextRequest): Promise<NextResponse | undefined> {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host')?.split(':')[0] ?? '';
   const isDev = isLocalhost(hostname);
@@ -176,17 +179,21 @@ export default convexAuthNextjsMiddleware(async (request: NextRequest, { convexA
     return;
   }
 
-  const authed = await convexAuth.isAuthenticated();
+  // Optimistic session check: presence of the Better Auth session cookie. This
+  // is a cheap edge-safe gate for routing only — every Convex call still fully
+  // verifies the session server-side, so a stale/forged cookie grants no data.
+  const authed = getSessionCookie(request) !== null;
 
   /* ---- Redirect unauthenticated users away from protected routes ---- */
   if (!authed && isProtected(request) && !isPublicPath(pathname)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = '/login';
+    loginUrl.search = '';
     // VULN-12: only set `next` for a safe relative path (no open redirect)
     if (pathname.startsWith('/') && !pathname.startsWith('//') && !pathname.includes('://')) {
       loginUrl.searchParams.set('next', pathname);
     }
-    return nextjsMiddlewareRedirect(request, loginUrl.pathname + loginUrl.search);
+    return NextResponse.redirect(loginUrl);
   }
 
   /* ---- Authenticated user on root domain hitting app page → app subdomain ---- */
@@ -211,7 +218,7 @@ export default convexAuthNextjsMiddleware(async (request: NextRequest, { convexA
   }
 
   return;
-});
+}
 
 export const config = {
   matcher: [

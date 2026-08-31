@@ -1,18 +1,19 @@
 import { httpRouter } from 'convex/server';
 import { httpAction } from './_generated/server';
-import { auth } from './auth';
+import { authComponent, createAuth } from './auth';
 import { checkConvexEnv } from './lib/envCheck';
 
 /**
- * HTTP router — wires Convex Auth's HTTP routes (OAuth callbacks, etc.).
+ * HTTP router — wires Better Auth's HTTP routes (sign-in/up, OTP verification,
+ * OAuth callbacks, token issuance, JWKS).
  *
  * Self-hosted, HTTP actions are served on port 3211 by the Convex backend.
- * The Google OAuth redirect URI must point at this deployment's HTTP-actions
- * URL: `${CONVEX_SITE_URL}/api/auth/callback/google`.
+ * The Google OAuth redirect URI points at this deployment's HTTP-actions URL:
+ * `${CONVEX_SITE_URL}/api/auth/callback/google`.
  */
 const http = httpRouter();
 
-auth.addHttpRoutes(http);
+authComponent.registerRoutes(http, createAuth);
 
 /**
  * Env health check — surfaces missing Convex-deployment env vars so a

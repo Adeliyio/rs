@@ -1,41 +1,49 @@
 'use client';
 
-import { useAuthActions } from '@convex-dev/auth/react';
 import { useRouter } from 'next/navigation';
 
+import { authClient } from '@/lib/auth-client';
 import { checkAuthRateLimit } from './rate-limit-action';
 
 /**
- * Client-side auth flows for Resolvaio, built on Convex Auth's useAuthActions.
+ * Client-side auth flows for Resolvaio, built on Better Auth's browser client
+ * (replaces @convex-dev/auth's useAuthActions).
  *
- * Convex Auth exposes signIn/signOut as CLIENT actions (not server actions), so
- * the auth pages are client components that call this hook. Rate limiting stays
+ * Better Auth client methods return `{ data, error }` — they do NOT throw — so
+ * each flow inspects `error` rather than using try/catch. Rate limiting stays
  * server-side (Redis) via the `checkAuthRateLimit` server action, called before
- * the sensitive operations — preserving the old VULN-08 protection.
+ * the sensitive operations (preserving the old VULN-08 protection).
  *
- * Password flows (provider id 'password'):
- *  - signIn:            { email, password, flow: 'signIn' }
- *  - signUp:            { email, password, fullName, flow: 'signUp' } → emails OTP
- *  - verify email:      { email, code, flow: 'email-verification' }
- *  - request reset:     { email, flow: 'reset' } → emails OTP
- *  - confirm reset:     { email, code, newPassword, flow: 'reset-verification' }
- * Google OAuth: signIn('google').
+ * Flows:
+ *  - signIn:          authClient.signIn.email({ email, password })
+ *  - signUp:          authClient.signUp.email({ email, password, name })
+ *                     → auto-sends an 8-digit email-verification OTP
+ *  - resend / verify: authClient.emailOtp.sendVerificationOtp / verifyEmail
+ *  - reset request:   authClient.emailOtp.requestPasswordReset({ email })
+ *  - reset confirm:   authClient.emailOtp.resetPassword({ email, otp, password })
+ *  - Google OAuth:    authClient.signIn.social({ provider: 'google' })
+ *
+ * The return-shape contract ({ error?, pending?, alreadyExists?, sent?, success? })
+ * is unchanged so the login/register pages did not need edits.
  */
 export function useResolvaioAuth() {
-  const { signIn, signOut } = useAuthActions();
   const router = useRouter();
 
   return {
     async login(email: string, password: string): Promise<{ error?: string }> {
       const rl = await checkAuthRateLimit('login');
       if (!rl.allowed) return { error: 'Too many login attempts. Please try again in a few minutes.' };
-      try {
-        await signIn('password', { email, password, flow: 'signIn' });
-        router.push('/new');
-        return {};
-      } catch {
+      const { error } = await authClient.signIn.email({ email, password });
+      if (error) {
+        // An unverified account gets a clear nudge instead of "invalid password".
+        const msg = (error.message ?? '').toLowerCase();
+        if (msg.includes('verif') || error.status === 403) {
+          return { error: 'Please confirm your email first. Check your inbox for the code.' };
+        }
         return { error: 'Invalid email or password. Please try again.' };
       }
+      router.push('/new');
+      return {};
     },
 
     async register(
@@ -45,45 +53,36 @@ export function useResolvaioAuth() {
     ): Promise<{ error?: string; pending?: boolean; alreadyExists?: boolean }> {
       const rl = await checkAuthRateLimit('signup');
       if (!rl.allowed) return { error: 'Too many registration attempts. Please try again in a few minutes.' };
-      try {
-        await signIn('password', { email, password, fullName, flow: 'signUp' });
-        return { pending: true };
-      } catch (err) {
-        // Surface the real cause instead of masking every failure as
-        // "email already registered". Convex Auth throws a variety of errors
-        // (misconfigured provider, OTP/email send failure, validation) that all
-        // arrive here — logging + inspecting the message is the only way to tell.
-        const message = err instanceof Error ? err.message : String(err);
+      const { error } = await authClient.signUp.email({
+        email,
+        password,
+        name: fullName,
+      });
+      if (error) {
+        const message = (error.message ?? '').toLowerCase();
         // eslint-disable-next-line no-console
-        console.error('[auth] signUp failed:', message, err);
-
-        const lower = message.toLowerCase();
-        if (lower.includes('already') || lower.includes('exists') || lower.includes('duplicate')) {
+        console.error('[auth] signUp failed:', error.message, error);
+        if (message.includes('already') || message.includes('exists') || message.includes('duplicate')) {
           return {
             error: 'An account with that email already exists.',
             alreadyExists: true,
           };
         }
-        if (lower.includes('password')) {
+        if (message.includes('password')) {
           return { error: 'Password does not meet the requirements. Use 8+ characters with an uppercase letter and a number.' };
         }
-        // Unknown failure — show enough to diagnose rather than a misleading guess.
         return {
-          error:
-            'We could not create your account right now. Please try again in a moment.',
+          error: 'We could not create your account right now. Please try again in a moment.',
         };
       }
+      // Account created; the email-verification OTP was sent automatically.
+      return { pending: true };
     },
 
     /**
-     * Resend the verification code to a PENDING account.
-     *
-     * The correct mechanism is the Password provider's `email-verification`
-     * flow with NO `code`: it looks up the existing account by email and calls
-     * the Resend OTP provider's send, emailing a FRESH code. (Re-running the
-     * `signUp` flow does NOT work here — for an account that already exists it
-     * throws before sending anything, which is why the old resend silently did
-     * nothing.) fullName/password are unused but kept for a stable signature.
+     * Resend the verification code to a PENDING account. Sends a fresh 8-digit
+     * email-verification OTP. fullName/password are unused but kept for a stable
+     * signature (the register page passes them through).
      */
     async resendCode(
       _fullName: string,
@@ -92,16 +91,16 @@ export function useResolvaioAuth() {
     ): Promise<{ error?: string; sent?: boolean }> {
       const rl = await checkAuthRateLimit('signup');
       if (!rl.allowed) return { error: 'Too many requests. Please wait a few minutes before requesting another code.' };
-      try {
-        // No `code` → the provider sends a fresh verification code.
-        await signIn('password', { email, flow: 'email-verification' });
-        return { sent: true };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: 'email-verification',
+      });
+      if (error) {
         // eslint-disable-next-line no-console
-        console.error('[auth] resendCode failed:', message, err);
+        console.error('[auth] resendCode failed:', error.message, error);
         return { error: 'Could not resend the code right now. Please try again in a moment.' };
       }
+      return { sent: true };
     },
 
     async verifyEmail(email: string, code: string): Promise<{ error?: string }> {
@@ -109,33 +108,25 @@ export function useResolvaioAuth() {
       // 8-digit OTP can't be brute-forced for account takeover.
       const rl = await checkAuthRateLimit('login');
       if (!rl.allowed) return { error: 'Too many attempts. Please try again in a few minutes.' };
-      try {
-        await signIn('password', { email, code, flow: 'email-verification' });
-        router.push('/new');
-        return {};
-      } catch (err) {
-        // Distinguish a genuinely bad code from a backend/config failure instead
-        // of always blaming the user (which sends them to request another code
-        // that would also fail).
-        const message = err instanceof Error ? err.message : String(err);
+      const { error } = await authClient.emailOtp.verifyEmail({ email, otp: code });
+      if (error) {
+        const message = (error.message ?? '').toLowerCase();
         // eslint-disable-next-line no-console
-        console.error('[auth] verifyEmail failed:', message, err);
-        const lower = message.toLowerCase();
-        if (lower.includes('code') || lower.includes('expired') || lower.includes('invalid') || lower.includes('verif')) {
+        console.error('[auth] verifyEmail failed:', error.message, error);
+        if (message.includes('code') || message.includes('expired') || message.includes('invalid') || message.includes('otp')) {
           return { error: 'That code was invalid or expired. Please try again.' };
         }
         return { error: 'We could not confirm your code right now. Please try again in a moment.' };
       }
+      router.push('/new');
+      return {};
     },
 
     async requestReset(email: string): Promise<{ error?: string; success?: string }> {
       const rl = await checkAuthRateLimit('reset');
       if (!rl.allowed) return { error: 'Too many reset requests. Please try again in a few minutes.' };
-      try {
-        await signIn('password', { email, flow: 'reset' });
-      } catch {
-        // do not reveal whether the account exists
-      }
+      // Fire and forget — never reveal whether the account exists.
+      await authClient.emailOtp.requestPasswordReset({ email });
       return { success: 'If an account with that email exists, you will receive a password reset code.' };
     },
 
@@ -148,36 +139,40 @@ export function useResolvaioAuth() {
       // brute-forced into an account takeover.
       const rl = await checkAuthRateLimit('reset');
       if (!rl.allowed) return { error: 'Too many attempts. Please try again in a few minutes.' };
-      try {
-        await signIn('password', { email, code, newPassword, flow: 'reset-verification' });
-        router.push('/login?message=Your password has been reset. Please sign in.');
-        return {};
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+      const { error } = await authClient.emailOtp.resetPassword({
+        email,
+        otp: code,
+        password: newPassword,
+      });
+      if (error) {
+        const message = (error.message ?? '').toLowerCase();
         // eslint-disable-next-line no-console
-        console.error('[auth] confirmReset failed:', message, err);
-        const lower = message.toLowerCase();
-        if (lower.includes('code') || lower.includes('expired') || lower.includes('invalid')) {
+        console.error('[auth] confirmReset failed:', error.message, error);
+        if (message.includes('code') || message.includes('expired') || message.includes('invalid') || message.includes('otp')) {
           return { error: 'That code was invalid or expired. Please request a new one.' };
         }
-        if (lower.includes('password')) {
+        if (message.includes('password')) {
           return { error: 'Password does not meet the requirements. Use 8+ characters with an uppercase letter and a number.' };
         }
         return { error: 'We could not reset your password right now. Please try again in a moment.' };
       }
+      router.push('/login?message=Your password has been reset. Please sign in.');
+      return {};
     },
 
     async google(): Promise<{ error?: string }> {
-      try {
-        await signIn('google');
-        return {};
-      } catch {
+      const { error } = await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/new',
+      });
+      if (error) {
         return { error: 'Could not initiate Google sign-in. Please try again.' };
       }
+      return {};
     },
 
     async logout(): Promise<void> {
-      await signOut();
+      await authClient.signOut();
       router.push('/');
     },
   };

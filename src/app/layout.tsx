@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, Fraunces } from 'next/font/google';
 
-import { ConvexAuthNextjsServerProvider } from '@convex-dev/auth/nextjs/server';
-
+import { getToken } from '@/lib/auth-server';
 import { siteUrl } from '@/lib/seo/site';
 import { safeJsonLd } from '@/lib/safe-json-ld';
 import { organizationSchema, websiteSchema } from '@/lib/seo/schema';
@@ -70,28 +69,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): React.JSX.Element {
+}>): Promise<React.JSX.Element> {
+  // Read the current session token on the server so the first client render is
+  // already authenticated (no unauthenticated flash). Undefined when signed out.
+  const initialToken = await getToken();
+
   return (
-    <ConvexAuthNextjsServerProvider>
-      <html lang="en-US" suppressHydrationWarning>
-        <body className={`${inter.variable} ${fraunces.variable} font-sans antialiased`}>
-          {/* Site-wide Organization + WebSite entities. Emitted once here so
-              every page carries them and every #organization @id reference
-              (Service provider, WebSite publisher) resolves — not just on the
-              state pages that used to emit them locally. */}
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema()) }} />
-          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema()) }} />
-          <ConvexClientProvider>
-            {children}
-            <CookieConsent />
-            <PlausibleAnalytics />
-          </ConvexClientProvider>
-        </body>
-      </html>
-    </ConvexAuthNextjsServerProvider>
+    <html lang="en-US" suppressHydrationWarning>
+      <body className={`${inter.variable} ${fraunces.variable} font-sans antialiased`}>
+        {/* Site-wide Organization + WebSite entities. Emitted once here so
+            every page carries them and every #organization @id reference
+            (Service provider, WebSite publisher) resolves — not just on the
+            state pages that used to emit them locally. */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationSchema()) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteSchema()) }} />
+        <ConvexClientProvider initialToken={initialToken}>
+          {children}
+          <CookieConsent />
+          <PlausibleAnalytics />
+        </ConvexClientProvider>
+      </body>
+    </html>
   );
 }

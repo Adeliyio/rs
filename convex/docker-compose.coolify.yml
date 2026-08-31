@@ -8,14 +8,16 @@
 #   CONVEX_CLOUD_ORIGIN = https://convex.resolvaio.com        (backend :3210)
 #   CONVEX_SITE_ORIGIN  = https://convex-site.resolvaio.com   (backend :3211)
 #
-# AND these auth/app vars — they MUST be listed in the backend `environment:`
-# block below (as ${VAR}) or Docker Compose will NOT inject them into the
-# container, even if they're set in the Coolify UI. This was the cause of the
-# "Missing environment variable SITE_URL" auth failure: the var was in the UI
-# but not passed through by compose.
+# IMPORTANT — TWO ENV STORES: the container env below configures the BACKEND
+# PROCESS, but Convex FUNCTIONS (and the Better Auth library) read from the
+# Convex FUNCTION env store, set with `npx convex env set NAME value`. The auth
+# vars MUST be set there. Setting them only in Coolify/compose is NOT enough —
+# that was the root cause of the earlier "Missing SITE_URL" auth failures.
+#
+# Auth vars to set in the FUNCTION env store (`npx convex env set`):
+#   BETTER_AUTH_SECRET    = (openssl rand -base64 32 — Better Auth signing secret)
 #   SITE_URL              = https://app.resolvaio.com   (public app origin — NOT the convex url)
-#   JWT_PRIVATE_KEY       = (from `node generateKeys.mjs`)
-#   JWKS                  = (from `node generateKeys.mjs`)
+#   JWKS                  = (static key doc: `npx convex run auth:generateJwk | npx convex env set JWKS` AFTER first deploy)
 #   AUTH_RESEND_KEY       = (same value as RESEND_API_KEY)
 #   EMAIL_FROM            = Resolvaio <onboarding@resolvaio.com>  (verified sender)
 #   CONVEX_SERVICE_SECRET = (shared secret, must match the Next.js app)
@@ -40,11 +42,12 @@ services:
       - 'CONVEX_CLOUD_ORIGIN=${CONVEX_CLOUD_ORIGIN}'
       - 'CONVEX_SITE_ORIGIN=${CONVEX_SITE_ORIGIN}'
       - DISABLE_BEACON=true
-      # --- Auth + app env: MUST be passed through here (compose only injects
-      #     what's listed), or the backend can't read them. This is what fixes
-      #     the "Missing environment variable SITE_URL" auth failure. ---
+      # NOTE: Better Auth reads its config from the Convex FUNCTION env store
+      # (`npx convex env set`), NOT from this container env — see the header.
+      # These pass-throughs are kept only so the values are also visible to the
+      # backend process/tools; the function store is the source of truth.
+      - 'BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}'
       - 'SITE_URL=${SITE_URL}'
-      - 'JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}'
       - 'JWKS=${JWKS}'
       - 'AUTH_RESEND_KEY=${AUTH_RESEND_KEY}'
       - 'EMAIL_FROM=${EMAIL_FROM}'

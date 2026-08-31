@@ -78,7 +78,21 @@ infrastructure/
 skills-lock.json
 .agents/
 
-# Local key-generation artifacts (never commit private keys)
+# Local key-generation artifacts (never commit private keys). The former
+# JWT_PRIVATE_KEY tooling is retired — Better Auth uses a static JWKS generated
+# on the deployment (npx convex run auth:generateJwk). Kept ignored defensively.
 .jwt_private_key.tmp
 .jwks.tmp
 writeKeys.mjs
+generateKeys.mjs
+
+# Scratch HTML (SEO audit exports, previews) — never commit.
+index.html
+
+# Auth key-generation scratch output — a generated JWKS doc contains the PRIVATE
+# key. Never commit. The static JWKS lives only in the Convex function env store
+# (npx convex env set JWKS). error.md is local terminal-output scratch.
+jwks.json
+empty.jsonl
+error.md
+convex-compose-coolify.txt

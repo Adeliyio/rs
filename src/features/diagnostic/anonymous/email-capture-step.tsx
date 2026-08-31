@@ -8,17 +8,16 @@
  * cost is protected while the visitor has already seen the product's value.
  *
  * On submit:
- *   1. auth.register(name, email, password)  — Convex Auth 'password' signUp
+ *   1. auth.register(name, email, password)  — Better Auth email/password signUp
  *   2. auth.verifyEmail(email, code)         — OTP step (see friction note below)
  *   3. POST /api/cases { wedge:'deposit', jurisdiction }        — create the case
  *   4. PUT  /api/diagnostic/state { caseId, state }             — hydrate answers
  *   5. router.push(`/case/${id}`)                               — resume paid flow
  *
- * FRICTION NOTE: the current @convex-dev/auth 'password' provider is configured
- * with email verification ON — signUp emails an 8-digit OTP and the session is
- * not authenticated until it is verified. We cannot make account creation fully
- * invisible without changing the auth provider config (out of scope / forbidden:
- * "do NOT rip out the auth system"). We make it as seamless as possible: a single
+ * FRICTION NOTE: Better Auth is configured with email verification ON — signUp
+ * emails an 8-digit OTP and the session is not authenticated until it is
+ * verified. We cannot make account creation fully invisible without changing the
+ * auth config. We make it as seamless as possible: a single
  * inline card (no separate /register → /login wall), the OTP entry appears in the
  * same place, and hydration + redirect happen automatically once verified.
  */

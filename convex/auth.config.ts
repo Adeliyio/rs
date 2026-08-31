@@ -1,21 +1,35 @@
+import { getAuthConfigProvider } from '@convex-dev/better-auth/auth-config';
+import type { AuthConfig } from 'convex/server';
+
 /**
- * Convex Auth JWT provider configuration.
+ * Better Auth JWT provider configuration (STATIC JWKS).
  *
- * Convex Auth signs its own session JWTs and must declare itself as a trusted
- * provider here — WITHOUT this file (plus the JWT_PRIVATE_KEY and JWKS env vars
- * on the Convex deployment), signUp/signIn fail with a 400 because the backend
- * cannot mint or verify a session token.
+ * The Convex backend must know how to verify the session JWTs Better Auth
+ * mints. Instead of discovering the JWKS over the backend's own public URL
+ * (which failed on self-hosted Coolify — AuthProviderDiscoveryFailed), we bake
+ * a STATIC JWKS into the JWKS env var and hand it straight to the provider. The
+ * backend never fetches its own URL.
  *
- * `domain` is the deployment's own HTTP-actions origin, provided automatically
- * by the backend as CONVEX_SITE_URL (self-hosted: the :3211 origin, e.g.
- * https://convex-site.resolvaio.com). `applicationID: 'convex'` is the fixed id
- * Convex Auth uses for its issued tokens.
+ * BOOTSTRAP: on the very FIRST deploy the JWKS does not exist yet — it is
+ * generated FROM a deployed backend (`auth:generateJwk`). So we only pass `jwks`
+ * when it is present AND valid JSON; otherwise we fall back to the library's
+ * URL-discovery default just long enough to complete that first deploy. Once you
+ * run
+ *   npx convex run auth:generateJwk | npx convex env set JWKS
+ * the static key takes over on the next deploy. An invalid/partial JWKS value is
+ * ignored (rather than throwing at module load and failing the whole push).
  */
+function validJwks(): string | undefined {
+  const raw = process.env.JWKS;
+  if (!raw) return undefined;
+  try {
+    JSON.parse(raw);
+    return raw;
+  } catch {
+    return undefined;
+  }
+}
+
 export default {
-  providers: [
-    {
-      domain: process.env.CONVEX_SITE_URL,
-      applicationID: 'convex',
-    },
-  ],
-};
+  providers: [getAuthConfigProvider({ jwks: validJwks() })],
+} satisfies AuthConfig;
