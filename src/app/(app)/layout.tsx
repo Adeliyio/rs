@@ -44,8 +44,11 @@ export default async function AppLayout({
         userName={userName}
         userEmail={userEmail}
       />
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-5xl px-8 py-10 sm:px-12">
+      {/* The main area is a full-height flex column so a centered view
+          (EmptyState uses flex-1 + justify-center) can actually center
+          vertically instead of stacking from the top with dead space above. */}
+      <main className="flex flex-1 flex-col overflow-y-auto">
+        <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-8 sm:px-12">
           {children}
         </div>
       </main>

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Home,
   LogOut,
@@ -100,6 +100,7 @@ export function Sidebar({
   userEmail,
 }: SidebarProps): React.JSX.Element {
   const pathname = usePathname();
+  const router = useRouter();
   const auth = useResolvaioAuth();
 
   const activeCases = cases.filter(
@@ -121,17 +122,20 @@ export function Sidebar({
         </span>
       </div>
 
-      {/* New Case Button */}
+      {/* New Case Button.
+          A plain <Link href="/new"> no-ops when the user is ALREADY on /new
+          (the post-login landing) — the most-clicked control read as dead. We
+          navigate with a changing `fresh` param instead; /new forwards it as a
+          React key so EmptyState REMOUNTS, resetting any open picker or error.
+          From any route this reliably lands on a clean wedge picker. */}
       <div className="px-4 pb-2">
         <Button
-          asChild
+          onClick={() => router.push(`/new?fresh=${Date.now()}`)}
           className="w-full justify-start gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-sidebar-primary-foreground"
           size="sm"
         >
-          <Link href="/new">
-            <Plus className="h-4 w-4" />
-            New Case
-          </Link>
+          <Plus className="h-4 w-4" />
+          New Case
         </Button>
       </div>
 
@@ -257,12 +261,14 @@ export function Sidebar({
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-[12px] font-medium text-primary">
             {userName?.[0]?.toUpperCase() ?? 'U'}
           </div>
-          <div className="min-w-0 flex-1">
+          {/* Name only — the full email is NOT shown always-on in the rail
+              (shoulder-surfing / screenshot / screen-share PII leak, redundant
+              with the name + avatar). The full address lives on the Settings
+              page, where the user goes to confirm which account they're in. The
+              title attr reveals it on deliberate hover. */}
+          <div className="min-w-0 flex-1" title={userEmail ?? undefined}>
             <p className="truncate text-[13px] font-medium text-sidebar-accent-foreground">
               {userName ?? 'User'}
-            </p>
-            <p className="truncate text-[11px] text-sidebar-muted">
-              {userEmail ?? ''}
             </p>
           </div>
           <button

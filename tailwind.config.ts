@@ -59,6 +59,20 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        // Sidebar palette (dark ink navy). These CSS vars are defined in
+        // globals.css but were never registered here, so `bg-sidebar-background`
+        // et al. generated NO CSS — the sidebar fell back to the light page
+        // background (invisible white logo, no contrast vs. the canvas). Mapping
+        // them restores the intended dark sidebar.
+        'sidebar-background': 'hsl(var(--sidebar-background))',
+        'sidebar-foreground': 'hsl(var(--sidebar-foreground))',
+        'sidebar-primary': 'hsl(var(--sidebar-primary))',
+        'sidebar-primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+        'sidebar-accent': 'hsl(var(--sidebar-accent))',
+        'sidebar-accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+        'sidebar-border': 'hsl(var(--sidebar-border))',
+        'sidebar-ring': 'hsl(var(--sidebar-ring))',
+        'sidebar-muted': 'hsl(var(--sidebar-muted))',
       },
       borderRadius: {
         '2xl': 'calc(var(--radius) + 8px)',  /* 20px — premium cards */

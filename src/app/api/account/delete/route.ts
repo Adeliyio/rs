@@ -1,5 +1,5 @@
 /**
- * POST /api/account/delete
+ * DELETE /api/account/delete
  *
  * GDPR/CCPA right to deletion — atomic cascade across all user data.
  *
@@ -35,7 +35,7 @@ const deleteAccountSchema = z.object({
 // evaluate it during build-time page-data collection (fails without runtime env).
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: Request) {
+export async function DELETE(request: Request) {
   try {
     const user = await currentUser();
     if (!user) {
@@ -105,14 +105,4 @@ export async function POST(request: Request) {
       { status: 500 },
     );
   }
-}
-
-export async function DELETE() {
-  return NextResponse.json(
-    {
-      error: 'Method not allowed. Use POST with { confirmation } body.',
-      required_confirmation: CONFIRMATION_PHRASE,
-    },
-    { status: 405 },
-  );
 }

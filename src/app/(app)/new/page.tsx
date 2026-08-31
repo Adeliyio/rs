@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 export default async function NewCasePage({
   searchParams,
 }: {
-  searchParams: Promise<{ wedge?: string; plan?: string }>;
+  searchParams: Promise<{ wedge?: string; plan?: string; fresh?: string }>;
 }): Promise<React.JSX.Element> {
-  const { wedge, plan } = await searchParams;
+  const { wedge, plan, fresh } = await searchParams;
 
   // `?plan=unlimited` came from the subscription pricing CTA → subscription wedge.
   const preselect =
@@ -29,5 +29,8 @@ export default async function NewCasePage({
         ? 'subscription'
         : undefined;
 
-  return <EmptyState preselectWedge={preselect} />;
+  // `?fresh=<ts>` comes from the sidebar "New Case" button. Using it as a key
+  // remounts EmptyState so any open picker / error state is reset — this is what
+  // makes "New Case" do something when the user is already on /new.
+  return <EmptyState key={fresh ?? 'default'} preselectWedge={preselect} />;
 }

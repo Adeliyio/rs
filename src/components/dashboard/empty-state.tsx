@@ -88,6 +88,11 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
           err instanceof Error ? err.message : 'Failed to create case',
         );
         setIsCreating(null);
+        // Close whichever picker is open so the error banner (rendered in normal
+        // page flow) is not hidden behind the fixed inset-0 modal overlay — else
+        // the user picks a state, nothing appears to happen, and they're stuck.
+        setShowJurisdictionPicker(false);
+        setShowSubscriptionStatePicker(false);
       }
     },
     [router],
@@ -145,9 +150,9 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
   }
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center px-6 py-20">
+    <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
       <div className="max-w-xl text-center">
-        <h1 className="text-[32px] font-semibold tracking-tight text-foreground sm:text-[40px]">
+        <h1 className="font-display text-[34px] font-semibold tracking-tight text-foreground sm:text-[42px]">
           Recover what&apos;s yours
         </h1>
         <p className="mt-4 text-[15px] leading-[1.7] text-muted-foreground">
@@ -162,7 +167,7 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
         </div>
       )}
 
-      <div className="mt-12 grid w-full max-w-2xl gap-6 sm:grid-cols-2">
+      <div className="mt-10 grid w-full max-w-2xl gap-6 sm:grid-cols-2">
         {/* Deposit tile */}
         <button
           type="button"
@@ -176,7 +181,7 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <Shield className="h-5 w-5 text-primary" />
           </div>
-          <h2 className="mt-5 text-[18px] font-semibold text-foreground">Security Deposit</h2>
+          <h2 className="mt-5 font-display text-[20px] font-semibold text-foreground">Security Deposit</h2>
           <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
             Your landlord didn&apos;t return your deposit — or withheld too
             much. We generate a demand letter grounded in your state&apos;s
@@ -220,7 +225,7 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <Receipt className="h-5 w-5 text-primary" />
           </div>
-          <h2 className="mt-5 text-[18px] font-semibold text-foreground">Cancel a Subscription</h2>
+          <h2 className="mt-5 font-display text-[20px] font-semibold text-foreground">Cancel a Subscription</h2>
           <p className="mt-2 text-[14px] leading-[1.7] text-muted-foreground">
             A gym, service, or app that won&apos;t cancel. We generate a
             step-by-step email sequence using the rules that protect you.
@@ -373,7 +378,7 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
       )}
 
       {/* Disclaimer — PRD Principle 5 */}
-      <p className="mt-12 max-w-lg text-center text-[12px] text-muted-foreground/70 leading-relaxed">
+      <p className="mt-12 max-w-lg text-center text-[12px] text-muted-foreground leading-relaxed">
         Resolvaio is a writing and research assistance tool. It is not a law
         firm, does not provide legal advice, and does not guarantee outcomes.
         Consider consulting a licensed attorney for advice specific to your

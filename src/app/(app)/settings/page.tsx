@@ -13,6 +13,12 @@ import { Download, Trash2, AlertTriangle, Loader2, CreditCard, ExternalLink } fr
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { authClient } from '@/lib/auth-client';
+
+/** The server (api/account/delete) requires this exact confirmation phrase. The
+ *  two-step "Yes, delete everything" button is the UI gate; it sends the phrase
+ *  so client and server agree on one contract. */
+const DELETE_CONFIRMATION_PHRASE = 'DELETE MY ACCOUNT';
 
 interface SubscriptionData {
   id: string;
@@ -25,6 +31,13 @@ interface SubscriptionData {
 }
 
 export default function SettingsPage(): React.JSX.Element {
+  // Settings is where the full account email lives (it's removed from the
+  // always-on sidebar). Show it so the user can confirm WHICH account they're
+  // about to export or delete data for.
+  const { data: session } = authClient.useSession();
+  const accountName = session?.user?.name ?? null;
+  const accountEmail = session?.user?.email ?? null;
+
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -71,12 +84,25 @@ export default function SettingsPage(): React.JSX.Element {
     setIsDeleting(true);
     setError(null);
     try {
-      const res = await fetch('/api/account/delete', { method: 'DELETE' });
+      const res = await fetch('/api/account/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        // The two-step confirm button IS the gate; send the phrase the server
+        // requires so the DELETE request validates (previously no body was sent,
+        // so the request could never satisfy the schema).
+        body: JSON.stringify({ confirmation: DELETE_CONFIRMATION_PHRASE }),
+      });
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
         throw new Error(data.error ?? 'Deletion failed');
       }
-      // Redirect to home after deletion
+      // Clear the client auth session before leaving, mirroring the sidebar
+      // logout — don't rely solely on the server having invalidated the session.
+      try {
+        await authClient.signOut();
+      } catch {
+        // best-effort — the account is already deleted; still redirect out.
+      }
       window.location.href = '/';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Deletion failed');
@@ -90,6 +116,27 @@ export default function SettingsPage(): React.JSX.Element {
       <p className="mt-2 text-[15px] text-muted-foreground">
         Manage your account data and privacy preferences.
       </p>
+
+      {/* Signed-in account — the canonical home for the full email. Confirms
+          whose data the Export / Delete actions below will affect. */}
+      {(accountName || accountEmail) && (
+        <div className="mt-6 flex items-center gap-3 rounded-xl border bg-card px-5 py-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[14px] font-semibold text-primary">
+            {(accountName ?? accountEmail ?? 'U')[0]?.toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Signed in as
+            </p>
+            {accountName && (
+              <p className="truncate text-[14px] font-medium text-foreground">{accountName}</p>
+            )}
+            {accountEmail && (
+              <p className="truncate text-[13px] text-muted-foreground">{accountEmail}</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 px-5 py-3">

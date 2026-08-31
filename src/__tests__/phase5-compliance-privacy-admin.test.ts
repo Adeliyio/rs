@@ -142,8 +142,25 @@ describe('5b (cont): Account data deletion API', () => {
   );
   const deleteSource = fs.readFileSync(deletePath, 'utf-8');
 
-  it('exports a DELETE handler', () => {
-    expect(deleteSource).toContain('export async function DELETE()');
+  it('exports a DELETE handler that reads the request (not a 405 stub)', () => {
+    // Must take the request (to read the confirmation body) — the old
+    // `DELETE()` no-arg stub just returned 405 while the real cascade sat in a
+    // POST the client never called, so deletion always failed.
+    expect(deleteSource).toContain('export async function DELETE(request: Request)');
+    // And it must actually run the cascade, not reject the method.
+    expect(deleteSource).toContain('deleteMyAccountCascade');
+    expect(deleteSource).not.toContain("status: 405");
+  });
+
+  it('the settings client sends a DELETE with the confirmation phrase', () => {
+    // Client + server must agree on one contract: method DELETE, body carrying
+    // the confirmation phrase the schema requires.
+    const settingsSrc = fs.readFileSync(
+      path.resolve(__dirname, '../app/(app)/settings/page.tsx'),
+      'utf-8',
+    );
+    expect(settingsSrc).toContain("method: 'DELETE'");
+    expect(settingsSrc).toContain('DELETE MY ACCOUNT');
   });
 
   // Convex migration: the per-table Supabase cascade moved into an atomic Convex
