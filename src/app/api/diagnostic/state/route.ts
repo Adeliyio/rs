@@ -17,9 +17,43 @@ import { q, m, currentUser, api } from '@/lib/convex/server';
 import { loadDiagnosticGraph, loadDisclaimers } from '@/lib/kb/loader';
 import { encryptAnswersPii, decryptAnswersPii } from '@/lib/crypto';
 import { ALL_US_STATES } from '@/lib/kb/us-states';
-import type { DiagnosticState } from '@/types/diagnostic.types';
+import { createInitialState, advanceState } from '@/features/diagnostic/engine/state-manager';
+import { getNextNodeId } from '@/features/diagnostic/engine/graph-traversal';
+import type { DiagnosticGraph, DiagnosticState } from '@/types/diagnostic.types';
 import type { Wedge } from '@/types/enums';
 import type { Id } from '@convex/dataModel';
+
+/**
+ * Seed a fresh diagnostic state so the graph's entry `jurisdiction` node is NOT
+ * re-asked when the case was already created WITH a jurisdiction (the EmptyState
+ * wedge modal collects the state, then the graph's first node used to ask it
+ * again — the double state-pick). Both graphs use entry_node 'jurisdiction'.
+ *
+ * We only seed when the entry node really is the jurisdiction select AND the
+ * stored jurisdiction resolves to a valid next node (i.e. it's a supported
+ * option, not 'OTHER'/unsupported). Otherwise we fall back to a normal fresh
+ * state and let the node ask, so the anonymous/edge paths are unaffected.
+ */
+function seedJurisdiction(
+  caseId: string,
+  graph: DiagnosticGraph,
+  jurisdiction: string | null | undefined,
+): DiagnosticState | null {
+  if (!jurisdiction) return null;
+  const entryId = graph.entry_node;
+  const entryNode = graph.nodes[entryId];
+  if (!entryNode || entryId !== 'jurisdiction' || entryNode.type !== 'select') {
+    return null;
+  }
+  const code = jurisdiction.toUpperCase();
+  const nextNodeId = getNextNodeId(entryNode, code);
+  // Only skip the node if this jurisdiction has a defined onward transition and
+  // it isn't the unsupported-state branch (that branch must be reached via the
+  // node itself, never silently seeded past).
+  if (!nextNodeId || nextNodeId === 'unsupported_state') return null;
+  const fresh = createInitialState(caseId, graph.version ?? '', entryId);
+  return advanceState(fresh, entryId, code, nextNodeId);
+}
 // Calls Convex — never cache (Next 14 caches GET route handlers by default).
 export const dynamic = 'force-dynamic';
 
@@ -61,7 +95,16 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const graph = loadDiagnosticGraph(caseRow.wedge as Wedge);
 
     // Return graph + existing state (may be null for new cases)
-    const state = caseRow.diagnostic_state as DiagnosticState | null;
+    let state = caseRow.diagnostic_state as DiagnosticState | null;
+
+    // No persisted state yet → this is the first load of a freshly-created case.
+    // Pre-seed the jurisdiction the case was created with so the diagnostic does
+    // not ask the user for their state a SECOND time (the EmptyState modal
+    // already collected it). Falls back to null (normal fresh start) when the
+    // jurisdiction can't be safely seeded past.
+    if (!state) {
+      state = seedJurisdiction(caseId, graph, caseRow.jurisdiction);
+    }
 
     // Decrypt PII fields before sending to the client
     const decryptedState = state && state.answers
