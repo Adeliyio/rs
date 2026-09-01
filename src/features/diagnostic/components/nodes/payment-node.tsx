@@ -1,14 +1,16 @@
 'use client';
 
 /**
- * Payment node — renders DisclaimerAcknowledgment then PolarCheckout.
+ * Payment node — renders DisclaimerAcknowledgment then the PlanSelector.
  *
  * Flow:
  * 1. User acknowledges the disclaimer (checkbox + "Generate" button)
- * 2. PolarCheckout redirects the browser to Polar's hosted checkout
+ * 2. PlanSelector presents three peer options (single letter / monthly / annual)
+ *    and redirects the browser to Polar's hosted checkout for the chosen one
  * 3. Polar redirects back to POLAR_SUCCESS_URL after payment; payment_status
- *    transitions to 'paid' asynchronously via the order.paid webhook, which the
- *    intake-client polls for before generating.
+ *    transitions to 'paid' asynchronously via the order.paid webhook (one-time),
+ *    or the subscription.active webhook grants Unlimited (which waives the
+ *    per-case fee, M1). The intake-client polls before generating.
  *
  * There is no in-page success callback under the redirect flow — the case is
  * linked to the order via checkout metadata ({caseId}) on the webhook.
@@ -17,8 +19,7 @@
 import { useState, useCallback, useEffect } from 'react';
 
 import { DisclaimerAcknowledgment } from '@/components/disclaimer-acknowledgment';
-import { PolarCheckout } from '@/features/checkout/components/polar-checkout';
-import { SubscriptionUpsell } from '@/features/checkout/components/subscription-upsell';
+import { PlanSelector } from '@/features/checkout/components/plan-selector';
 import { assignPriceVariant } from '@/lib/pricing/ab-pricing';
 import type { DiagnosticNode } from '@/types/diagnostic.types';
 
@@ -100,32 +101,16 @@ export default function PaymentNodeComponent({
     );
   }
 
-  // step === 'checkout'
+  // step === 'checkout' — present all three options as peers so the user picks
+  // one (single letter vs monthly vs annual), rather than a $49 box with the
+  // subscription bolted on beneath it.
   const priceVariant = assignPriceVariant(caseId);
 
   return (
-    <div className="space-y-6">
-      <PolarCheckout
-        productId={priceVariant.productId}
-        caseId={caseId}
-        productName={`Security Deposit Demand Letter (${priceVariant.label})`}
-      />
-
-      {/* Unlimited alternative at the FINAL payment step: a user who'd rather
-          have all-cases access than pay per letter can pick it here instead of
-          the one-time charge. Choosing a plan goes to Polar subscription
-          checkout; once active, the generate route waives the per-case fee (M1),
-          so this case unlocks with no $49 charge. Authed context (payment node
-          only runs at /case/[id]), so the upsell's api.users.me resolves. */}
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          or get unlimited access
-        </span>
-        <div className="h-px flex-1 bg-border" />
-      </div>
-
-      <SubscriptionUpsell onDismiss={() => { /* inline on the paywall — nothing to dismiss */ }} />
-    </div>
+    <PlanSelector
+      caseId={caseId}
+      oneTimeProductId={priceVariant.productId}
+      oneTimeLabel={priceVariant.label}
+    />
   );
 }

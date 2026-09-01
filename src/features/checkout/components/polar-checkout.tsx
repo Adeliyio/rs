@@ -40,7 +40,7 @@ interface PolarCheckoutProps {
 /* ------------------------------------------------------------------ */
 
 /** Builds the `/api/checkout` URL with products + metadata + optional email. */
-function buildCheckoutUrl({
+export function buildCheckoutUrl({
   productId,
   caseId,
   userId,
