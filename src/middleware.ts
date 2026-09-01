@@ -1,15 +1,33 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getSessionCookie } from 'better-auth/cookies';
 
 /**
  * Middleware — resolves the Better Auth session (edge-safe).
  *
- * Uses Better Auth's `getSessionCookie` to check for a session cookie WITHOUT a
- * network round-trip (the documented optimistic middleware pattern — the actual
- * session is still verified server-side on every Convex call). Then keeps the
- * app's existing subdomain routing (resolvaio.com marketing vs app.resolvaio.com
- * app) and the public/protected route policy exactly as before.
+ * Checks for the Better Auth session COOKIE without a network round-trip (the
+ * documented optimistic middleware pattern — the real session is still verified
+ * server-side on every Convex call). We read the cookie inline rather than
+ * importing `getSessionCookie` from `better-auth/cookies`: that module's barrel
+ * transitively pulls in `getCookieCache` → jose JWE decrypt → `DecompressionStream`,
+ * a Node API the Edge Runtime (where middleware runs) does not support, which
+ * broke the production build. `getSessionCookie` itself is pure cookie parsing,
+ * so the inline equivalent below is behaviourally identical and edge-safe.
  */
+
+// Better Auth default cookie identity: prefix `better-auth`, name
+// `session_token` → `better-auth.session_token`. getSessionCookie also accepts a
+// `-` separated variant and the `__Secure-` prefix (production HTTPS), so we
+// check all four the same way it does. Presence only — never decrypted here.
+const SESSION_COOKIE_NAMES = [
+  '__Secure-better-auth.session_token',
+  'better-auth.session_token',
+  '__Secure-better-auth-session_token',
+  'better-auth-session_token',
+] as const;
+
+/** Edge-safe presence check for the Better Auth session cookie. */
+function hasSessionCookie(request: NextRequest): boolean {
+  return SESSION_COOKIE_NAMES.some((name) => Boolean(request.cookies.get(name)?.value));
+}
 
 /** Routes that do not require an authenticated session. */
 const PUBLIC_ROUTES = [
@@ -182,7 +200,7 @@ export default async function middleware(request: NextRequest): Promise<NextResp
   // Optimistic session check: presence of the Better Auth session cookie. This
   // is a cheap edge-safe gate for routing only — every Convex call still fully
   // verifies the session server-side, so a stale/forged cookie grants no data.
-  const authed = getSessionCookie(request) !== null;
+  const authed = hasSessionCookie(request);
 
   /* ---- Redirect unauthenticated users away from protected routes ---- */
   if (!authed && isProtected(request) && !isPublicPath(pathname)) {
