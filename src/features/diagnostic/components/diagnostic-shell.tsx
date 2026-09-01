@@ -15,6 +15,8 @@ import { cn } from '@/lib/utils';
 import type { Wedge } from '@/types/enums';
 
 import { useDiagnostic } from '@/features/diagnostic/hooks/use-diagnostic';
+import { UnsupportedJurisdictionScreen } from '@/components/dashboard/unsupported-jurisdiction-screen';
+import { STATE_RESOURCES } from '@/lib/kb/state-resources';
 import { NodeRenderer } from './node-renderer';
 
 /* ------------------------------------------------------------------ */
@@ -126,6 +128,32 @@ export default function DiagnosticShell({
   /* ---- Loading state ---- */
   if (isLoading || !currentNode || !state) {
     return <LoadingSkeleton />;
+  }
+
+  /* ---- Unsupported jurisdiction ----
+     The user picked a state we don't cover yet (deposit graph: 'Another state'
+     → unsupported_jurisdiction terminal). This is NOT a refusal — show the same
+     resources + generic-letter screen the anonymous shell uses, not the generic
+     "complete" screen (which would strand the user with no next step). Reached
+     via the diagnostic now that the state question is asked once, in-flow. */
+  if (
+    currentNode.type === 'terminal' &&
+    currentNode.terminal_type === 'unsupported_jurisdiction'
+  ) {
+    // Answers are keyed by NODE ID; the "which state?" node's id is
+    // 'unsupported_state' (field jurisdiction_state_other).
+    const stateCode =
+      typeof state.answers['unsupported_state'] === 'string'
+        ? (state.answers['unsupported_state'] as string)
+        : '';
+    return (
+      <UnsupportedJurisdictionScreen
+        state={stateCode}
+        stateResources={STATE_RESOURCES[stateCode] ?? null}
+        genericLetterUrl="/api/kb/generic-demand-letter"
+        onBack={goBack}
+      />
+    );
   }
 
   /* ---- Completion state ---- */

@@ -1,43 +1,27 @@
 'use client';
 
 /**
- * Empty state — shown when the user has no cases.
+ * Empty state — shown when the user has no cases (and the /new "New Case" entry).
  * Displays two wedge tiles (deposit, subscription) to start a new case.
- * PRD §6.2 step 1: "Wedge identification (two tiles, or pre-selected by entry route)."
  *
- * On tile click: calls POST /api/cases to create a case, then redirects
- * to /case/[id] to begin the diagnostic.
+ * On tile click: calls POST /api/cases WITHOUT a jurisdiction and redirects to
+ * /case/[id]. The state is collected by the diagnostic's first question (so it
+ * is asked exactly once — no modal, no double-ask). Unsupported states are
+ * handled inside the deposit graph itself (its OTHER → unsupported flow).
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2, Receipt, Shield } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { UnsupportedJurisdictionScreen } from '@/components/dashboard/unsupported-jurisdiction-screen';
-import { STATE_RESOURCES } from '@/lib/kb/state-resources';
-
-/* ------------------------------------------------------------------ */
-/*  Jurisdiction picker for deposit wedge                             */
-/* ------------------------------------------------------------------ */
-
-const DEPOSIT_JURISDICTIONS = ['CA', 'TX', 'NY', 'FL'] as const;
-
-const US_STATES = [
-  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
-  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
-  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
-  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
-  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
-  'DC',
-] as const;
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
 interface EmptyStateProps {
-  /** Deep-link hint from marketing CTAs (?wedge=…): pre-opens the matching state picker. */
+  /** Deep-link hint from marketing CTAs (?wedge=…): starts that wedge directly. */
   preselectWedge?: 'deposit' | 'subscription';
 }
 
@@ -45,24 +29,19 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
   const router = useRouter();
   const [isCreating, setIsCreating] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showJurisdictionPicker, setShowJurisdictionPicker] = useState(
-    preselectWedge === 'deposit',
-  );
-  const [showSubscriptionStatePicker, setShowSubscriptionStatePicker] = useState(
-    preselectWedge === 'subscription',
-  );
-  const [unsupportedState, setUnsupportedState] = useState<string | null>(null);
 
   const createCase = useCallback(
-    async (wedge: string, jurisdiction: string) => {
+    async (wedge: string) => {
       setIsCreating(wedge);
       setError(null);
 
       try {
+        // No jurisdiction sent — the diagnostic collects the state as its first
+        // question. The API creates the case with a PENDING jurisdiction.
         const response = await fetch('/api/cases', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ wedge, jurisdiction }),
+          body: JSON.stringify({ wedge }),
         });
 
         if (!response.ok) {
@@ -88,66 +67,34 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
           err instanceof Error ? err.message : 'Failed to create case',
         );
         setIsCreating(null);
-        // Close whichever picker is open so the error banner (rendered in normal
-        // page flow) is not hidden behind the fixed inset-0 modal overlay — else
-        // the user picks a state, nothing appears to happen, and they're stuck.
-        setShowJurisdictionPicker(false);
-        setShowSubscriptionStatePicker(false);
       }
     },
     [router],
   );
 
+  // No state modal: the diagnostic asks for the state as its first question, so
+  // clicking a wedge creates the case immediately (state omitted → PENDING, set
+  // by the diagnostic). This removes the old double-ask (modal state → diagnostic
+  // re-asked the same state).
   const handleDepositClick = useCallback(() => {
-    setShowJurisdictionPicker(true);
-    setError(null);
-  }, []);
-
-  const handleJurisdictionSelect = useCallback(
-    (jurisdiction: string) => {
-      void createCase('deposit', jurisdiction);
-    },
-    [createCase],
-  );
+    void createCase('deposit');
+  }, [createCase]);
 
   const handleSubscriptionClick = useCallback(() => {
-    setShowSubscriptionStatePicker(true);
-    setError(null);
-  }, []);
+    void createCase('subscription');
+  }, [createCase]);
 
-  const handleSubscriptionStateSelect = useCallback(
-    (state: string) => {
-      void createCase('subscription', state);
-    },
-    [createCase],
-  );
-
-  const handleMyStateNotListed = useCallback(() => {
-    setShowJurisdictionPicker(false);
-    setUnsupportedState('select');
-  }, []);
-
-  const handleUnsupportedStateSelect = useCallback((selectedState: string) => {
-    setUnsupportedState(selectedState);
-  }, []);
-
-  const handleBackFromUnsupported = useCallback(() => {
-    setUnsupportedState(null);
-  }, []);
-
-  /* ---- Unsupported-jurisdiction full screen ---- */
-  if (unsupportedState && unsupportedState !== 'select') {
-    const resources = STATE_RESOURCES[unsupportedState] ?? null;
-
-    return (
-      <UnsupportedJurisdictionScreen
-        state={unsupportedState}
-        stateResources={resources}
-        genericLetterUrl="/api/kb/generic-demand-letter"
-        onBack={handleBackFromUnsupported}
-      />
-    );
-  }
+  // Deep-link (?wedge=deposit|subscription from a marketing CTA): start that
+  // wedge directly, once. The diagnostic still collects the state as its first
+  // question. Guarded so it fires a single time even under StrictMode remounts.
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (autoStarted.current) return;
+    if (preselectWedge === 'deposit' || preselectWedge === 'subscription') {
+      autoStarted.current = true;
+      void createCase(preselectWedge);
+    }
+  }, [preselectWedge, createCase]);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
@@ -201,7 +148,7 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
             )}
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            {DEPOSIT_JURISDICTIONS.map((state) => (
+            {['CA', 'TX', 'NY', 'FL'].map((state) => (
               <span
                 key={state}
                 className="rounded-md bg-muted px-2 py-0.5 text-[12px] font-medium text-muted-foreground"
@@ -250,132 +197,6 @@ export function EmptyState({ preselectWedge }: EmptyStateProps = {}): React.JSX.
           </div>
         </button>
       </div>
-
-      {/* Jurisdiction picker modal for deposit */}
-      {showJurisdictionPicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-sm rounded-2xl border bg-card p-8 shadow-premium-lg">
-            <h3 className="text-[18px] font-semibold text-foreground">Select your state</h3>
-            <p className="mt-2 text-[14px] text-muted-foreground">
-              Security deposit recovery is currently available in these states.
-            </p>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              {DEPOSIT_JURISDICTIONS.map((state) => (
-                <button
-                  key={state}
-                  type="button"
-                  onClick={() => handleJurisdictionSelect(state)}
-                  disabled={isCreating !== null}
-                  className={cn(
-                    'flex items-center justify-center rounded-xl border px-4 py-3.5',
-                    'text-[14px] font-medium transition-all',
-                    'hover:bg-accent hover:border-primary/20',
-                    isCreating !== null && 'pointer-events-none opacity-70',
-                  )}
-                >
-                  {state}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleMyStateNotListed}
-              className="mt-4 w-full text-[14px] font-medium text-primary transition-colors hover:text-primary/80"
-            >
-              My state isn&apos;t listed
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setShowJurisdictionPicker(false)}
-              className="mt-3 w-full rounded-xl border px-4 py-2.5 text-[14px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* State picker modal for subscription */}
-      {showSubscriptionStatePicker && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-md rounded-2xl border bg-card p-8 shadow-premium-lg">
-            <h3 className="text-[18px] font-semibold text-foreground">Select your state</h3>
-            <p className="mt-2 text-[14px] text-muted-foreground">
-              Subscription cancellation is available in all US states.
-            </p>
-
-            <div className="mt-6 grid max-h-64 grid-cols-4 gap-2 overflow-y-auto">
-              {US_STATES.map((state) => (
-                <button
-                  key={state}
-                  type="button"
-                  onClick={() => handleSubscriptionStateSelect(state)}
-                  disabled={isCreating !== null}
-                  className={cn(
-                    'flex items-center justify-center rounded-lg border px-3 py-2.5',
-                    'text-[13px] font-medium transition-all',
-                    'hover:bg-accent hover:border-primary/20',
-                    isCreating !== null && 'pointer-events-none opacity-70',
-                  )}
-                >
-                  {state}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowSubscriptionStatePicker(false)}
-              className="mt-5 w-full rounded-xl border px-4 py-2.5 text-[14px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Unsupported state picker — choose which unsupported state */}
-      {unsupportedState === 'select' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="mx-4 w-full max-w-md rounded-2xl border bg-card p-8 shadow-premium-lg">
-            <h3 className="text-[18px] font-semibold text-foreground">Select your state</h3>
-            <p className="mt-2 text-[14px] text-muted-foreground">
-              We&apos;ll show you free resources and a generic demand letter template
-              for your state.
-            </p>
-
-            <div className="mt-6 grid max-h-64 grid-cols-4 gap-2 overflow-y-auto">
-              {US_STATES.filter(
-                (s) => !(DEPOSIT_JURISDICTIONS as readonly string[]).includes(s),
-              ).map((state) => (
-                <button
-                  key={state}
-                  type="button"
-                  onClick={() => handleUnsupportedStateSelect(state)}
-                  className={cn(
-                    'flex items-center justify-center rounded-lg border px-3 py-2.5',
-                    'text-[13px] font-medium transition-all',
-                    'hover:bg-accent hover:border-primary/20',
-                  )}
-                >
-                  {state}
-                </button>
-              ))}
-            </div>
-
-            <button
-              type="button"
-              onClick={handleBackFromUnsupported}
-              className="mt-5 w-full rounded-xl border px-4 py-2.5 text-[14px] text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Disclaimer — PRD Principle 5 */}
       <p className="mt-12 max-w-lg text-center text-[12px] text-muted-foreground leading-relaxed">

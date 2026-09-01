@@ -26,18 +26,32 @@ const US_STATES = [
 
 interface CreateCaseBody {
   wedge: string;
-  jurisdiction: string;
+  /**
+   * Optional. When the case is started from the dashboard "New Case" flow the
+   * state is NOT collected up front — the diagnostic asks it as its first
+   * question (avoiding the old double-ask). In that case jurisdiction is omitted
+   * and the case is created with a PENDING_JURISDICTION sentinel, which the
+   * diagnostic overwrites with the real state on the first answer (via the
+   * saveDiagnosticState PUT). Deep-link / anonymous flows may still pass a
+   * validated jurisdiction directly.
+   */
+  jurisdiction?: string;
 }
 
+/** Sentinel for a case whose state the diagnostic will collect on question 1. */
+const PENDING_JURISDICTION = 'PENDING';
+
 function isValidCreateBody(body: unknown): body is CreateCaseBody {
-  return (
-    typeof body === 'object' &&
-    body !== null &&
-    'wedge' in body &&
-    typeof (body as CreateCaseBody).wedge === 'string' &&
-    'jurisdiction' in body &&
-    typeof (body as CreateCaseBody).jurisdiction === 'string'
-  );
+  if (typeof body !== 'object' || body === null || !('wedge' in body)) {
+    return false;
+  }
+  const b = body as { wedge: unknown; jurisdiction?: unknown };
+  if (typeof b.wedge !== 'string') return false;
+  // jurisdiction is optional; if present it must be a string (validated below).
+  if ('jurisdiction' in b && b.jurisdiction !== undefined && typeof b.jurisdiction !== 'string') {
+    return false;
+  }
+  return true;
 }
 
 /* ------------------------------------------------------------------ */
@@ -105,23 +119,30 @@ export async function POST(request: Request) {
       );
     }
 
-    if (wedge === 'deposit') {
-      if (!(DEPOSIT_JURISDICTION as readonly string[]).includes(jurisdiction)) {
+    // Jurisdiction is collected by the diagnostic's first question when omitted.
+    // Only validate it when the caller actually supplied one (deep-link/anonymous
+    // paths); an omitted state becomes the PENDING sentinel and is set later.
+    let jurisdictionToUse: string = PENDING_JURISDICTION;
+    if (jurisdiction !== undefined && jurisdiction !== '') {
+      if (wedge === 'deposit') {
+        if (!(DEPOSIT_JURISDICTION as readonly string[]).includes(jurisdiction)) {
+          return NextResponse.json(
+            { error: `Invalid jurisdiction for deposit: '${jurisdiction}'. Must be one of: ${DEPOSIT_JURISDICTION.join(', ')}` },
+            { status: 400 },
+          );
+        }
+      } else if (!(US_STATES as readonly string[]).includes(jurisdiction)) {
         return NextResponse.json(
-          { error: `Invalid jurisdiction for deposit: '${jurisdiction}'. Must be one of: ${DEPOSIT_JURISDICTION.join(', ')}` },
+          { error: `Invalid jurisdiction: '${jurisdiction}'. Must be a valid US state code.` },
           { status: 400 },
         );
       }
-    } else if (!(US_STATES as readonly string[]).includes(jurisdiction)) {
-      return NextResponse.json(
-        { error: `Invalid jurisdiction: '${jurisdiction}'. Must be a valid US state code.` },
-        { status: 400 },
-      );
+      jurisdictionToUse = jurisdiction;
     }
 
     const result = await m(api.cases.create, {
       wedge: wedge as 'deposit' | 'subscription',
-      jurisdiction,
+      jurisdiction: jurisdictionToUse,
     });
 
     // Uniqueness guard (replaces the old 23505 / uq_active_case handling).

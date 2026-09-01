@@ -363,7 +363,7 @@ describe('Phase 2: Testimonial consent integration', () => {
 /* ================================================================== */
 
 describe('Phase 2: Subscription jurisdiction — no longer hardcoded', () => {
-  it('empty-state no longer hardcodes CA for subscription', async () => {
+  it('empty-state no longer hardcodes CA and no longer collects state itself', async () => {
     const fs = await import('fs');
     const path = await import('path');
     const source = fs.readFileSync(
@@ -374,31 +374,26 @@ describe('Phase 2: Subscription jurisdiction — no longer hardcoded', () => {
     // Should NOT contain the old hardcoded subscription CA
     expect(source).not.toContain("void createCase('subscription', 'CA')");
 
-    // Should have a state picker for subscription
-    expect(source).toContain('showSubscriptionStatePicker');
-    expect(source).toContain('handleSubscriptionStateSelect');
-
-    // Should include all US states
-    expect(source).toContain('US_STATES');
+    // The state modal is gone — EmptyState creates the case WITHOUT a
+    // jurisdiction; the diagnostic asks for the state once (no double-ask).
+    expect(source).not.toContain('showSubscriptionStatePicker');
+    expect(source).not.toContain('Select your state');
+    expect(source).toContain("createCase('subscription')");
   });
 
-  it('subscription state picker includes all 50 states + DC', async () => {
+  it('subscription state (all 50 + DC) is collected by the diagnostic graph, not a modal', async () => {
     const fs = await import('fs');
     const path = await import('path');
-    const source = fs.readFileSync(
-      path.resolve(process.cwd(), 'src/components/dashboard/empty-state.tsx'),
-      'utf-8',
+    const graph = JSON.parse(
+      fs.readFileSync(
+        path.resolve(process.cwd(), 'kb/diagnostics/subscription-graph.json'),
+        'utf-8',
+      ),
     );
-
-    // Extract the US_STATES array
-    const match = source.match(/const US_STATES\s*=\s*\[([\s\S]*?)\]\s*as const/);
-    expect(match).not.toBeNull();
-
-    if (match) {
-      const statesString = match[1]!;
-      const states = statesString.match(/'[A-Z]{2}'/g) ?? [];
-      expect(states.length).toBe(51); // 50 states + DC
-    }
+    // The jurisdiction node sources the full US list from the KB, not a
+    // hardcoded picker in the component.
+    expect(graph.entry_node).toBe('jurisdiction');
+    expect(graph.nodes.jurisdiction.options_source).toBe('all_us_states');
   });
 
   it('subscription graph collects jurisdiction as first node', async () => {

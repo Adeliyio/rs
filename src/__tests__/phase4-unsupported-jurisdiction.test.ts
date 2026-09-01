@@ -186,58 +186,56 @@ describe('4b: Unsupported-jurisdiction screen component', () => {
 });
 
 /* ================================================================== */
-/*  4. Empty-state — "My state isn't listed" flow                     */
+/*  4. Unsupported jurisdiction is handled in the diagnostic shell    */
 /* ================================================================== */
 
-describe('4b (cont): Empty-state — unsupported jurisdiction flow', () => {
-  const emptyStatePath = path.resolve(
-    __dirname,
-    '../components/dashboard/empty-state.tsx',
+// The state is now collected ONCE by the diagnostic's first question (no
+// EmptyState modal — that was the double-ask). So the "unsupported state" flow
+// moved from a modal in empty-state.tsx to the diagnostic shell reaching the
+// deposit graph's unsupported_jurisdiction terminal. These tests assert it at
+// its new home and that the resources screen is not degraded to a plain
+// "complete" screen.
+describe('4b (cont): Diagnostic shell — unsupported jurisdiction flow', () => {
+  const shellSource = fs.readFileSync(
+    path.resolve(__dirname, '../features/diagnostic/components/diagnostic-shell.tsx'),
+    'utf-8',
   );
-  const emptyStateSource = fs.readFileSync(emptyStatePath, 'utf-8');
+  const emptyStateSource = fs.readFileSync(
+    path.resolve(__dirname, '../components/dashboard/empty-state.tsx'),
+    'utf-8',
+  );
 
-  it('imports UnsupportedJurisdictionScreen', () => {
-    expect(emptyStateSource).toContain(
-      "import { UnsupportedJurisdictionScreen }",
-    );
+  it('the authed diagnostic shell imports UnsupportedJurisdictionScreen', () => {
+    expect(shellSource).toContain('import { UnsupportedJurisdictionScreen }');
+    expect(shellSource).toContain('import { STATE_RESOURCES }');
   });
 
-  it('imports STATE_RESOURCES', () => {
-    expect(emptyStateSource).toContain(
-      "import { STATE_RESOURCES }",
-    );
+  it('renders UnsupportedJurisdictionScreen on the unsupported_jurisdiction terminal', () => {
+    expect(shellSource).toContain("terminal_type === 'unsupported_jurisdiction'");
+    expect(shellSource).toContain('<UnsupportedJurisdictionScreen');
+    expect(shellSource).toContain("STATE_RESOURCES[stateCode]");
   });
 
-  it('has unsupportedState state variable', () => {
-    expect(emptyStateSource).toContain('unsupportedState');
-    expect(emptyStateSource).toContain('setUnsupportedState');
-  });
-
-  it('has "My state isn\'t listed" button in jurisdiction picker', () => {
-    expect(emptyStateSource).toContain("My state isn");
-    expect(emptyStateSource).toContain('handleMyStateNotListed');
-  });
-
-  it('shows unsupported state picker (excluding CA/TX/NY/FL)', () => {
-    expect(emptyStateSource).toContain('DEPOSIT_JURISDICTIONS');
-    expect(emptyStateSource).toContain('.filter(');
-    expect(emptyStateSource).toContain('.includes(s)');
-  });
-
-  it('renders UnsupportedJurisdictionScreen when state is selected', () => {
-    expect(emptyStateSource).toContain('<UnsupportedJurisdictionScreen');
-    expect(emptyStateSource).toContain('STATE_RESOURCES[unsupportedState]');
-  });
-
-  it('passes generic letter URL to the screen', () => {
+  it('passes the generic letter URL to the screen', () => {
     // Served via an API route that reads the KB file server-side — a raw
     // /kb/*.md link 404s in production (kb/ is not a served static asset).
-    expect(emptyStateSource).toContain('/api/kb/generic-demand-letter');
+    expect(shellSource).toContain('/api/kb/generic-demand-letter');
   });
 
-  it('has back handler to return to main screen', () => {
-    expect(emptyStateSource).toContain('handleBackFromUnsupported');
-    expect(emptyStateSource).toContain('setUnsupportedState(null)');
+  it('the unsupported screen precedes the generic completion screen', () => {
+    // Order matters: the unsupported terminal also sets isComplete, so the
+    // specific screen must be checked BEFORE the generic "Diagnostic complete".
+    const unsupportedIdx = shellSource.indexOf("terminal_type === 'unsupported_jurisdiction'");
+    const completeIdx = shellSource.indexOf('Diagnostic complete');
+    expect(unsupportedIdx).toBeGreaterThan(-1);
+    expect(completeIdx).toBeGreaterThan(unsupportedIdx);
+  });
+
+  it('EmptyState no longer collects the state (no modal — single ask in the diagnostic)', () => {
+    // The old double-ask: a modal here + the graph re-asking. The modal is gone;
+    // EmptyState creates the case with NO jurisdiction and the diagnostic asks.
+    expect(emptyStateSource).not.toContain('Select your state');
+    expect(emptyStateSource).not.toContain('handleMyStateNotListed');
   });
 });
 
@@ -751,16 +749,24 @@ describe('4 (risk mitigation): Safety nets', () => {
 /* ================================================================== */
 
 describe('4 (integration): Full unsupported-jurisdiction flow', () => {
-  it('empty-state has both supported and unsupported paths', () => {
-    const source = fs.readFileSync(
+  it('supported and unsupported paths both run through the diagnostic', () => {
+    // EmptyState just starts the wedge (no state modal); the diagnostic graph
+    // owns BOTH paths: supported states advance into the diagnostic, and the
+    // 'Another state' option routes to the unsupported_jurisdiction terminal,
+    // which the shell renders as the free-resources screen.
+    const emptyState = fs.readFileSync(
       path.resolve(__dirname, '../components/dashboard/empty-state.tsx'),
       'utf-8',
     );
-    // Supported: direct case creation
-    expect(source).toContain('handleJurisdictionSelect');
-    // Unsupported: shows free resources
-    expect(source).toContain('handleMyStateNotListed');
-    expect(source).toContain('UnsupportedJurisdictionScreen');
+    expect(emptyState).toContain("createCase('deposit')");
+    expect(emptyState).not.toContain('handleMyStateNotListed');
+
+    const shell = fs.readFileSync(
+      path.resolve(__dirname, '../features/diagnostic/components/diagnostic-shell.tsx'),
+      'utf-8',
+    );
+    expect(shell).toContain('UnsupportedJurisdictionScreen');
+    expect(shell).toContain("terminal_type === 'unsupported_jurisdiction'");
   });
 
   it('unsupported screen calls waitlist API', () => {
