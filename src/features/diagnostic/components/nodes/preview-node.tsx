@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 
 import { LetterPreview } from '@/features/checkout/components/letter-preview';
+import { SubscriptionUpsell } from '@/features/checkout/components/subscription-upsell';
 import { assignPriceVariant } from '@/lib/pricing/ab-pricing';
 import type { DiagnosticNode } from '@/types/diagnostic.types';
 
@@ -99,17 +100,34 @@ export default function PreviewNodeComponent({
   const priceVariant = assignPriceVariant(caseId);
 
   return (
-    <LetterPreview
-      jurisdiction={data.jurisdiction}
-      jurisdictionFullName={data.jurisdiction_full_name}
-      depositAmount={data.deposit_amount}
-      statuteCount={data.statute_count}
-      deadlineCount={data.deadline_count}
-      penaltyAvailable={data.penalty_available}
-      sampleStatuteCitation={data.sample_statute?.citation ?? 'State statute'}
-      sampleStatuteTitle={data.sample_statute?.title ?? 'Security deposit law'}
-      onProceedToPayment={() => onAnswer({ action: 'proceed_to_payment', price_variant: priceVariant })}
-      priceLabel={priceVariant.label}
-    />
+    <div className="space-y-6">
+      <LetterPreview
+        jurisdiction={data.jurisdiction}
+        jurisdictionFullName={data.jurisdiction_full_name}
+        depositAmount={data.deposit_amount}
+        statuteCount={data.statute_count}
+        deadlineCount={data.deadline_count}
+        penaltyAvailable={data.penalty_available}
+        sampleStatuteCitation={data.sample_statute?.citation ?? 'State statute'}
+        sampleStatuteTitle={data.sample_statute?.title ?? 'Security deposit law'}
+        onProceedToPayment={() => onAnswer({ action: 'proceed_to_payment', price_variant: priceVariant })}
+        priceLabel={priceVariant.label}
+      />
+
+      {/* Unlimited alternative, offered at the decision moment (not only AFTER a
+          one-time purchase). Choosing a plan goes straight to Polar subscription
+          checkout; once subscription.active lands, the deposit generate route
+          waives the per-case fee (M1), so the letter unlocks with no $49 charge.
+          Inline (not a dismissable overlay) — onDismiss is a no-op here. */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          or get unlimited access
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <SubscriptionUpsell onDismiss={() => { /* inline on the paywall — nothing to dismiss */ }} />
+    </div>
   );
 }
