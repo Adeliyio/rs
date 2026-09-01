@@ -32,6 +32,13 @@ const nextConfig = {
   experimental: {
     // Runs instrumentation.ts at server boot — this is what initializes Sentry.
     instrumentationHook: true,
+    // Constrain build-time parallelism to keep peak memory under the Docker
+    // build container's ceiling. `next build` was being OOM-killed (docker exec
+    // exit 255) on the build host; each worker thread carries its own V8 heap,
+    // so capping to a single CPU and disabling worker threads sharply lowers the
+    // peak. Slightly slower build, but it completes instead of being killed.
+    cpus: 1,
+    workerThreads: false,
     // archiver (and its dep readdir-glob) use a malformed exports field where
     // "default" is not the last condition, breaking webpack module resolution.
     // Since archiver is server-only (used in packet bundle generation), we

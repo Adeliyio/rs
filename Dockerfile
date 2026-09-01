@@ -18,6 +18,13 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV DOCKER_BUILD=1
+# `next build` was dying ~1s into "Creating an optimized production build" with
+# docker exec exit 255 (the build container being OOM-killed by the host, not a
+# compile error). Cap V8's heap so the build stays under the container's memory
+# ceiling. 1536MB suits a ~2GB build box; raise it if the build server has more
+# RAM. (Next's parallel build workers — another peak-memory multiplier — are
+# disabled in next.config.mjs via experimental.workerThreads/cpus.)
+ENV NODE_OPTIONS=--max-old-space-size=1536
 RUN pnpm build
 
 # Bundle the worker entrypoint for production (tsx is dev-only).
