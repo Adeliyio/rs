@@ -18,6 +18,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 import { DisclaimerAcknowledgment } from '@/components/disclaimer-acknowledgment';
 import { PolarCheckout } from '@/features/checkout/components/polar-checkout';
+import { SubscriptionUpsell } from '@/features/checkout/components/subscription-upsell';
 import { assignPriceVariant } from '@/lib/pricing/ab-pricing';
 import type { DiagnosticNode } from '@/types/diagnostic.types';
 
@@ -103,10 +104,28 @@ export default function PaymentNodeComponent({
   const priceVariant = assignPriceVariant(caseId);
 
   return (
-    <PolarCheckout
-      productId={priceVariant.productId}
-      caseId={caseId}
-      productName={`Security Deposit Demand Letter (${priceVariant.label})`}
-    />
+    <div className="space-y-6">
+      <PolarCheckout
+        productId={priceVariant.productId}
+        caseId={caseId}
+        productName={`Security Deposit Demand Letter (${priceVariant.label})`}
+      />
+
+      {/* Unlimited alternative at the FINAL payment step: a user who'd rather
+          have all-cases access than pay per letter can pick it here instead of
+          the one-time charge. Choosing a plan goes to Polar subscription
+          checkout; once active, the generate route waives the per-case fee (M1),
+          so this case unlocks with no $49 charge. Authed context (payment node
+          only runs at /case/[id]), so the upsell's api.users.me resolves. */}
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          or get unlimited access
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      <SubscriptionUpsell onDismiss={() => { /* inline on the paywall — nothing to dismiss */ }} />
+    </div>
   );
 }
