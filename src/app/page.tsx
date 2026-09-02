@@ -234,13 +234,13 @@ export default function HomePage(): React.JSX.Element {
         <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
           {/* Left — copy */}
           <div className="text-center lg:text-left">
-            <p className="mb-5 text-[13px] font-medium uppercase tracking-widest text-muted-foreground">
-              Built for renters, subscribers, and anyone tired of getting ripped off
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 px-3 py-1 text-[12px] font-semibold uppercase tracking-widest text-emerald-700">
+              <Check className="h-3.5 w-3.5" /> Cancel any subscription — 100% free, no account
             </p>
             <h1 className="text-[38px] font-semibold leading-[1.1] tracking-tight text-foreground sm:text-[50px]">
-              Demand your deposit back.
+              Cancel the subscription — free.
               <br />
-              Cancel the subscription.
+              Demand your deposit back.
               <br />
               <span className="text-primary">Cite the actual law.</span>
             </h1>
@@ -904,9 +904,9 @@ export default function HomePage(): React.JSX.Element {
             </div>
             <div className="flex gap-10 text-[13px] text-muted-foreground">
               <div className="space-y-2.5">
-                <p className="font-semibold text-muted-foreground">Tools</p>
-                <Link href="/tools/cancel-subscription" className="block transition-colors hover:text-foreground">Cancel Subscription</Link>
-                <Link href="/tools/deposit-deadline" className="block transition-colors hover:text-foreground">Deposit Deadline Calculator</Link>
+                <p className="font-semibold text-foreground">Free Tools</p>
+                <Link href="/tools/cancel-subscription" className="block transition-colors hover:text-foreground">Free Subscription Cancellation</Link>
+                <Link href="/tools/deposit-deadline" className="block transition-colors hover:text-foreground">Free Deposit Deadline Calculator</Link>
                 <Link href="/blog" className="block transition-colors hover:text-foreground">Blog</Link>
               </div>
               <div className="space-y-2.5">

@@ -39,8 +39,15 @@ export async function POST(
         { status: 400 },
       );
     }
+    // Dual gate, matching /generate: a paid case OR an active subscription
+    // (Unlimited) may download the PDF. Without the subscription branch a paying
+    // subscriber could read the letter on screen but never download the mailable
+    // PDF (their case is never marked payment_status:'paid').
     if (caseRow.payment_status !== 'paid') {
-      return NextResponse.json({ error: 'Payment required before PDF generation.' }, { status: 402 });
+      const activeSubscription = await q(api.subscriptions.currentMine, {});
+      if (!activeSubscription) {
+        return NextResponse.json({ error: 'Payment required before PDF generation.' }, { status: 402 });
+      }
     }
 
     const letter = await q(api.letters.latestByCaseMine, { caseId: caseId as Id<'cases'> });

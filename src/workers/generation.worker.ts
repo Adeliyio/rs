@@ -21,6 +21,10 @@ import {
   type DepositDiagnosticAnswers,
 } from '@/features/deposit/generation/letter-generator';
 import {
+  normalizeDepositAnswers,
+  depositDemandIsValid,
+} from '@/features/deposit/generation/normalize-answers';
+import {
   generateSequence,
   type DiagnosticAnswers,
 } from '@/features/subscription/generation/sequence-generator';
@@ -28,6 +32,7 @@ import { computeDeadlines } from '@/lib/deadlines/calculator';
 import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
 import { loadKbEntry } from '@/lib/kb/loader';
 import { enqueueLetterDeliveryEmail } from '@/lib/queue/enqueue';
+import { refundOrder } from '@/lib/payments/auto-refund';
 import { AI_CONFIG } from '@/config/ai.config';
 import { JURISDICTION_TIMEZONE } from '@/types/enums';
 import type { DepositJurisdiction } from '@/types/enums';
@@ -70,11 +75,19 @@ async function loadCaseData(caseId: string, userId: string) {
     console.log(`[GenerationWorker] Skip ${caseId}: status is '${caseRow.status}', not 'intake'.`);
     return { caseRow, skip: true as const };
   }
-  // 2. Deposit paywall — never generate an unpaid deposit letter.
+  // 2. Deposit paywall — generate only if the case is paid OR the owner has an
+  //    active subscription (Unlimited). Mirrors the /generate route's dual gate;
+  //    subscription cases are NEVER marked payment_status:'paid', so a paid-only
+  //    check silently stranded every Unlimited subscriber during a queue spike.
   if (caseRow.wedge === 'deposit' && caseRow.payment_status !== 'paid') {
-    // eslint-disable-next-line no-console
-    console.warn(`[GenerationWorker] Skip ${caseId}: deposit case is not paid.`);
-    return { caseRow, skip: true as const };
+    const entitled = await workerConvex.query(api.service.hasActiveSubscription, {
+      userId: caseRow.user_id as Id<'users'>,
+    });
+    if (!entitled) {
+      // eslint-disable-next-line no-console
+      console.warn(`[GenerationWorker] Skip ${caseId}: deposit case not paid and no active subscription.`);
+      return { caseRow, skip: true as const };
+    }
   }
 
   return { caseRow, skip: false as const };
@@ -90,16 +103,36 @@ async function processDepositGeneration(
 ): Promise<void> {
   const { caseRow, skip } = await loadCaseData(caseId, userId);
   if (skip) return;
-  const answers = decryptAnswersPii(
+  const rawAnswers = decryptAnswersPii(
     (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
   );
 
   // R-3: refusal re-check (mirrors the /generate route's hard-block gate).
-  const refusal = checkRefusal(answers, 'deposit');
+  const refusal = checkRefusal(rawAnswers, 'deposit');
   if (refusal.triggered && refusal.severity === 'hard_block') {
     // eslint-disable-next-line no-console
     console.warn(`[GenerationWorker] Skip ${caseId}: refusal hard-block (${refusal.rule?.rule_id}).`);
     return;
+  }
+
+  // Fetch the owner's name so the letter isn't signed "[YOUR NAME]".
+  const owner = await workerConvex.query(api.service.userById, {
+    userId: caseRow.user_id as Id<'users'>,
+  });
+  const ownerName: string =
+    (owner?.name as string | undefined) ??
+    (owner?.email as string | undefined)?.split('@')[0] ??
+    '';
+
+  // Same normalization the sync route uses — group flatten, key renames, boolean
+  // coercion, money derivation, tenant_name fill. Without this the worker (the
+  // recovery / queue-spike path) shipped "[LANDLORD NAME]" / "$0" letters.
+  const answers = normalizeDepositAnswers(rawAnswers, { userName: ownerName });
+
+  // Never generate a $0 demand from the background path either — fail the job so
+  // it retries / surfaces, rather than delivering junk to a paying customer.
+  if (!depositDemandIsValid(answers)) {
+    throw new Error(`[GenerationWorker] ${caseId}: could not derive a positive demand amount`);
   }
 
   const diagnosticAnswers: DepositDiagnosticAnswers = {
@@ -136,9 +169,24 @@ async function processDepositGeneration(
 
   const generatedLetter = result.letter;
 
+  // Replace any residual [YOUR NAME] / [DATE] the model emitted.
+  const letterToday = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const finalContent = generatedLetter.content
+    .replace(/\[YOUR NAME\]/gi, ownerName)
+    .replace(/\[YOUR FULL NAME\]/gi, ownerName)
+    .replace(/\[FULL NAME\]/gi, ownerName)
+    .replace(/\[NAME\]/gi, ownerName)
+    .replace(/\[DATE\]/gi, letterToday)
+    .replace(/\[TODAY'S DATE\]/gi, letterToday)
+    .replace(/\[CURRENT DATE\]/gi, letterToday);
+
   await workerConvex.mutation(api.service.createLetter, {
     caseId: caseId as Id<'cases'>,
-    content: generatedLetter.content,
+    content: finalContent,
     groundingContextIds: generatedLetter.grounding_context_ids,
     citationValidation: {
       valid: generatedLetter.citation_validation.valid,
@@ -344,9 +392,63 @@ export function createLetterGenerationWorker(): Worker {
     // eslint-disable-next-line no-console
     console.error(`[GenerationWorker] Job ${job?.id} failed:`, err.message);
     Sentry.captureException(err, { tags: { area: 'letter-generation' } });
+
+    // Rel-H3: on TERMINAL failure (all attempts exhausted) of a PAID deposit
+    // case, refund the customer rather than leaving them charged with no letter
+    // forever. Best-effort and guarded — never throw out of the event handler.
+    void handleTerminalGenerationFailure(job).catch((e) => {
+      // eslint-disable-next-line no-console
+      console.error('[GenerationWorker] terminal-failure recovery errored:', e);
+    });
   });
 
   return worker;
+}
+
+/**
+ * When a generation job has exhausted all attempts, protect a paying deposit
+ * customer: refund the order (if any) and close the case. Subscription-covered
+ * failures have no order to refund — alert ops instead. Idempotent-ish: only
+ * acts on a case still in 'intake' with payment_status 'paid'.
+ */
+async function handleTerminalGenerationFailure(
+  job: Job<GenerationJobPayload> | undefined,
+): Promise<void> {
+  if (!job) return;
+  // Only act once retries are truly exhausted.
+  const maxAttempts = job.opts?.attempts ?? 1;
+  if ((job.attemptsMade ?? 0) < maxAttempts) return;
+
+  const { case_id: caseId, wedge } = job.data;
+  if (wedge !== 'deposit') return;
+
+  const caseRow = await workerConvex.query(api.service.getCase, {
+    caseId: caseId as Id<'cases'>,
+  });
+  if (!caseRow) return;
+  // Only a paid case still awaiting its letter needs rescuing.
+  if (caseRow.payment_status !== 'paid' || caseRow.status !== 'intake') return;
+
+  const orderId = (caseRow as { polar_order_id?: string | null }).polar_order_id;
+  if (orderId) {
+    const refund = await refundOrder(
+      caseId,
+      orderId,
+      'Refund: letter generation failed after payment (all retries exhausted).',
+    );
+    if (!refund.refunded) {
+      Sentry.captureException(
+        new Error(`Paid case ${caseId}: generation failed AND refund failed — manual review`),
+        { tags: { area: 'letter-generation-recovery' } },
+      );
+    }
+  } else {
+    // Subscription-covered (no order to refund) — surface for ops follow-up.
+    Sentry.captureException(
+      new Error(`Subscription case ${caseId}: generation failed terminally, no order to refund — manual retry needed`),
+      { tags: { area: 'letter-generation-recovery' } },
+    );
+  }
 }
 
 export function createSequenceGenerationWorker(): Worker {

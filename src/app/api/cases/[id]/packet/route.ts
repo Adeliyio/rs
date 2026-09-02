@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { q, currentUser, api } from '@/lib/convex/server';
+import { normalizeDepositAnswers } from '@/features/deposit/generation/normalize-answers';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { decryptAnswersPii } from '@/lib/crypto';
 import {
@@ -111,15 +112,20 @@ export async function POST(
 
     /* ---- Build case data from diagnostic answers (decrypt PII) ---- */
     const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
-    const answers = decryptAnswersPii(
+    const rawAnswers = decryptAnswersPii(
       (diagnosticState?.answers ?? {}) as Record<string, unknown>,
     );
+    // Same normalization the letter uses — flatten groups (landlord_name lives
+    // in the landlord_info group), derive amounts, and fill tenant_name from the
+    // user — so the packet isn't stamped with [YOUR NAME] / [LANDLORD NAME] / $0.
+    const ownerName = user.name ?? user.email?.split('@')[0] ?? '';
+    const answers = normalizeDepositAnswers(rawAnswers, { userName: ownerName });
 
     const packetCaseData: PacketCaseData = {
       case_id: caseId,
-      tenant_name: (answers['tenant_name'] as string) ?? '[YOUR NAME]',
-      landlord_name: (answers['landlord_name'] as string) ?? '[LANDLORD NAME]',
-      property_address: (answers['property_address'] as string) ?? '[PROPERTY ADDRESS]',
+      tenant_name: (answers['tenant_name'] as string) || '[YOUR NAME]',
+      landlord_name: (answers['landlord_name'] as string) || '[LANDLORD NAME]',
+      property_address: (answers['property_address'] as string) || '[PROPERTY ADDRESS]',
       deposit_amount: (answers['original_deposit_amount'] as number) ?? 0,
       demand_amount: (answers['demand_amount'] as number) ?? (answers['amount_withheld'] as number) ?? 0,
       jurisdiction: caseRow.jurisdiction,

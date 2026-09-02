@@ -6,14 +6,14 @@ import { ChevronDown, Mail, Calculator } from 'lucide-react';
 
 const TOOLS = [
   {
-    name: 'Cancel Subscription',
-    description: 'Free 3-step email sequence',
+    name: 'Cancel a Subscription \u2014 Free',
+    description: 'Full 3-step email sequence, no account needed',
     href: '/tools/cancel-subscription',
     icon: Mail,
   },
   {
-    name: 'Deposit Deadline Calculator',
-    description: 'Check your state\u2019s return deadline',
+    name: 'Deposit Deadline Calculator \u2014 Free',
+    description: 'Check your state\u2019s return deadline in seconds',
     href: '/tools/deposit-deadline',
     icon: Calculator,
   },
@@ -56,7 +56,7 @@ export function ToolsDropdown() {
         onClick={() => setOpen((prev) => !prev)}
         className="inline-flex items-center gap-1 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
       >
-        Tools
+        Free Tools
         <ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 

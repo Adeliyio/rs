@@ -112,6 +112,23 @@ export const listByUserInternal = internalQuery({
   },
 });
 
+/**
+ * Whether a user has an entitling (active/past_due) subscription. Mirrors the
+ * `currentMine` filter but keyed by an explicit userId so trusted server code
+ * (the generation worker, the PDF route) can check entitlement for the case
+ * OWNER — currentMine is auth-scoped and unusable from the service client.
+ */
+export const hasActiveForUserInternal = internalQuery({
+  args: { userId: v.id('users') },
+  handler: async (ctx, { userId }): Promise<boolean> => {
+    const rows = await ctx.db
+      .query('subscriptions')
+      .withIndex('by_user', (q) => q.eq('userId', userId))
+      .collect();
+    return rows.some((s) => s.status === 'active' || s.status === 'past_due');
+  },
+});
+
 export const deleteByUserInternal = internalMutation({
   args: { userId: v.id('users') },
   handler: async (ctx, { userId }) => {

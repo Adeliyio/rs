@@ -143,14 +143,26 @@ export async function processAutoRefundIfNeeded(
   // Unsupported jurisdiction — trigger refund
   const reason = `Automatic refund: jurisdiction ${caseRow.jurisdiction} is not supported for deposit cases. Supported states: ${DEPOSIT_JURISDICTION.join(', ')}.`;
 
+  return refundOrder(caseId, orderId, reason);
+}
+
+/**
+ * Refund a paid order for ANY case, regardless of jurisdiction, and mark it
+ * refunded+closed. Use this for a paid case that cannot proceed (e.g. a
+ * post-payment hard-block in a SUPPORTED state) — where processAutoRefundIfNeeded
+ * deliberately does nothing. Returns { refunded: true } only when Polar actually
+ * refunded, so callers never falsely tell a customer "refund initiated".
+ */
+export async function refundOrder(
+  caseId: string,
+  orderId: string,
+  reason: string,
+): Promise<AutoRefundResult> {
   const refundResult = await requestPolarRefund(orderId, reason);
 
   if (!refundResult.ok) {
     // eslint-disable-next-line no-console
-    console.error(
-      `[AutoRefund] Failed to refund order ${orderId}:`,
-      refundResult.error,
-    );
+    console.error(`[Refund] Failed to refund order ${orderId}:`, refundResult.error);
     return { refunded: false, error: refundResult.error };
   }
 
@@ -169,9 +181,7 @@ export async function processAutoRefundIfNeeded(
   }
 
   // eslint-disable-next-line no-console
-  console.log(
-    `[AutoRefund] Refunded order ${orderId} for case ${caseId} (unsupported jurisdiction: ${caseRow.jurisdiction})`,
-  );
+  console.log(`[Refund] Refunded order ${orderId} for case ${caseId}: ${reason}`);
 
   return { refunded: true, reason };
 }

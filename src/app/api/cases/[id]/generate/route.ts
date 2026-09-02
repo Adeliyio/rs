@@ -27,13 +27,17 @@ import {
   generateLetter,
   type DepositDiagnosticAnswers,
 } from '@/features/deposit/generation/letter-generator';
+import {
+  normalizeDepositAnswers,
+  depositDemandIsValid,
+} from '@/features/deposit/generation/normalize-answers';
 import { AI_CONFIG } from '@/config/ai.config';
 import {
   enqueueLetterDeliveryEmail,
   enqueueLetterGeneration,
   getGenerationQueueDepth,
 } from '@/lib/queue/enqueue';
-import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund';
+import { processAutoRefundIfNeeded, refundOrder } from '@/lib/payments/auto-refund';
 import { Sentry } from '@/lib/sentry';
 import { computeDeadlines } from '@/lib/deadlines/calculator';
 import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
@@ -318,68 +322,37 @@ async function recoverPaidDepositFailure(
   }
 }
 
-/**
- * Normalize diagnostic answers for the deposit letter generator.
- *
- * The diagnostic engine keys answers by NODE ID, and GROUP nodes store a nested
- * object of their sub-fields. So `landlord_name` lives at
- * `answers.landlord_info.landlord_name`, not `answers.landlord_name`, and the
- * deposit amount is under the node id `deposit_amount`, not the generator's
- * `original_deposit_amount`. Reading the flat keys directly produced letters
- * addressed to "[LANDLORD NAME]" demanding "$0" — a broken paid deliverable.
- *
- * This flattens the known group nodes to top-level field keys and maps the
- * renamed keys, WITHOUT clobbering any value already present at the target key
- * (e.g. from document extraction). Returns a new object; the original is left
- * intact and still spread last for anything not covered here.
- */
-function normalizeDepositAnswers(
-  answers: Record<string, unknown>,
-): Record<string, unknown> {
-  const out: Record<string, unknown> = { ...answers };
-
-  // Flatten group-node answers ({ [nodeId]: { field: value } }) to top level.
-  const groups = ['landlord_info', 'lease_dates', 'forwarding_address_details'];
-  for (const g of groups) {
-    const grp = answers[g];
-    if (grp && typeof grp === 'object' && !Array.isArray(grp)) {
-      for (const [k, val] of Object.entries(grp as Record<string, unknown>)) {
-        if (out[k] === undefined) out[k] = val;
-      }
-    }
-  }
-
-  // Map renamed node-id keys to the generator's expected field names. The
-  // boolean node `forwarding_address` stores under its own id but the generator
-  // reads `forwarding_address_provided` (its field) — critical for the Texas
-  // forwarding-address rule, which otherwise reads undefined.
-  const renames: Record<string, string> = {
-    deposit_amount: 'original_deposit_amount',
-    partial_amount_received: 'amount_returned',
-    forwarding_address: 'forwarding_address_provided',
-  };
-  for (const [from, to] of Object.entries(renames)) {
-    if (out[to] === undefined && answers[from] !== undefined) {
-      out[to] = answers[from];
-    }
-  }
-
-  return out;
-}
-
 async function handleDepositGeneration(
   convex: ServiceConvex,
   caseId: string,
   caseRow: CaseRow,
   rawAnswers: Record<string, unknown>,
   userId: string,
+  userInfo: UserInfo,
 ) {
   // Payment and jurisdiction gates are enforced in the POST handler
   // before routing here. This function handles generation only.
 
-  // Flatten group nodes + map renamed keys so the generator reads the real
-  // landlord name / deposit amount instead of falling back to placeholders.
-  const answers = normalizeDepositAnswers(rawAnswers);
+  // Flatten group nodes, map renamed keys, coerce booleans, DERIVE the money
+  // figures, and fill tenant_name from the user — so the generator reads real
+  // values instead of shipping "[LANDLORD NAME]", "$0", or "[YOUR NAME]".
+  const answers = normalizeDepositAnswers(rawAnswers, { userName: userInfo.fullName });
+
+  // Never hand a paying customer a $0 demand. If we can't derive a positive
+  // amount, fail into the recovery path rather than generating junk.
+  if (!depositDemandIsValid(answers)) {
+    const recovered = await recoverPaidDepositFailure(
+      caseId,
+      caseRow,
+      userId,
+      'deposit demand amount could not be derived (would have been $0)',
+    );
+    if (recovered) return recovered;
+    return NextResponse.json(
+      { error: 'We could not prepare your letter. Please try again or contact support.' },
+      { status: 500 },
+    );
+  }
 
   const diagnosticAnswers: DepositDiagnosticAnswers = {
     wedge: 'deposit',
@@ -427,12 +400,26 @@ async function handleDepositGeneration(
 
   const generatedLetter = result.letter;
 
+  // Belt-and-braces: even with tenant_name supplied, the model can still emit a
+  // literal [YOUR NAME] / [DATE] placeholder. Replace them from the user's real
+  // identity so the paid letter is never signed "[YOUR NAME]".
+  const letterToday = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const finalLetterContent = replaceUserPlaceholders(
+    generatedLetter.content,
+    userInfo,
+    letterToday,
+  );
+
   let letterRow: { id: string };
   try {
     letterRow = await convex.mutation(api.service.createLetter, {
       secret: serviceSecret(),
       caseId: caseId as Id<'cases'>,
-      content: generatedLetter.content,
+      content: finalLetterContent,
       groundingContextIds: generatedLetter.grounding_context_ids,
       citationValidation: {
         valid: generatedLetter.citation_validation.valid,
@@ -601,7 +588,14 @@ export async function POST(
       let refundInitiated = false;
       if (wasPaid && caseRow.polar_order_id) {
         try {
-          const refund = await processAutoRefundIfNeeded(caseId, caseRow.polar_order_id);
+          // Use refundOrder (works for ANY jurisdiction) — NOT
+          // processAutoRefundIfNeeded, which no-ops for supported states and
+          // would leave a CA/TX/NY/FL customer charged while we claimed a refund.
+          const refund = await refundOrder(
+            caseId,
+            caseRow.polar_order_id,
+            `Refund: case hard-blocked after payment (${trigger}).`,
+          );
           refundInitiated = refund.refunded;
         } catch (refundErr) {
           // eslint-disable-next-line no-console
@@ -613,14 +607,21 @@ export async function POST(
             `[generate] PAID case ${caseId} hard-blocked (${trigger}) but refund not ` +
               `confirmed — needs manual review so the customer isn't charged for nothing.`,
           );
+          Sentry.captureException(
+            new Error(`Paid hard-blocked case ${caseId} refund not confirmed (${trigger})`),
+            { tags: { area: 'generate-refund' } },
+          );
         }
       }
 
       return NextResponse.json(
         {
-          error: wasPaid
-            ? 'This case cannot proceed. If you were charged, a refund has been initiated.'
-            : 'This case cannot proceed with generation.',
+          // Honest message: only promise a refund when Polar actually refunded.
+          error: !wasPaid
+            ? 'This case cannot proceed with generation.'
+            : refundInitiated
+              ? 'This case cannot proceed. Your payment has been refunded.'
+              : 'This case cannot proceed. We could not auto-refund your payment — please contact support and we will refund you promptly.',
           refusal_trigger: trigger,
           decline_reason: refusalResult.rule?.decline_reason,
           refund_initiated: refundInitiated,
@@ -730,7 +731,7 @@ export async function POST(
       return await handleSubscriptionGeneration(convex, caseId, caseRow, answers, user.id, userInfo);
     }
 
-    return await handleDepositGeneration(convex, caseId, caseRow, answers, user.id);
+    return await handleDepositGeneration(convex, caseId, caseRow, answers, user.id, userInfo);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal error';
     // eslint-disable-next-line no-console

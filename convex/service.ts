@@ -634,6 +634,25 @@ export const userEmailById = query({
   },
 });
 
+/** Full user (id, email, name) by id — the worker needs `name` for tenant_name. */
+export const userById = query({
+  args: { ...secretArg, userId: v.id('users') },
+  handler: async (ctx, { secret, userId }): Promise<any> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.users.getByIdInternal, { userId });
+  },
+});
+
+/** Whether the case OWNER has an entitling subscription — for the worker's
+ *  paywall gate and the PDF route (both run as trusted server code, not auth). */
+export const hasActiveSubscription = query({
+  args: { ...secretArg, userId: v.id('users') },
+  handler: async (ctx, { secret, userId }): Promise<boolean> => {
+    assertSecret(secret);
+    return ctx.runQuery(internal.subscriptions.hasActiveForUserInternal, { userId });
+  },
+});
+
 export const deleteUser = mutation({
   args: { ...secretArg, userId: v.id('users') },
   handler: async (ctx, { secret, userId }): Promise<any> => {
