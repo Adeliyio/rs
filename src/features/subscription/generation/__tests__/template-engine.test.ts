@@ -192,8 +192,9 @@ describe('template-engine — email 2 required elements (a–h)', () => {
     );
     const body = steps[1]?.body ?? '';
 
-    // (a) reference "my email of [DATE]"
-    expect(body).toContain('my email of [DATE]');
+    // (a) reference a prior email by a fillable date (NOT today — that produced
+    // a self-contradictory timeline, so back-references use a distinct token).
+    expect(body).toContain('my email of [DATE YOU SENT THE PREVIOUS EMAIL]');
     // (b) note lack of response
     expect(body).toMatch(/not received the written confirmation/i);
     // (c) restate account id
@@ -238,8 +239,8 @@ describe('template-engine — email 3 required elements (a–g)', () => {
     );
     const body = steps[2]?.body ?? '';
 
-    // (a) reference both prior emails by date (two [DATE] placeholders)
-    const dateRefs = body.match(/email of \[DATE\]|follow-up of \[DATE\]/g) ?? [];
+    // (a) reference both prior emails by a fillable prior-date placeholder (two)
+    const dateRefs = body.match(/email of \[DATE YOU SENT THE PREVIOUS EMAIL\]|follow-up of \[DATE YOU SENT THE PREVIOUS EMAIL\]/g) ?? [];
     expect(dateRefs.length).toBeGreaterThanOrEqual(2);
     // (b) final written request before regulatory complaint
     expect(body).toMatch(/final written request/i);

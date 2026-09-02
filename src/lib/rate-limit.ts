@@ -32,7 +32,12 @@ export interface RateLimitConfig {
 
 export const RATE_LIMITS = {
   auth: { max: 5, windowSeconds: 15 * 60 } as RateLimitConfig,       // 5 / 15min
-  generation: { max: 5, windowSeconds: 60 * 60 } as RateLimitConfig,  // 5 / 1hr
+  generation: { max: 5, windowSeconds: 60 * 60 } as RateLimitConfig,  // 5 / 1hr (paid OpenAI)
+  // Anonymous FREE, $0, deterministic template generation (cancellation wedge).
+  // Sized far above the shared-NAT/mobile/corporate collision threshold — the
+  // 'generation' bucket (5/hr, for paid AI) wrongly 429'd innocent shared-IP
+  // users on a no-cost endpoint. No AI cost here, so a generous limit is safe.
+  freeTemplate: { max: 40, windowSeconds: 60 * 60 } as RateLimitConfig, // 40 / 1hr
   upload: { max: 10, windowSeconds: 60 * 60 } as RateLimitConfig,     // 10 / 1hr
   general: { max: 60, windowSeconds: 60 } as RateLimitConfig,         // 60 / 1min
 } as const;

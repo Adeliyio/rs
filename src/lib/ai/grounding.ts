@@ -110,12 +110,21 @@ function formatVerticalGuidance(
 
   lines.push(`  Vertical: ${template.display_name}`);
   lines.push(`  Description: ${template.description}`);
-  lines.push(
-    `  Common Companies: ${template.common_companies.join(', ')}`,
-  );
-  lines.push(
-    `  Typical Barriers: ${template.typical_barriers.join('; ')}`,
-  );
+  // Guard array reads: not every vertical KB file defines common_companies /
+  // typical_barriers (mobile_app.json does not), and an unguarded .join() threw,
+  // 500-ing every request for that vertical. Fall back to common_issues / [].
+  const commonCompanies =
+    (template as { common_companies?: string[] }).common_companies ?? [];
+  const typicalBarriers =
+    (template as { typical_barriers?: string[]; common_issues?: string[] }).typical_barriers ??
+    (template as { common_issues?: string[] }).common_issues ??
+    [];
+  if (commonCompanies.length > 0) {
+    lines.push(`  Common Companies: ${commonCompanies.join(', ')}`);
+  }
+  if (typicalBarriers.length > 0) {
+    lines.push(`  Typical Barriers: ${typicalBarriers.join('; ')}`);
+  }
 
   // Add sequence template guidance
   const seq = template.sequence_template;
@@ -300,10 +309,17 @@ export function assembleGroundingContext(
   sections.push(formatVenues(allVenues));
 
   if (verticalTemplate) {
-    sections.push('=== VERTICAL-SPECIFIC GUIDANCE ===');
-    sections.push(
-      formatVerticalGuidance(verticalTemplate, normalizedJurisdiction),
-    );
+    // Degrade gracefully: a malformed vertical KB file must never abort the whole
+    // grounding build (that 500-ed the free deliverable). Skip the vertical block
+    // and keep federal + state grounding rather than throwing.
+    try {
+      const guidance = formatVerticalGuidance(verticalTemplate, normalizedJurisdiction);
+      sections.push('=== VERTICAL-SPECIFIC GUIDANCE ===');
+      sections.push(guidance);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[grounding] vertical guidance skipped (malformed KB):', err);
+    }
   }
 
   if (subscriptionBase) {

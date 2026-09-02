@@ -75,7 +75,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       headersList.get('x-real-ip') ??
       'unknown';
 
-    const rateResult = await checkRateLimit('generation', `anon-cancellation:${ip}`);
+    // Free, $0, deterministic templates — use the free-template bucket (40/hr),
+    // NOT the paid-AI 'generation' bucket (5/hr) that 429'd shared-IP users.
+    const rateResult = await checkRateLimit('freeTemplate', `anon-cancellation:${ip}`);
     if (!rateResult.allowed) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },

@@ -27,6 +27,10 @@ import type { SequenceStep, Citation } from '@/types/generation.types';
 const PLACEHOLDER_NAME = '[YOUR NAME]';
 const PLACEHOLDER_EMAIL = '[YOUR EMAIL]';
 const PLACEHOLDER_DATE = '[DATE]';
+// Back-reference to a PRIOR email the user sent — this must NOT be auto-filled
+// with today's date (that produced a self-contradictory timeline, e.g. "my email
+// of Sep 3" dated Sep 3). It stays a user-fillable placeholder.
+const PLACEHOLDER_PRIOR_DATE = '[DATE YOU SENT THE PREVIOUS EMAIL]';
 
 /* ------------------------------------------------------------------ */
 /*  Grounding parsing                                                 */
@@ -209,13 +213,18 @@ function resolveVerticalWording(vertical?: string): VerticalWording {
 /*  Field helpers                                                     */
 /* ------------------------------------------------------------------ */
 
-/** The account line, using an explicit fallback placeholder when absent. */
+/**
+ * The account identifier for the letter. When the user didn't provide one, fall
+ * back to a clearly-fillable placeholder (bracketed like [YOUR NAME]) that the
+ * user knows to complete — NOT the awkward "[account identifier on file]" that
+ * read as a broken template artifact in a ready-to-send email.
+ */
 function accountIdentifierLine(situation: UserSituation): string {
-  const id =
+  return (
     situation.account_identifier ??
     situation.billing_email ??
-    '[account identifier on file]';
-  return id;
+    '[YOUR ACCOUNT NUMBER OR BILLING EMAIL]'
+  );
 }
 
 /** Human-readable effective-date phrase. */
@@ -352,7 +361,7 @@ function buildEmail2Body(
 
   // (a) reference "my email of [DATE]"; (b) note lack of response
   blocks.push(
-    `I am following up on my email of ${PLACEHOLDER_DATE} regarding cancellation of my ${wording.serviceNoun}. As of today I have not received the written confirmation I requested.`,
+    `I am following up on my email of ${PLACEHOLDER_PRIOR_DATE} regarding cancellation of my ${wording.serviceNoun}. As of today I have not received the written confirmation I requested.`,
   );
 
   // (c) restate account id
@@ -420,7 +429,7 @@ function buildEmail3Body(
 
   // (a) reference both prior emails by date
   blocks.push(
-    `This is my final written request regarding cancellation of my ${wording.serviceNoun}, following my email of ${PLACEHOLDER_DATE} and my subsequent follow-up of ${PLACEHOLDER_DATE}. My account is identified as ${account}.`,
+    `This is my final written request regarding cancellation of my ${wording.serviceNoun}, following my email of ${PLACEHOLDER_PRIOR_DATE} and my subsequent follow-up of ${PLACEHOLDER_PRIOR_DATE}. My account is identified as ${account}.`,
   );
   blocks.push('');
 
@@ -517,10 +526,21 @@ function buildChargesSinceLine(situation: UserSituation): string {
     return '';
   }
   const amount = situation.monthly_charge ? formatMoney(situation.monthly_charge) : 'the recurring amount';
+
+  // Only assert the charge came "after my cancellation request" when the user
+  // ACTUALLY made a prior cancellation attempt — otherwise that is a false,
+  // rebuttable statement to the counterparty. With no prior attempt, state the
+  // charge neutrally.
+  const hadPriorAttempt = Boolean(situation.previous_cancellation_date);
+
   if (situation.last_charge_date) {
-    return `A charge of ${amount} was recorded on ${situation.last_charge_date}, after my cancellation request.`;
+    return hadPriorAttempt
+      ? `A charge of ${amount} was recorded on ${situation.last_charge_date}, after my cancellation request.`
+      : `The most recent charge on record is ${amount}, on ${situation.last_charge_date}.`;
   }
-  return `A charge of ${amount} has been recorded since my cancellation request.`;
+  return hadPriorAttempt
+    ? `A charge of ${amount} has been recorded since my cancellation request.`
+    : `A recurring charge of ${amount} remains on the account.`;
 }
 
 /* ------------------------------------------------------------------ */

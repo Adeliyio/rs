@@ -120,6 +120,22 @@ function isGrounded(
     if (isTokenBoundaryMatch(longer, shorter)) return true;
   }
 
+  // Section-token exception: a bare section number (e.g. "§1666" / "1666" from
+  // the FCBA cite) is often shorter than MIN_OVERLAP but is legitimately part of
+  // a grounded FULL citation ("15 usc 1666"). If the candidate is a section-like
+  // token AND appears token-bounded inside a grounded entry, treat it as
+  // grounded — this stops the validator mangling "15 U.S.C. §1666" to
+  // "15 U.S.C." The token-boundary requirement keeps a fabricated "1666.99" out
+  // (it is not itself a bounded token inside any grounded entry).
+  const sectionToken = normalized.replace(/^[^0-9]*/, ''); // drop leading §/usc words
+  if (/^\d{2,}(\.\d+)?[a-z]?$/.test(sectionToken)) {
+    for (const entry of groundingIndex) {
+      if (entry.length > normalized.length && isTokenBoundaryMatch(entry, sectionToken)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 

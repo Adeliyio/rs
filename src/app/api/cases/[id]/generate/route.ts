@@ -23,6 +23,7 @@ import {
   generateSequence,
   type DiagnosticAnswers,
 } from '@/features/subscription/generation/sequence-generator';
+import { normalizeSubscriptionAnswers } from '@/features/diagnostic/anonymous/anonymous-answers';
 import {
   generateLetter,
   type DepositDiagnosticAnswers,
@@ -175,10 +176,15 @@ async function handleSubscriptionGeneration(
   convex: ServiceConvex,
   caseId: string,
   caseRow: CaseRow,
-  answers: Record<string, unknown>,
+  rawAnswers: Record<string, unknown>,
   userId: string,
   userInfo: UserInfo,
 ) {
+  // Flatten group nodes (subscription_details / cancellation_attempt_details /
+  // refund_details) and coerce boolean-node keys so monthly_charge, dates, the
+  // refund request, and prior-attempt details actually reach the emails —
+  // reading flat field keys off the raw node-id-keyed answers dropped them all.
+  const answers = normalizeSubscriptionAnswers(rawAnswers);
   const diagnosticAnswers: DiagnosticAnswers = {
     wedge: 'subscription',
     jurisdiction: caseRow.jurisdiction,

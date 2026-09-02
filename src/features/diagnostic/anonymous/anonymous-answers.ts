@@ -83,6 +83,57 @@ export interface CancellationPayload {
  * Maps the subscription-graph in-memory answers to the cancellation endpoint
  * payload. Node ids come from kb/diagnostics/subscription-graph.json.
  */
+/**
+ * Normalize node-id-keyed diagnostic answers into FLAT, field-keyed values the
+ * subscription sequence generator reads — the authenticated /generate path's
+ * equivalent of buildCancellationPayload. The graph stores group nodes nested
+ * (subscription_details / cancellation_attempt_details / refund_details) and
+ * booleans under their NODE id (cancellation_attempts, refund_request), so the
+ * authed route reading flat field keys silently dropped monthly_charge, dates,
+ * refund request, and prior-attempt details. This flattens + maps + coerces them
+ * so the authed deliverable matches what the user typed. Non-clobbering: an
+ * existing top-level value wins (e.g. document extraction).
+ */
+export function normalizeSubscriptionAnswers(
+  answers: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...answers };
+  const put = (key: string, value: unknown): void => {
+    if (value !== undefined && out[key] === undefined) out[key] = value;
+  };
+
+  // vertical / service type
+  put('vertical', asString(answers.service_vertical));
+  put('service_type', asString(answers.service_vertical));
+
+  // subscription_details group
+  put('billing_email', asString(groupField(answers, 'subscription_details', 'billing_email')));
+  put('monthly_charge', asString(groupField(answers, 'subscription_details', 'monthly_charge')));
+  put('billing_frequency', asString(groupField(answers, 'subscription_details', 'billing_frequency')));
+  put('last_charge_date', asString(groupField(answers, 'subscription_details', 'last_charge_date')));
+
+  // prior-cancellation-attempt boolean lives under the node id 'cancellation_attempts'
+  put('prior_cancellation_attempt', asBool(answers.cancellation_attempts));
+  // cancellation_attempt_details group
+  put('cancellation_date', asString(groupField(answers, 'cancellation_attempt_details', 'cancellation_date')));
+  put('cancellation_method', asString(groupField(answers, 'cancellation_attempt_details', 'cancellation_method')));
+  put('cancellation_result', asString(groupField(answers, 'cancellation_attempt_details', 'cancellation_result')));
+
+  // wants-refund boolean lives under the node id 'refund_request'
+  put('wants_refund', asBool(answers.refund_request));
+  // refund_details group
+  put('refund_amount', asString(groupField(answers, 'refund_details', 'refund_amount')));
+  put('refund_reason', asString(groupField(answers, 'refund_details', 'refund_reason')));
+
+  // Also coerce any boolean-node strings that may already sit at the field key.
+  for (const k of ['prior_cancellation_attempt', 'wants_refund']) {
+    const b = asBool(out[k]);
+    if (b !== undefined) out[k] = b;
+  }
+
+  return out;
+}
+
 export function buildCancellationPayload(
   answers: Record<string, unknown>,
 ): CancellationPayload {

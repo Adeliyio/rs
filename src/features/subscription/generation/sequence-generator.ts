@@ -67,6 +67,30 @@ export type SequenceGenerationResult =
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Replace user-supplied free-text spans in a body with a neutral token before
+ * compliance scanning, so a banned phrase inside the USER's own words (company
+ * name, account id, refund reason, free notes) can't fail the deliverable. Only
+ * template-authored scaffolding remains scanned.
+ */
+function maskUserValues(text: string, situation: UserSituation): string {
+  const userValues = [
+    situation.company_name,
+    situation.account_identifier,
+    situation.refund_reason,
+    situation.additional_details,
+    situation.service_type,
+  ].filter((v): v is string => typeof v === 'string' && v.trim().length > 2);
+
+  let masked = text;
+  for (const v of userValues) {
+    // Escape regex metachars in the user value, replace all occurrences.
+    const escaped = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    masked = masked.replace(new RegExp(escaped, 'g'), '[USER_VALUE]');
+  }
+  return masked;
+}
+
 function extractUserSituation(answers: DiagnosticAnswers): UserSituation {
   // Also check service_vertical as the diagnostic graph node key
   const vertical = answers.vertical ?? answers['service_vertical'] as string | undefined;
@@ -192,8 +216,13 @@ async function runPipeline(
     );
     citationResults.push(citResult);
 
-    // Compliance scan on cleaned text
-    const compResult = scanCompliance(cleanedText);
+    // Compliance scan — on the text with USER-SUPPLIED values masked out. The
+    // template scaffolding is provably clean; failing the whole $0 deliverable
+    // because a user's own company name happens to contain a scanned marketing
+    // word is a fail-closed bug that bricked real, innocent requests. We scan
+    // only what WE authored, not what the user typed.
+    const scanText = maskUserValues(cleanedText, userSituation);
+    const compResult = scanCompliance(scanText);
     if (!compResult.pass) {
       allCompliancePass = false;
     }
