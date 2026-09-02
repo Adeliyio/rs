@@ -286,8 +286,17 @@ async function recoverPaidDepositFailure(
   userId: string,
   reason: string,
 ): Promise<NextResponse | null> {
-  if (caseRow.wedge !== 'deposit' || caseRow.payment_status !== 'paid') {
+  // Admit an ENTITLED deposit case — paid OR covered by an active subscription.
+  // A subscriber's case is never payment_status:'paid', so a paid-only guard
+  // left a subscriber whose sync generation failed with a bare 500 and no
+  // background retry (the $49 payer got one). The worker re-verifies entitlement
+  // (paid OR active sub) before generating, so enqueuing a subscriber is safe.
+  if (caseRow.wedge !== 'deposit') {
     return null;
+  }
+  if (caseRow.payment_status !== 'paid') {
+    const entitled = await q(api.subscriptions.currentMine, {});
+    if (!entitled) return null;
   }
 
   // eslint-disable-next-line no-console

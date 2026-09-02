@@ -15,7 +15,7 @@
  * option carries caseId so order.paid marks that case paid.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery } from 'convex/react';
 import { Check, Loader2 } from 'lucide-react';
 
@@ -69,6 +69,34 @@ export function PlanSelector({
   const me = useQuery(api.users.me, {});
   const resolvedUserId = me?.id ?? undefined;
   const resolvedEmail = userEmail || me?.email || undefined;
+
+  // Reactively track entitlement so we NEVER show buy cards to someone who is
+  // already covered — this closes the double-charge race: a subscriber returning
+  // from checkout before the webhook lands used to see the cards again and could
+  // buy twice. currentMine is a reactive query, so it flips to covered the moment
+  // subscription.active writes the row. We also poll the case's payment status
+  // for the one-time path (order.paid webhook).
+  const activeSub = useQuery(api.subscriptions.currentMine, {});
+  const [casePaid, setCasePaid] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    let tries = 0;
+    const check = async () => {
+      try {
+        const res = await fetch(`/api/cases/${caseId}/payment-status`);
+        if (res.ok && !cancelled) {
+          const data = (await res.json()) as { payment_status?: string };
+          if (data.payment_status === 'paid') { setCasePaid(true); return; }
+        }
+      } catch { /* non-fatal */ }
+      // Short-poll for a window (covers return-from-checkout before the webhook).
+      if (!cancelled && tries++ < 15) setTimeout(() => void check(), 2000);
+    };
+    void check();
+    return () => { cancelled = true; };
+  }, [caseId]);
+
+  const alreadyCovered = casePaid || Boolean(activeSub);
 
   const monthlyProductId = process.env.NEXT_PUBLIC_POLAR_PRODUCT_MONTHLY ?? '';
   const annualProductId = process.env.NEXT_PUBLIC_POLAR_PRODUCT_YEARLY ?? '';
@@ -129,6 +157,23 @@ export function PlanSelector({
       featured: true,
     },
   ];
+
+  // Already paid / entitled → never show buy cards again (prevents double-charge
+  // on return-from-checkout and during the subscription.active webhook race). The
+  // IntakeClient mount effect kicks off generation; this just reassures the user.
+  if (alreadyCovered) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-10 text-center">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <p className="text-sm font-medium text-foreground">
+          Payment confirmed — preparing your letter…
+        </p>
+        <p className="text-xs text-muted-foreground">
+          This page will update automatically. No need to pay again.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

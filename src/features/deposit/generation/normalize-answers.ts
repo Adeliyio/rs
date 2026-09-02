@@ -92,17 +92,41 @@ export function normalizeDepositAnswers(
   if (originalDeposit !== undefined) out['original_deposit_amount'] = originalDeposit;
   if (amountReturned !== undefined) out['amount_returned'] = amountReturned;
 
-  // 5. DERIVE amount_withheld and demand_amount so the letter never demands $0.
-  //    amount_withheld = original - returned (or the whole deposit if nothing
-  //    was returned). demand_amount defaults to the withheld amount.
+  // 5. DERIVE amount_withheld and demand_amount so the letter demands the RIGHT
+  //    figure — never $0, and never the whole deposit when part was returned.
+  //    The itemization_status determines how the money splits:
+  //
+  //    - 'partial_return_with_itemization': the graph routes to deduction_details
+  //      and NEVER collects amount_returned. Deriving "kept everything" here
+  //      wrongly demanded the FULL deposit. Instead, withheld = sum(deductions),
+  //      and returned = deposit − withheld. (The tenant disputes the deductions;
+  //      the demand is the itemized/withheld amount.)
+  //    - 'nothing' (landlord returned nothing): the whole deposit is withheld.
+  //    - partial-with-a-returned-amount: withheld = deposit − returned.
   const status = out['itemization_status'];
-  const keptEverything = status === 'nothing' || amountReturned === undefined || amountReturned === 0;
+  const deductions = Array.isArray(out['deductions'])
+    ? (out['deductions'] as Array<{ amount?: unknown }>)
+    : [];
+  const sumDeductions = deductions.reduce<number>((acc, d) => {
+    const n = asNumber(d?.amount);
+    return acc + (n ?? 0);
+  }, 0);
 
   let amountWithheld = asNumber(out['amount_withheld']);
-  if (amountWithheld === undefined && originalDeposit !== undefined) {
-    amountWithheld = keptEverything
-      ? originalDeposit
-      : Math.max(0, originalDeposit - (amountReturned ?? 0));
+  if (amountWithheld === undefined) {
+    if (status === 'partial_return_with_itemization' && sumDeductions > 0) {
+      amountWithheld = sumDeductions;
+      // Backfill amount_returned so the letter states it correctly.
+      if (amountReturned === undefined && originalDeposit !== undefined) {
+        out['amount_returned'] = Math.max(0, originalDeposit - sumDeductions);
+      }
+    } else if (originalDeposit !== undefined) {
+      const keptEverything =
+        status === 'nothing' || amountReturned === undefined || amountReturned === 0;
+      amountWithheld = keptEverything
+        ? originalDeposit
+        : Math.max(0, originalDeposit - amountReturned);
+    }
   }
   if (amountWithheld !== undefined) out['amount_withheld'] = amountWithheld;
 

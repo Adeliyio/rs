@@ -10,7 +10,7 @@
  *   (webhook may take a moment), then call generate → reload.
  */
 
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import DiagnosticShell from '@/features/diagnostic/components/diagnostic-shell';
@@ -122,6 +122,44 @@ export default function IntakeClient({
       pollingRef.current = false;
     }
   }, [caseId, wedge, router, isAdvancing, pollForPayment, handleGenerateResponse, hasActiveSubscription]);
+
+  /**
+   * CRITICAL fulfillment fix: a one-time $49 buyer returns from Polar checkout
+   * landing back on the (unanswered) `paywall` node, so DiagnosticShell never
+   * fires onComplete → generation never ran → the payer was charged with no
+   * letter. Decouple the trigger from the diagnostic being "complete": on mount,
+   * if this deposit case is already paid (or the user is an active subscriber),
+   * kick off generation directly. Guarded by pollingRef/isAdvancing so it can't
+   * double-fire alongside the onComplete path, and it self-limits to one attempt.
+   */
+  const autoStartedRef = useRef(false);
+  useEffect(() => {
+    if (wedge !== 'deposit' || autoStartedRef.current) return;
+
+    // Active subscriber: entitlement is known server-side at render → generate.
+    if (hasActiveSubscription) {
+      autoStartedRef.current = true;
+      void handleComplete();
+      return;
+    }
+
+    // Otherwise check whether payment already landed (returned from checkout).
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch(`/api/cases/${caseId}/payment-status`);
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { payment_status?: string };
+        if (data.payment_status === 'paid' && !cancelled && !autoStartedRef.current) {
+          autoStartedRef.current = true;
+          void handleComplete();
+        }
+      } catch {
+        // Non-fatal — the user can still complete the flow manually.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [wedge, caseId, hasActiveSubscription, handleComplete]);
 
   /* A7: refusal → compassionate decline screen (reachable at end of intake). */
   if (refusal) {
