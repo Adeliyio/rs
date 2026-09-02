@@ -21,7 +21,6 @@
 #   AUTH_RESEND_KEY       = (same value as RESEND_API_KEY)
 #   EMAIL_FROM            = Resolvaio <onboarding@resolvaio.com>  (verified sender)
 #   CONVEX_SERVICE_SECRET = (shared secret, must match the Next.js app)
-#   AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET = (only if using Google login)
 #
 # Set the DOMAINS in Coolify per service (Domains field):
 #   backend   → convex.resolvaio.com       mapped to container port 3210
@@ -52,8 +51,6 @@ services:
       - 'AUTH_RESEND_KEY=${AUTH_RESEND_KEY}'
       - 'EMAIL_FROM=${EMAIL_FROM}'
       - 'CONVEX_SERVICE_SECRET=${CONVEX_SERVICE_SECRET}'
-      - 'AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}'
-      - 'AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}'
     volumes:
       - 'convex_data:/convex/data'
     healthcheck:

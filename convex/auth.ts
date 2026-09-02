@@ -36,12 +36,12 @@ import authConfig from './auth.config';
  * - emailAndPassword: email + password. Verification is an 8-digit OTP CODE
  *   emailed via Resend (emailOTP plugin), not a magic link — preserving the
  *   existing sign-up UX. Password reset uses the same OTP mechanism.
- * - google: OAuth. Requires AUTH_GOOGLE_ID / AUTH_GOOGLE_SECRET.
+ *   (Google/social login was removed — email+password+OTP only.)
  *
  * ENV (Convex FUNCTION env store — `npx convex env set`, NOT container env):
  *   BETTER_AUTH_SECRET, SITE_URL (public app origin), JWKS (static, generated
  *   via `npx convex run auth:generateJwk | npx convex env set JWKS`),
- *   AUTH_RESEND_KEY, EMAIL_FROM, AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET.
+ *   AUTH_RESEND_KEY, EMAIL_FROM.
  */
 
 const siteUrl = process.env.SITE_URL!;
@@ -235,12 +235,6 @@ const createAuthOptions = (ctx: GenericCtx<DataModel>) => {
       // the very first post-signup step forces the user through password login —
       // the one path most exposed to duplicate-signup / stale-hash failures.
       autoSignInAfterVerification: true,
-    },
-    socialProviders: {
-      google: {
-        clientId: process.env.AUTH_GOOGLE_ID ?? '',
-        clientSecret: process.env.AUTH_GOOGLE_SECRET ?? '',
-      },
     },
     plugins: [
       emailOTP({

@@ -6,7 +6,6 @@ import { Suspense, useState } from 'react';
 import { LogoIcon } from '@/components/logo';
 
 import { useResolvaioAuth } from '@/lib/convex/use-auth';
-import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -138,10 +137,6 @@ function LoginPageContent() {
             Sign In
           </Button>
         </form>
-
-        <div className="mt-5">
-          <GoogleButton label="Sign in with Google" />
-        </div>
       </div>
 
       {/* Footer links */}

@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { LogoIcon } from '@/components/logo';
 
 import { useResolvaioAuth } from '@/lib/convex/use-auth';
-import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 
 
@@ -334,10 +333,6 @@ export default function RegisterPage() {
             {busy ? 'Creating account…' : 'Create Account'}
           </Button>
         </form>
-
-        <div className="mt-5">
-          <GoogleButton label="Sign up with Google" />
-        </div>
       </div>
 
       {/* Footer links */}

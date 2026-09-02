@@ -21,7 +21,6 @@ import { checkAuthRateLimit } from './rate-limit-action';
  *  - resend / verify: authClient.emailOtp.sendVerificationOtp / verifyEmail
  *  - reset request:   authClient.emailOtp.requestPasswordReset({ email })
  *  - reset confirm:   authClient.emailOtp.resetPassword({ email, otp, password })
- *  - Google OAuth:    authClient.signIn.social({ provider: 'google' })
  *
  * The return-shape contract ({ error?, pending?, alreadyExists?, sent?, success? })
  * is unchanged so the login/register pages did not need edits.
@@ -167,17 +166,6 @@ export function useResolvaioAuth() {
         return { error: 'We could not reset your password right now. Please try again in a moment.' };
       }
       router.push('/login?message=Your password has been reset. Please sign in.');
-      return {};
-    },
-
-    async google(): Promise<{ error?: string }> {
-      const { error } = await authClient.signIn.social({
-        provider: 'google',
-        callbackURL: '/new',
-      });
-      if (error) {
-        return { error: 'Could not initiate Google sign-in. Please try again.' };
-      }
       return {};
     },
 
