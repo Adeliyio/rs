@@ -24,8 +24,14 @@ function isEntitled(s: {
   cancelAtPeriodEnd?: boolean;
   currentPeriodEnd?: number;
 }): boolean {
-  if (s.status === 'active' || s.status === 'past_due') return true;
-  if (s.status === 'canceled' || s.cancelAtPeriodEnd) {
+  // revoked / expired → never entitled.
+  if (s.status === 'revoked' || s.status === 'expired') return false;
+  // active → entitled (no time check needed; renewals extend the period).
+  if (s.status === 'active') return true;
+  // past_due / canceled / cancelAtPeriodEnd → entitled ONLY until the paid period
+  // ends. past_due without a future period end must NOT grant indefinite access
+  // (a permanently-failed card would otherwise stay entitled forever).
+  if (s.status === 'past_due' || s.status === 'canceled' || s.cancelAtPeriodEnd) {
     return typeof s.currentPeriodEnd === 'number' && Date.now() < s.currentPeriodEnd;
   }
   return false;

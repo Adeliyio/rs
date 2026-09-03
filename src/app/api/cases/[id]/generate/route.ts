@@ -569,11 +569,40 @@ export async function POST(
     /* ---- Validate diagnostic completion ---- */
     const diagnosticState = caseRow.diagnostic_state as DiagnosticState | null;
 
-    if (!diagnosticState || !diagnosticState.is_completed) {
+    // There must be diagnostic data to generate from.
+    if (!diagnosticState || !diagnosticState.answers) {
       return NextResponse.json(
         { error: 'Diagnostic is not complete. Finish all diagnostic steps before generating.' },
         { status: 400 },
       );
+    }
+
+    // For a DEPOSIT case, the diagnostic's final step IS the paywall node, which
+    // never sets is_completed=true (it is not a terminal node — markComplete only
+    // fires on terminals). So a paid one-time buyer returning from checkout would
+    // hard-400 here forever. Payment itself is the completion signal for deposit:
+    // require is_completed ONLY when the case is not yet paid (the deposit payment
+    // gate below still enforces paid-OR-active-subscription before any generation).
+    if (caseRow.wedge !== 'deposit' && !diagnosticState.is_completed) {
+      return NextResponse.json(
+        { error: 'Diagnostic is not complete. Finish all diagnostic steps before generating.' },
+        { status: 400 },
+      );
+    }
+    if (
+      caseRow.wedge === 'deposit' &&
+      !diagnosticState.is_completed &&
+      caseRow.payment_status !== 'paid'
+    ) {
+      // Not paid and not marked complete → let the deposit payment gate below
+      // return the correct 402 rather than a misleading "diagnostic incomplete".
+      const activeSub = await q(api.subscriptions.currentMine, {});
+      if (!activeSub) {
+        return NextResponse.json(
+          { error: 'Payment required before letter generation.' },
+          { status: 402 },
+        );
+      }
     }
 
     const answers = decryptAnswersPii(diagnosticState.answers as Record<string, unknown>);

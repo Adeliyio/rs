@@ -80,6 +80,12 @@ function maskUserValues(text: string, situation: UserSituation): string {
     situation.refund_reason,
     situation.additional_details,
     situation.service_type,
+    // These are the user's VERBATIM description of a prior cancellation attempt —
+    // inlined into email 1 by the template engine. Omitting them meant a scanned
+    // word appearing in the user's own quoted sentence failed the compliance scan
+    // and 500'd the free deliverable.
+    situation.previous_cancellation_result,
+    situation.previous_cancellation_method,
   ].filter((v): v is string => typeof v === 'string' && v.trim().length > 2);
 
   let masked = text;

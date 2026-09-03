@@ -144,26 +144,35 @@ export function normalizeDepositAnswers(
     return acc + (n ?? 0);
   }, 0);
 
-  const isItemizedPartial =
-    status === 'partial_return_with_itemization' || status === 'letter_only';
-
+  // ONLY partial_return_with_itemization splits by deductions (landlord returned
+  // part + itemized the rest). 'letter_only' means the landlord kept EVERYTHING
+  // and just mailed an itemization — the whole deposit is withheld and no money
+  // was returned, so it must NOT go through the deduction-split path (that
+  // fabricated an "Amount Returned" and under-demanded).
   let amountWithheld = asNumber(out['amount_withheld']);
   if (amountWithheld === undefined) {
-    if (isItemizedPartial) {
+    if (status === 'partial_return_with_itemization') {
       if (sumDeductions > 0) {
-        // Withheld = the disputed itemized amount; returned = the rest.
-        amountWithheld = sumDeductions;
+        // Withheld = the disputed itemized amount, capped at the deposit (a demand
+        // exceeding what was ever paid is facially contradictory). Returned = rest.
+        amountWithheld =
+          originalDeposit !== undefined
+            ? Math.min(sumDeductions, originalDeposit)
+            : sumDeductions;
         if (amountReturned === undefined && originalDeposit !== undefined) {
-          out['amount_returned'] = Math.max(0, originalDeposit - sumDeductions);
+          out['amount_returned'] = Math.max(0, originalDeposit - amountWithheld);
         }
       }
-      // else: itemized-partial with NO parseable deductions (e.g. the user hit
-      // "Skip"). Do NOT fall through to keptEverything (that demanded the FULL
-      // deposit, contradicting their own facts). Leave underived → the demand
-      // guard fails and the case routes to recovery rather than shipping junk.
+      // else: itemized-partial with NO parseable deductions (user hit "Skip").
+      // Leave underived → the demand guard fails → routes to recovery, rather
+      // than fabricating a full-deposit demand that contradicts their own facts.
     } else if (originalDeposit !== undefined) {
+      // nothing / letter_only / partial-with-returned-amount.
       const keptEverything =
-        status === 'nothing' || amountReturned === undefined || amountReturned === 0;
+        status === 'nothing' ||
+        status === 'letter_only' ||
+        amountReturned === undefined ||
+        amountReturned === 0;
       amountWithheld = keptEverything
         ? originalDeposit
         : Math.max(0, originalDeposit - amountReturned);
@@ -186,10 +195,14 @@ export function normalizeDepositAnswers(
 }
 
 /**
- * True when the normalized answers still can't produce a real demand — used to
- * FAIL generation loudly rather than ship a $0 letter to a paying customer.
+ * True when the normalized answers produce a SANE demand — a positive amount that
+ * does not exceed the original deposit. Used to FAIL generation loudly (→ recovery)
+ * rather than ship a $0, or an impossible over-deposit, letter to a paying customer.
  */
 export function depositDemandIsValid(normalized: Record<string, unknown>): boolean {
   const demand = normalized['demand_amount'];
-  return typeof demand === 'number' && demand > 0;
+  if (typeof demand !== 'number' || demand <= 0) return false;
+  const deposit = normalized['original_deposit_amount'];
+  if (typeof deposit === 'number' && deposit > 0 && demand > deposit) return false;
+  return true;
 }

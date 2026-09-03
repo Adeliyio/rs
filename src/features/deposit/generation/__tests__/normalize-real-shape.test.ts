@@ -89,6 +89,44 @@ describe('deposit normalizer — REAL node-id-keyed shape', () => {
     expect(n.forwarding_address_provided).toBe(true);
   });
 
+  it('letter_only (kept everything, itemization mailed) → full deposit, no fabricated return', () => {
+    const n = normalizeDepositAnswers({
+      deposit_amount: 1800,
+      received_itemization: 'letter_only',
+      deduction_details: [
+        { description: 'Repairs', amount: 400, dispute_basis: 'Not responsible', has_evidence: true },
+      ],
+    });
+    // Landlord kept the whole deposit; demand = full deposit, and we must NOT
+    // fabricate an "Amount Returned" or under-demand to the deductions sum.
+    expect(n.amount_withheld).toBe(1800);
+    expect(n.demand_amount).toBe(1800);
+    expect(n.amount_returned).toBeUndefined();
+    expect(depositDemandIsValid(n)).toBe(true);
+  });
+
+  it('caps an over-deposit itemized demand and rejects it via the guard', () => {
+    const n = normalizeDepositAnswers({
+      deposit_amount: 1000,
+      received_itemization: 'partial_return_with_itemization',
+      deduction_details: [
+        { description: 'A', amount: 800, dispute_basis: 'Excessive', has_evidence: false },
+        { description: 'B', amount: 700, dispute_basis: 'Excessive', has_evidence: false },
+      ],
+    });
+    // sum 1500 > 1000 deposit → withheld capped at the deposit, never demand more
+    // than was ever paid.
+    expect(n.amount_withheld).toBe(1000);
+    expect(n.demand_amount).toBe(1000);
+    expect(depositDemandIsValid(n)).toBe(true);
+  });
+
+  it('depositDemandIsValid rejects a demand exceeding the deposit', () => {
+    expect(depositDemandIsValid({ demand_amount: 1500, original_deposit_amount: 1000 })).toBe(false);
+    expect(depositDemandIsValid({ demand_amount: 1000, original_deposit_amount: 1000 })).toBe(true);
+    expect(depositDemandIsValid({ demand_amount: 0, original_deposit_amount: 1000 })).toBe(false);
+  });
+
   it('fills tenant_name from the user when the graph did not collect it', () => {
     const n = normalizeDepositAnswers(
       { deposit_amount: 1000, received_itemization: 'nothing' },

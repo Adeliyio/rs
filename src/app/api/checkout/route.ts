@@ -23,7 +23,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { Checkout } from '@polar-sh/nextjs';
 
-import { currentUser } from '@/lib/convex/server';
+import { q, currentUser, api } from '@/lib/convex/server';
+import type { Id } from '@convex/dataModel';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,28 @@ export async function GET(request: NextRequest): Promise<Response> {
   const allowed = allowedProductIds();
   if (products.length === 0 || !products.every((p) => allowed.has(p))) {
     return NextResponse.json({ error: 'Invalid product.' }, { status: 400 });
+  }
+
+  // 2.5 Server-side double-charge guard for the ONE-TIME deposit path. The client
+  //     poll can always time out, so the buy button can re-appear for a case
+  //     whose order.paid webhook is merely slow — a second click would charge
+  //     again. If this checkout targets a caseId that is already paid, refuse.
+  const rawMeta = url.searchParams.get('metadata');
+  if (rawMeta) {
+    try {
+      const meta = JSON.parse(rawMeta) as { caseId?: string };
+      if (meta.caseId) {
+        const caseRow = await q(api.cases.getMine, { caseId: meta.caseId as Id<'cases'> });
+        if (caseRow && caseRow.payment_status === 'paid') {
+          return NextResponse.json(
+            { error: 'This case is already paid. No further payment is needed.' },
+            { status: 409 },
+          );
+        }
+      }
+    } catch {
+      // Malformed metadata — let the Polar adapter reject it downstream.
+    }
   }
 
   // 3. Delegate to the Polar adapter (it reads the same query params).

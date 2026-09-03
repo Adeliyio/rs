@@ -366,6 +366,18 @@ export async function handleSubscriptionUpdated(
   const eventType = 'subscription.updated';
   const sub = polarSubscriptionSchema.parse(payload.data);
 
+  // Revocation is TERMINAL. Polar also fires subscription.updated on a revoked
+  // sub (carrying status 'canceled' + a still-future period end), and delivery
+  // order is not assured — so a naive patch would resurrect 'revoked' back to
+  // 'canceled' and re-grant Unlimited to a non-paying user until period end.
+  // Never downgrade a revoked row.
+  const existing = await workerConvex.query(api.service.getSubscriptionByPolarId, {
+    polarSubscriptionId: sub.id,
+  });
+  if (existing?.status === 'revoked') {
+    return { ok: true, event_type: eventType };
+  }
+
   const patch: Record<string, unknown> = { status: sub.status };
 
   const start = dateToMs(sub.currentPeriodStart);
