@@ -177,10 +177,12 @@ describe('SEC-16: Webhook rate limiting + signature verification', () => {
     expect(source).toContain('Webhook rate limit exceeded');
   });
 
-  test('verifies the Standard Webhooks signature via the Polar adapter', () => {
-    // The @polar-sh/nextjs Webhooks() adapter verifies the HMAC signature; a
-    // failed verification surfaces as a 403 the route maps to 401.
-    expect(source).toContain('Webhooks({');
+  test('verifies the Standard Webhooks signature via the Polar SDK', () => {
+    // The route verifies the HMAC signature with the Polar SDK's validateEvent
+    // (webhook-id / webhook-timestamp / webhook-signature); a failed
+    // verification throws WebhookVerificationError, which the route maps to 401.
+    expect(source).toContain('validateEvent');
+    expect(source).toContain('WebhookVerificationError');
     expect(source).toContain('POLAR_WEBHOOK_SECRET');
     expect(source).toContain('Invalid webhook signature');
   });

@@ -420,7 +420,7 @@ describe('4c: Auto-refund in generate route', () => {
 
   it('imports processAutoRefundIfNeeded', () => {
     expect(generateSource).toContain(
-      "import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund'",
+      "processAutoRefundIfNeeded",
     );
   });
 

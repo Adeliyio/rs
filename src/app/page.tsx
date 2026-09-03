@@ -745,7 +745,7 @@ export default function HomePage(): React.JSX.Element {
               </p>
               <ul className="mt-6 space-y-3 text-[14px] text-muted-foreground">
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> 3-step email sequence (Day 0, 7, 14)</li>
-                <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Federal ROSCA + state-specific citations</li>
+                <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Federal ROSCA/FTC nationwide + state law where available (CA, NY)</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Per-vertical templates (gym, telecom, SaaS, streaming, mobile app)</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> FTC and CFPB filing guidance</li>
                 <li className="flex items-start gap-2.5"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> Deadline timeline</li>

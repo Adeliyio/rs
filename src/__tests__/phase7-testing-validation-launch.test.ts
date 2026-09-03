@@ -571,10 +571,10 @@ describe('7f: Deposit landing page', () => {
   });
 
   it('has CTA to registration', () => {
-    // Redesign: the primary CTA now starts the diagnostic flow at /new?wedge=deposit
+    // Value-first funnel (M3): the CTA starts the anonymous diagnostic at /start?wedge=deposit
     // (the registration/auth step happens inside that flow) instead of linking to
     // /register directly. Same intent: a CTA that starts the user's letter journey.
-    expect(source).toContain('/new?wedge=deposit');
+    expect(source).toContain('/start?wedge=deposit');
     expect(source).toContain('Start Your Letter');
   });
 
@@ -687,9 +687,9 @@ describe('7f: DepositStatePage shared component', () => {
   });
 
   it('has CTA to registration', () => {
-    // Redesign: CTA now starts the diagnostic flow at /new?wedge=deposit
+    // Value-first funnel (M3): the CTA starts the anonymous diagnostic at /start?wedge=deposit
     // (registration happens within that flow) rather than linking to /register.
-    expect(source).toContain('/new?wedge=deposit');
+    expect(source).toContain('/start?wedge=deposit');
   });
 
   it('has 4-step "how to recover" process', () => {

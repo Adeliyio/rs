@@ -4,13 +4,13 @@ import { ArrowRight, Mail, Shield, Zap } from 'lucide-react';
 import { safeJsonLd } from '@/lib/safe-json-ld';
 
 export const metadata: Metadata = {
-  title: 'Subscription Cancellation — Free for All 50 US States',
+  title: 'Subscription Cancellation — Free in All 50 US States',
   description:
-    'Cancel unwanted subscriptions with a 3-step email sequence grounded in US consumer protection law. ROSCA, FCBA, and state-specific statutes. Gyms, telecom, SaaS, streaming. Free.',
+    'Cancel unwanted subscriptions with a 3-step email sequence grounded in federal consumer protection law (ROSCA, FCBA) in all 50 states, plus state-specific citations where available (California, New York). Gyms, telecom, SaaS, streaming. Free.',
   openGraph: {
     title: 'Subscription Cancellation | Resolvaio',
     description:
-      'Draft cancellation emails citing ROSCA and state consumer protection law. Free for all 50 US states.',
+      'Draft cancellation emails citing federal ROSCA/FTC protections in all 50 states, plus state-specific law where available (CA, NY). Free.',
   },
   alternates: {
     canonical: 'https://resolvaio.com/subscription',
@@ -170,7 +170,7 @@ export default function SubscriptionLandingPage() {
             '@type': 'Service',
             name: 'Subscription Cancellation',
             description:
-              'Generate cancellation email sequences grounded in ROSCA and state consumer protection law.',
+              'Generate cancellation email sequences grounded in federal ROSCA/FTC protections nationwide, plus state-specific consumer protection law where available (California, New York).',
             provider: {
               '@type': 'Organization',
               name: 'Resolvaio',
