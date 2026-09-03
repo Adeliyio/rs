@@ -44,6 +44,64 @@ export const RATE_LIMITS = {
 
 export type RateLimitCategory = keyof typeof RATE_LIMITS;
 
+/* ------------------------------------------------------------------ */
+/*  Client IP resolution (rate-limit keying)                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Resolve the real client IP for rate-limit keying — SPOOF-RESISTANT.
+ *
+ * SECURITY (CWE-290): the naive `x-forwarded-for.split(',')[0]` takes the
+ * LEFTMOST entry, which is fully client-controlled. On this deployment the app
+ * sits behind a single Caddy reverse proxy (infrastructure/Caddyfile → localhost)
+ * which APPENDS the real peer IP to the RIGHT of any inbound X-Forwarded-For and
+ * never strips a client-supplied one. So a request with `X-Forwarded-For: <spoof>`
+ * arrives as `<spoof>, <real-client>` and the trustworthy value is the LAST entry,
+ * not the first. Taking the leftmost let an attacker rotate the header to a fresh
+ * value per request and defeat the rate limit entirely.
+ *
+ * Resolution order:
+ *  1. `cf-connecting-ip` — set only by Cloudflare, unspoofable (future-proof; the
+ *     current Caddy deploy never sets it, so this is a no-op until CF is added).
+ *  2. `x-forwarded-for` — take the entry `TRUSTED_PROXY_HOPS` from the RIGHT
+ *     (default 1 = the single Caddy hop), i.e. the IP the trusted proxy appended.
+ *  3. `x-real-ip`, then 'unknown'.
+ *
+ * `TRUSTED_PROXY_HOPS` (env, default 1) is the number of trusted proxies in front
+ * of the app; raise it if additional trusted proxies are added so the correct
+ * appended entry is selected. Never returns a client-controlled leftmost token.
+ */
+export function clientIp(h: Headers): string {
+  const cf = h.get('cf-connecting-ip');
+  if (cf && cf.trim().length > 0) return cf.trim();
+
+  const forwarded = h.get('x-forwarded-for');
+  if (forwarded) {
+    const parts = forwarded
+      .split(',')
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+    if (parts.length > 0) {
+      const hops = trustedProxyHops();
+      // The proxy appends the real client on the right. The entry `hops` from the
+      // end is the one our outermost trusted proxy set; anything further left is
+      // attacker-supplied and must not be used. Clamp so a short/forged chain
+      // falls back to the leftmost trusted position rather than out of bounds.
+      const idx = Math.max(0, parts.length - hops);
+      return parts[idx]!;
+    }
+  }
+
+  return h.get('x-real-ip')?.trim() ?? 'unknown';
+}
+
+/** Number of trusted reverse-proxy hops in front of the app (default 1: Caddy). */
+function trustedProxyHops(): number {
+  const raw = process.env.TRUSTED_PROXY_HOPS;
+  const n = raw ? Number(raw) : NaN;
+  return Number.isInteger(n) && n >= 1 ? n : 1;
+}
+
 /**
  * Categories that FAIL CLOSED when Redis is unavailable — requests are
  * rejected rather than allowed without limits. These are expensive

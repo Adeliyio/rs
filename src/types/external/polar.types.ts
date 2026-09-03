@@ -33,6 +33,16 @@ export const polarOrderSchema = z
     productId: z.string().nullable().optional(),
     // Echoed from the checkout metadata — carries { caseId } for deposits.
     metadata: z.record(z.unknown()).optional().default({}),
+    // Customer email — set by Polar from the actual paying customer's record, NOT
+    // from the client-supplied checkout metadata. This is the trustworthy signal
+    // for binding a one-time order to its payer (the metadata caseId/userId are
+    // attacker-controllable). Polar nests it under `customer`, same as the
+    // subscription payload.
+    customer: z
+      .object({ email: z.string().nullable().optional() })
+      .passthrough()
+      .nullable()
+      .optional(),
     product: z
       .object({ name: z.string().optional() })
       .passthrough()

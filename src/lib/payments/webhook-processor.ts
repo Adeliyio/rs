@@ -108,6 +108,39 @@ export async function handleOrderPaid(
     };
   }
 
+  // SECURITY (CWE-639): bind the payer to the case OWNER before granting.
+  // The case is located from `metadata.caseId`, which is echoed verbatim from the
+  // client-supplied checkout query string — an authenticated attacker can start a
+  // real, fully-paid checkout tagged with a VICTIM's caseId, which would otherwise
+  // flip payment_status='paid' on the victim's case (and auto-enqueue their
+  // letter). Prevent this by requiring the paying customer to be the case owner.
+  //
+  // The trustworthy identity is `order.customer.email` — set by Polar from the
+  // actual customer record, NOT from the attacker-controllable metadata. We
+  // resolve it to a userId and require it equals caseRow.user_id. Fail CLOSED:
+  // if the payer cannot be confirmed as the owner, do NOT grant (the amount-floor
+  // check above is fail-closed for the same reason). A legitimate payer always
+  // owns the case they are paying for, so this never false-rejects a real buyer;
+  // a genuine edge (missing email) is left unprocessed for reprocessing/alerting
+  // rather than silently misattributing a paid entitlement.
+  const payerEmail = order.customer?.email ?? undefined;
+  const payerUserId = payerEmail
+    ? await workerConvex.query(api.service.userIdByEmail, { email: payerEmail })
+    : null;
+  if (!payerUserId || payerUserId !== caseRow.user_id) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[Webhook] order ${order.id} payer (${payerEmail ?? 'no email'}) does not ` +
+        `match case ${caseRow.id} owner. NOT granting entitlement (possible ` +
+        `metadata.caseId tampering).`,
+    );
+    return {
+      ok: false,
+      event_type: eventType,
+      error: `Order payer does not match the case owner`,
+    };
+  }
+
   // Persist the order id on the case if the metadata path found it first (so
   // refunds and lookups by order id resolve later).
   if (!caseRow.polar_order_id) {

@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
 import { api } from '@convex/api';
-import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { checkRateLimit, rateLimitHeaders, clientIp } from '@/lib/rate-limit';
 import { WEDGE, type Wedge } from '@/types/enums';
 
 /* ------------------------------------------------------------------ */
@@ -44,12 +44,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
-    /* ---- Rate limit by IP ---- */
-    const headersList = headers();
-    const ip =
-      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      headersList.get('x-real-ip') ??
-      'unknown';
+    /* ---- Rate limit by IP (spoof-resistant key) ---- */
+    const ip = clientIp(headers());
 
     const rateResult = await checkRateLimit('auth', `waitlist:${ip}`);
     if (!rateResult.allowed) {

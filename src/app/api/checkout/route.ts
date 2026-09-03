@@ -72,8 +72,22 @@ export async function GET(request: NextRequest): Promise<Response> {
     try {
       const meta = JSON.parse(rawMeta) as { caseId?: string };
       if (meta.caseId) {
+        // getMine returns the case ONLY if it belongs to the authenticated user.
         const caseRow = await q(api.cases.getMine, { caseId: meta.caseId as Id<'cases'> });
-        if (caseRow && caseRow.payment_status === 'paid') {
+        // SECURITY (CWE-639): refuse a checkout tagged with a caseId the caller
+        // does not own. Without this, an authed attacker could start a real
+        // checkout carrying a VICTIM's caseId; the order.paid webhook would then
+        // (absent its own owner check) grant on the victim's case. getMine === null
+        // means either the case doesn't exist or isn't the caller's — either way a
+        // checkout must not target it. (The webhook independently re-verifies the
+        // payer↔owner binding; this is defense in depth at the entry point.)
+        if (!caseRow) {
+          return NextResponse.json(
+            { error: 'Case not found for this account.' },
+            { status: 404 },
+          );
+        }
+        if (caseRow.payment_status === 'paid') {
           return NextResponse.json(
             { error: 'This case is already paid. No further payment is needed.' },
             { status: 409 },

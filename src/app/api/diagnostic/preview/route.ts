@@ -22,7 +22,7 @@ import { headers } from 'next/headers';
 import { z } from 'zod';
 
 import { loadKbEntry } from '@/lib/kb/loader';
-import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { checkRateLimit, rateLimitHeaders, clientIp } from '@/lib/rate-limit';
 import { WEDGE, type Wedge } from '@/types/enums';
 
 // No auth, no Convex — but keep dynamic so it is never statically cached.
@@ -58,12 +58,8 @@ const JURISDICTION_NAMES: Record<string, string> = {
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    /* ---- Rate limit by IP (cheap deterministic read; general bucket) ---- */
-    const headersList = headers();
-    const ip =
-      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      headersList.get('x-real-ip') ??
-      'unknown';
+    /* ---- Rate limit by IP (spoof-resistant key) ---- */
+    const ip = clientIp(headers());
 
     const rateResult = await checkRateLimit('general', `diagnostic-preview:${ip}`);
     if (!rateResult.allowed) {

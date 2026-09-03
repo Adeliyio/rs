@@ -782,6 +782,26 @@ describe('6f: Webhook processor handles Polar subscription events', () => {
     expect(fnSource).toContain('order.subscriptionId');
   });
 
+  it('order.paid binds the PAYER to the case owner before granting (CWE-639)', () => {
+    // SECURITY regression: the case is located from client-controlled
+    // metadata.caseId, so an authed attacker could pay toward a VICTIM's case and
+    // flip their payment_status='paid'. handleOrderPaid must resolve the paying
+    // customer to a userId and require it equals the case owner, BEFORE it calls
+    // setPaymentStatus('paid'). This test fails if that binding is removed.
+    const fnIdx = source.indexOf('export async function handleOrderPaid');
+    const fnSource = source.slice(fnIdx);
+    // Resolves the payer from the trustworthy (Polar-set) customer email...
+    expect(fnSource).toContain('order.customer?.email');
+    expect(fnSource).toContain('api.service.userIdByEmail');
+    // ...and gates on owner match.
+    expect(fnSource).toContain('caseRow.user_id');
+    // The ownership check must appear BEFORE the grant, not after.
+    const ownerCheckIdx = fnSource.indexOf('userIdByEmail');
+    const grantIdx = fnSource.indexOf('api.service.setPaymentStatus');
+    expect(ownerCheckIdx).toBeGreaterThan(-1);
+    expect(grantIdx).toBeGreaterThan(ownerCheckIdx);
+  });
+
   it('handles subscription.active (create/activate)', () => {
     expect(source).toContain('handleSubscriptionActive');
     expect(source).toContain('createSubscription');

@@ -18,7 +18,7 @@ import { z } from 'zod';
 
 import { generateSequence } from '@/features/subscription/generation/sequence-generator';
 import type { DiagnosticAnswers } from '@/features/subscription/generation/sequence-generator';
-import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
+import { checkRateLimit, rateLimitHeaders, clientIp } from '@/lib/rate-limit';
 import { VERTICAL, type Vertical } from '@/types/enums';
 
 export const dynamic = 'force-dynamic';
@@ -68,12 +68,8 @@ function fillDatePlaceholder(text: string, today: string): string {
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    /* ---- Rate limit by IP (generation bucket, fail-closed) ---- */
-    const headersList = headers();
-    const ip =
-      headersList.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-      headersList.get('x-real-ip') ??
-      'unknown';
+    /* ---- Rate limit by IP (spoof-resistant key) ---- */
+    const ip = clientIp(headers());
 
     // Free, $0, deterministic templates — use the free-template bucket (40/hr),
     // NOT the paid-AI 'generation' bucket (5/hr) that 429'd shared-IP users.
