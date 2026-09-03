@@ -13,7 +13,7 @@
 
 import { workerConvex, api } from '@/lib/convex/worker-client';
 import type { Id } from '@convex/dataModel';
-import { enqueuePaymentConfirmationEmail } from '@/lib/queue/enqueue';
+import { enqueuePaymentConfirmationEmail, enqueueLetterGeneration } from '@/lib/queue/enqueue';
 import { processAutoRefundIfNeeded } from '@/lib/payments/auto-refund';
 import { cancelOutcomeEmails } from '@/lib/outcomes/outcome-scheduler';
 import { DEPOSIT_JURISDICTION, type DepositJurisdiction } from '@/types/enums';
@@ -176,6 +176,32 @@ export async function handleOrderPaid(
     }
     // Do not send a "your letter is ready" confirmation for a refunded case.
     return { ok: true, event_type: eventType };
+  }
+
+  /* ---- SERVER-DRIVEN FULFILLMENT (the actual deliverable) ---- */
+  // Do NOT depend on the browser reaching /case/[id] to trigger generation: Polar
+  // redirects the buyer to /success (POLAR_SUCCESS_URL), which may not carry the
+  // caseId and can fall back to /new — leaving a paying customer charged with no
+  // letter. Enqueue generation here, off the webhook, so the letter is produced
+  // no matter where the browser lands. The job is idempotent (jobId gen-<caseId>
+  // + the worker only generates a paid case still in 'intake'), so a concurrent
+  // client-triggered /generate cannot double-produce.
+  if (isDeposit && supported) {
+    try {
+      await enqueueLetterGeneration(
+        caseRow.id,
+        caseRow.user_id,
+        'deposit',
+        caseRow.jurisdiction,
+      );
+    } catch (enqueueErr) {
+      // Rel-M3: if we cannot enqueue, do NOT mark the event processed — leave it
+      // for the reprocessing worker to replay, so fulfillment is never silently
+      // dropped for a paid customer.
+      throw new Error(
+        `Failed to enqueue fulfillment for paid case ${caseRow.id}: ${enqueueErr instanceof Error ? enqueueErr.message : String(enqueueErr)}`,
+      );
+    }
   }
 
   /* ---- payment confirmation email (best-effort) ---- */

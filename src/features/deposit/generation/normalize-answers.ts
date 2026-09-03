@@ -202,7 +202,11 @@ export function normalizeDepositAnswers(
 export function depositDemandIsValid(normalized: Record<string, unknown>): boolean {
   const demand = normalized['demand_amount'];
   if (typeof demand !== 'number' || demand <= 0) return false;
+  // A demand with no known (positive) deposit is never a valid deliverable — a
+  // letter stating "Original Deposit: $0 / Amount Demanded: $500" is facially
+  // contradictory. Require a positive deposit and demand <= deposit.
   const deposit = normalized['original_deposit_amount'];
-  if (typeof deposit === 'number' && deposit > 0 && demand > deposit) return false;
+  if (typeof deposit !== 'number' || deposit <= 0) return false;
+  if (demand > deposit) return false;
   return true;
 }

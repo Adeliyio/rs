@@ -121,10 +121,13 @@ describe('deposit normalizer — REAL node-id-keyed shape', () => {
     expect(depositDemandIsValid(n)).toBe(true);
   });
 
-  it('depositDemandIsValid rejects a demand exceeding the deposit', () => {
+  it('depositDemandIsValid rejects over-deposit, zero, and missing-deposit demands', () => {
     expect(depositDemandIsValid({ demand_amount: 1500, original_deposit_amount: 1000 })).toBe(false);
     expect(depositDemandIsValid({ demand_amount: 1000, original_deposit_amount: 1000 })).toBe(true);
     expect(depositDemandIsValid({ demand_amount: 0, original_deposit_amount: 1000 })).toBe(false);
+    // A positive demand against a missing/zero deposit is facially contradictory.
+    expect(depositDemandIsValid({ demand_amount: 500 })).toBe(false);
+    expect(depositDemandIsValid({ demand_amount: 500, original_deposit_amount: 0 })).toBe(false);
   });
 
   it('fills tenant_name from the user when the graph did not collect it', () => {

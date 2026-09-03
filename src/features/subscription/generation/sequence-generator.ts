@@ -67,34 +67,69 @@ export type SequenceGenerationResult =
 /*  Helpers                                                           */
 /* ------------------------------------------------------------------ */
 
-/**
- * Replace user-supplied free-text spans in a body with a neutral token before
- * compliance scanning, so a banned phrase inside the USER's own words (company
- * name, account id, refund reason, free notes) can't fail the deliverable. Only
- * template-authored scaffolding remains scanned.
- */
-function maskUserValues(text: string, situation: UserSituation): string {
-  const userValues = [
+/** All user-supplied free-text spans that get inlined into an email body. These
+ *  must never be scanned as our content (compliance) nor parsed as our citations. */
+function userValueList(situation: UserSituation): string[] {
+  return [
     situation.company_name,
     situation.account_identifier,
     situation.refund_reason,
     situation.additional_details,
     situation.service_type,
-    // These are the user's VERBATIM description of a prior cancellation attempt —
-    // inlined into email 1 by the template engine. Omitting them meant a scanned
-    // word appearing in the user's own quoted sentence failed the compliance scan
-    // and 500'd the free deliverable.
+    // The user's VERBATIM description of a prior cancellation attempt — inlined
+    // into email 1. A scanned word in the user's own sentence must not fail the
+    // deliverable, and a §/statute-looking account id must not be stripped as a
+    // fabricated citation.
     situation.previous_cancellation_result,
     situation.previous_cancellation_method,
   ].filter((v): v is string => typeof v === 'string' && v.trim().length > 2);
+}
 
+const esc = (v: string): string => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Replace user-supplied free-text spans with a neutral token before COMPLIANCE
+ * scanning, so a banned phrase inside the USER's own words can't fail the
+ * deliverable. Only template-authored scaffolding remains scanned.
+ */
+function maskUserValues(text: string, situation: UserSituation): string {
   let masked = text;
-  for (const v of userValues) {
-    // Escape regex metachars in the user value, replace all occurrences.
-    const escaped = v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    masked = masked.replace(new RegExp(escaped, 'g'), '[USER_VALUE]');
+  for (const v of userValueList(situation)) {
+    masked = masked.replace(new RegExp(esc(v), 'g'), '[USER_VALUE]');
   }
   return masked;
+}
+
+/**
+ * REVERSIBLE mask for the CITATION-validation path: swaps each user value for a
+ * unique sentinel, so the citation validator never sees (and never strips) a
+ * user's company name / account identifier that happens to look like a legal
+ * citation (e.g. an account id containing "§1950.5" or a company named
+ * "FTC Act Gyms"). Validate on the masked text, then restore the exact user
+ * values into the cleaned output.
+ */
+function maskUserValuesReversible(
+  text: string,
+  situation: UserSituation,
+): { masked: string; restore: (s: string) => string } {
+  const values = userValueList(situation);
+  const tokens: Array<{ token: string; value: string }> = [];
+  let masked = text;
+  values.forEach((v, i) => {
+    const token = `XUSERVALUEX${i}X`; // not citation-shaped; untouched by the validator's normalize/removal passes
+    if (masked.includes(v)) {
+      masked = masked.replace(new RegExp(esc(v), 'g'), token);
+      tokens.push({ token, value: v });
+    }
+  });
+  const restore = (s: string): string => {
+    let out = s;
+    for (const { token, value } of tokens) {
+      out = out.split(token).join(value);
+    }
+    return out;
+  };
+  return { masked, restore };
 }
 
 function extractUserSituation(answers: DiagnosticAnswers): UserSituation {
@@ -214,12 +249,17 @@ async function runPipeline(
   const processedSteps: SequenceStep[] = [];
 
   for (const step of rawSteps) {
-    // Citation validation
-    const { result: citResult, cleanedText } = validateCitations(
-      step.body,
+    // Citation validation — protect user free-text spans so the validator never
+    // classifies a user's company name / account identifier as a fabricated
+    // citation (which would 500 the deliverable or silently strip their account
+    // number). Validate on the masked body, then restore the exact user values.
+    const { masked, restore } = maskUserValuesReversible(step.body, userSituation);
+    const { result: citResult, cleanedText: maskedCleaned } = validateCitations(
+      masked,
       grounding.statute_ids,
       kbStatutes,
     );
+    const cleanedText = restore(maskedCleaned);
     citationResults.push(citResult);
 
     // Compliance scan — on the text with USER-SUPPLIED values masked out. The

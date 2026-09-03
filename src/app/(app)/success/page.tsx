@@ -16,18 +16,28 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { useQuery } from 'convex/react';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
 
+import { api } from '@convex/api';
 import { Button } from '@/components/ui/button';
 
 function SuccessInner(): React.JSX.Element {
   const params = useSearchParams();
   const checkoutId = params.get('checkout_id') ?? params.get('checkoutId');
-  // If the success URL carried the case id, deep-link straight to that case so
-  // the intake-client resumes polling for the webhook there (instead of dumping
-  // the user on the dashboard to hunt for their case).
-  const caseId = params.get('caseId') ?? params.get('case_id');
-  const continueHref = caseId ? `/case/${caseId}` : '/new';
+  // If the success URL carried the case id, deep-link straight to that case.
+  const paramCaseId = params.get('caseId') ?? params.get('case_id');
+
+  // Polar's success URL does NOT reliably carry the caseId (it lives in checkout
+  // metadata, not the redirect query), so a param-only link would dump the buyer
+  // on /new to hunt for their case. Reactively resolve their most recent case as
+  // a fallback so the CTA always deep-links to the right place. (Fulfillment is
+  // server-driven off the order.paid webhook regardless — this is just routing.)
+  const cases = useQuery(api.cases.listMine, paramCaseId ? 'skip' : {});
+  const resolvedCaseId =
+    paramCaseId ?? (Array.isArray(cases) && cases.length > 0 ? cases[0]!.id : null);
+  const continueHref = resolvedCaseId ? `/case/${resolvedCaseId}` : '/new';
+  const caseId = resolvedCaseId;
 
   return (
     <div className="mx-auto max-w-lg py-10 text-center">
