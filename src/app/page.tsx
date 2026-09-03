@@ -234,7 +234,7 @@ export default function HomePage(): React.JSX.Element {
         <div className="mx-auto grid max-w-5xl items-center gap-12 lg:grid-cols-2">
           {/* Left — copy */}
           <div className="text-center lg:text-left">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-50 px-3 py-1 text-[12px] font-semibold uppercase tracking-widest text-emerald-700">
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-widest text-primary">
               <Check className="h-3.5 w-3.5" /> Cancel any subscription — 100% free, no account
             </p>
             <h1 className="text-[38px] font-semibold leading-[1.1] tracking-tight text-foreground sm:text-[50px]">

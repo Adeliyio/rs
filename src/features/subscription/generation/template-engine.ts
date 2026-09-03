@@ -25,7 +25,6 @@ import type { SequenceStep, Citation } from '@/types/generation.types';
 /* ------------------------------------------------------------------ */
 
 const PLACEHOLDER_NAME = '[YOUR NAME]';
-const PLACEHOLDER_EMAIL = '[YOUR EMAIL]';
 const PLACEHOLDER_DATE = '[DATE]';
 // Back-reference to a PRIOR email the user sent — this must NOT be auto-filled
 // with today's date (that produced a self-contradictory timeline, e.g. "my email
@@ -565,9 +564,14 @@ function signOff(): string[] {
   // The signature is ONE block: "Sincerely," and the placeholder lines stack
   // tightly (single line breaks), separated from the letter body by the usual
   // paragraph gap that joinLines adds around this block. Returning them as
-  // separate blocks would scatter the signature into four spaced-out paragraphs.
+  // separate blocks would scatter the signature into spaced-out paragraphs.
+  //
+  // No email line: a real cancellation email is sent from the person's own
+  // inbox, so the recipient already has their address in the From: header.
+  // Printing "[YOUR EMAIL]" as a signature line reads like an unfilled form
+  // field, not a signature — the name (and date) are all a real sign-off needs.
   return [
-    ['Sincerely,', PLACEHOLDER_NAME, PLACEHOLDER_EMAIL, PLACEHOLDER_DATE].join('\n'),
+    ['Sincerely,', PLACEHOLDER_NAME, PLACEHOLDER_DATE].join('\n'),
   ];
 }
 

@@ -160,7 +160,6 @@ Thank you for your prompt attention to this matter.
 
 Sincerely,
 [Your Name]
-[Your Email]
 [Date]`;
 
 /* ------------------------------------------------------------------ */

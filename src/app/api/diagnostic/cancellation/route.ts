@@ -7,9 +7,10 @@
  * expose anonymously. This returns the generated 3-step sequence directly in the
  * response and writes NOTHING to the database (there is no case and no user).
  *
- * The `[YOUR NAME]` / `[YOUR EMAIL]` placeholders are intentionally preserved for
- * the visitor to complete when they send the emails; `[DATE]` is filled with
- * today's date. Rate-limited by IP as belt-and-suspenders.
+ * The `[YOUR NAME]` placeholder is intentionally preserved for the visitor to
+ * complete when they send the emails; `[DATE]` is filled with today's date. The
+ * signature carries no email line — the message is sent from the visitor's own
+ * inbox, so the recipient already has their address. Rate-limited by IP.
  */
 
 import { NextResponse } from 'next/server';

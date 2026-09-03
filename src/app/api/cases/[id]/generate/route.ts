@@ -154,18 +154,23 @@ function replaceUserPlaceholders(
   userInfo: UserInfo,
   today: string,
 ): string {
-  return text
-    .replace(/\[YOUR NAME\]/gi, userInfo.fullName)
-    .replace(/\[YOUR EMAIL\]/gi, userInfo.email)
-    .replace(/\[DATE\]/gi, today)
-    .replace(/\[YOUR FULL NAME\]/gi, userInfo.fullName)
-    .replace(/\[FULL NAME\]/gi, userInfo.fullName)
-    .replace(/\[NAME\]/gi, userInfo.fullName)
-    .replace(/\[EMAIL\]/gi, userInfo.email)
-    .replace(/\[EMAIL ADDRESS\]/gi, userInfo.email)
-    .replace(/\[TODAY'S DATE\]/gi, today)
-    .replace(/\[TODAYS DATE\]/gi, today)
-    .replace(/\[CURRENT DATE\]/gi, today);
+  return (
+    text
+      .replace(/\[YOUR NAME\]/gi, userInfo.fullName)
+      // No email in the signature: the message is sent from the sender's own
+      // inbox, so an address line reads like an unfilled form field. Strip a
+      // stray email placeholder that sits on its OWN line (the signature case) —
+      // including any blank line it leaves — even if the model emits one against
+      // instructions. (An inline mention, if it ever occurred, is left untouched.)
+      .replace(/^[ \t]*\[(?:YOUR EMAIL|EMAIL|EMAIL ADDRESS)\][ \t]*\r?\n?/gim, '')
+      .replace(/\[DATE\]/gi, today)
+      .replace(/\[YOUR FULL NAME\]/gi, userInfo.fullName)
+      .replace(/\[FULL NAME\]/gi, userInfo.fullName)
+      .replace(/\[NAME\]/gi, userInfo.fullName)
+      .replace(/\[TODAY'S DATE\]/gi, today)
+      .replace(/\[TODAYS DATE\]/gi, today)
+      .replace(/\[CURRENT DATE\]/gi, today)
+  );
 }
 
 /* ------------------------------------------------------------------ */

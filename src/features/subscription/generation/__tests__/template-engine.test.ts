@@ -166,10 +166,12 @@ describe('template-engine — email 1 required elements (a–i)', () => {
     expect(body).toContain('2026-04-20');
     expect(body).toContain('phone call to support');
     expect(body).toContain('they refused to cancel');
-    // (i) sign off
+    // (i) sign off — name + date only. A real cancellation email is sent from the
+    //     person's own inbox, so no "[YOUR EMAIL]" signature line (it would read
+    //     like an unfilled form field, not a signature).
     expect(body).toContain('[YOUR NAME]');
-    expect(body).toContain('[YOUR EMAIL]');
     expect(body).toContain('[DATE]');
+    expect(body).not.toContain('[YOUR EMAIL]');
   });
 });
 
@@ -403,7 +405,7 @@ describe('template-engine — conditional rendering', () => {
 /* ------------------------------------------------------------------ */
 
 describe('template-engine — placeholders', () => {
-  it('preserves [YOUR NAME], [YOUR EMAIL], [DATE] in every step', () => {
+  it('preserves [YOUR NAME] + [DATE] in every step, and never an email signature line', () => {
     const steps = generateSubscriptionSequenceFromTemplates(
       CA_GROUNDING_CONTEXT,
       CA_STATUTE_IDS,
@@ -412,8 +414,9 @@ describe('template-engine — placeholders', () => {
     );
     for (const step of steps) {
       expect(step.body).toContain('[YOUR NAME]');
-      expect(step.body).toContain('[YOUR EMAIL]');
       expect(step.body).toContain('[DATE]');
+      // The email is the From: header, not a signature line — see signOff().
+      expect(step.body).not.toContain('[YOUR EMAIL]');
     }
   });
 });

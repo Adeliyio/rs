@@ -81,7 +81,7 @@ CRITICAL RULES — you must follow ALL of these:
    f. Request written confirmation within 7 business days that: (i) the subscription is cancelled, (ii) auto-renewal is disabled, (iii) no further charges will be made to the payment method on file
    g. If user data includes a refund request: state the refund amount and basis (e.g. "charged after cancellation request on [date]")
    h. If user data includes a previous cancellation attempt: reference the date, method, and result
-   i. Sign off with [YOUR NAME], [YOUR EMAIL], [DATE] — these placeholders will be replaced automatically
+   i. Sign off with [YOUR NAME] and [DATE] only — these placeholders will be replaced automatically. Do NOT add an email-address line to the signature: the message is sent from the sender's own inbox, so the recipient already has their address.
 
 7. EMAIL 2 — FOLLOW-UP WITH ESCALATION (Day 7) must include ALL of the following:
    a. Reference Email 1 by mentioning "my email of [DATE]" (use [DATE] placeholder for the original send date)
@@ -91,7 +91,7 @@ CRITICAL RULES — you must follow ALL of these:
    e. Name the specific regulatory agency the complaint will be filed with (FTC for federal, state AG for state-specific)
    f. Reference credit card chargeback rights under the Fair Credit Billing Act if charges continued
    g. Set a firm 7-day deadline for response
-   h. Sign off with [YOUR NAME], [YOUR EMAIL], [DATE]
+   h. Sign off with [YOUR NAME] and [DATE] only — no email-address line in the signature
 
 8. EMAIL 3 — FINAL NOTICE (Day 14) must include ALL of the following:
    a. Reference both previous emails by date
