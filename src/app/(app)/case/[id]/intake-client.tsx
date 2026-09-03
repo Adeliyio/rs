@@ -143,19 +143,31 @@ export default function IntakeClient({
       return;
     }
 
-    // Otherwise check whether payment already landed (returned from checkout).
+    // Otherwise POLL for payment (the order.paid webhook normally lands AFTER
+    // the browser redirect back from Polar — a single check reads "not paid" and
+    // would strand the buyer forever). We poll payment-status for the same window
+    // as pollForPayment; once paid, fire generation exactly once. If it never
+    // becomes paid (a genuinely unpaid case, not a returning buyer), we simply
+    // stop — the user can proceed through the flow normally.
     let cancelled = false;
     void (async () => {
-      try {
-        const res = await fetch(`/api/cases/${caseId}/payment-status`);
-        if (!res.ok || cancelled) return;
-        const data = (await res.json()) as { payment_status?: string };
-        if (data.payment_status === 'paid' && !cancelled && !autoStartedRef.current) {
-          autoStartedRef.current = true;
-          void handleComplete();
+      for (let i = 0; i < PAYMENT_POLL_MAX_ATTEMPTS && !cancelled; i++) {
+        try {
+          const res = await fetch(`/api/cases/${caseId}/payment-status`);
+          if (res.ok) {
+            const data = (await res.json()) as { payment_status?: string };
+            if (data.payment_status === 'paid') {
+              if (!cancelled && !autoStartedRef.current) {
+                autoStartedRef.current = true;
+                void handleComplete();
+              }
+              return;
+            }
+          }
+        } catch {
+          // Non-fatal — keep polling; the user can also proceed manually.
         }
-      } catch {
-        // Non-fatal — the user can still complete the flow manually.
+        await new Promise((r) => setTimeout(r, PAYMENT_POLL_INTERVAL));
       }
     })();
     return () => { cancelled = true; };

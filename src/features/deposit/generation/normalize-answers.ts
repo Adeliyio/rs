@@ -68,11 +68,22 @@ export function normalizeDepositAnswers(
     }
   }
 
-  // 2. Map renamed node-id keys to the generator's expected field names.
+  // 2. Map renamed NODE-ID keys to the generator's field names. The diagnostic
+  //    engine keys every answer by the NODE id, which differs from the field
+  //    name the letter generator reads. Missing these aliases is why the letter
+  //    silently dropped itemization/deductions/days/walkthrough (audit round 3).
   const renames: Record<string, string> = {
     deposit_amount: 'original_deposit_amount',
     partial_amount_received: 'amount_returned',
     forwarding_address: 'forwarding_address_provided',
+    received_itemization: 'itemization_status',   // select node id → field
+    deduction_details: 'deductions',              // deduction_table node id → field
+    walkthrough_done: 'walkthrough_completed',    // boolean node id → field
+    // Computed days-since-move-out lives under either computed node id depending
+    // on the branch; both carry the same value.
+    days_since_moveout_check: 'days_since_move_out',
+    days_since_moveout_deduction_path: 'days_since_move_out',
+    days_since_moveout: 'days_since_move_out',
   };
   for (const [from, to] of Object.entries(renames)) {
     if (out[to] === undefined && answers[from] !== undefined) {
@@ -80,11 +91,32 @@ export function normalizeDepositAnswers(
     }
   }
 
+  // 2b. Map deduction ROWS to the shape the letter consumes. The table collects
+  //     only DISPUTED deductions with { description, amount, dispute_basis,
+  //     has_evidence }; the generator reads { description, amount, disputed,
+  //     basis_for_dispute }. Without this every disputed charge rendered as
+  //     "Accepted" (disputed defaulted false).
+  if (Array.isArray(out['deductions'])) {
+    out['deductions'] = (out['deductions'] as Array<Record<string, unknown>>).map((row) => ({
+      ...row,
+      description: row.description ?? row['description'],
+      amount: asNumber(row.amount) ?? row.amount,
+      disputed: true,
+      basis_for_dispute:
+        (row.basis_for_dispute as string | undefined) ??
+        (row.dispute_basis as string | undefined),
+    }));
+  }
+
   // 3. Coerce boolean-node strings to real booleans (else 'false' reads truthy).
   for (const key of ['forwarding_address_provided', 'walkthrough_completed', 'itemization_received']) {
     const b = asBool(out[key]);
     if (b !== undefined) out[key] = b;
   }
+
+  // 3b. Normalize the computed days value to a number.
+  const days = asNumber(out['days_since_move_out']);
+  if (days !== undefined) out['days_since_move_out'] = days;
 
   // 4. Normalize the money fields to numbers.
   const originalDeposit = asNumber(out['original_deposit_amount']);
@@ -112,14 +144,23 @@ export function normalizeDepositAnswers(
     return acc + (n ?? 0);
   }, 0);
 
+  const isItemizedPartial =
+    status === 'partial_return_with_itemization' || status === 'letter_only';
+
   let amountWithheld = asNumber(out['amount_withheld']);
   if (amountWithheld === undefined) {
-    if (status === 'partial_return_with_itemization' && sumDeductions > 0) {
-      amountWithheld = sumDeductions;
-      // Backfill amount_returned so the letter states it correctly.
-      if (amountReturned === undefined && originalDeposit !== undefined) {
-        out['amount_returned'] = Math.max(0, originalDeposit - sumDeductions);
+    if (isItemizedPartial) {
+      if (sumDeductions > 0) {
+        // Withheld = the disputed itemized amount; returned = the rest.
+        amountWithheld = sumDeductions;
+        if (amountReturned === undefined && originalDeposit !== undefined) {
+          out['amount_returned'] = Math.max(0, originalDeposit - sumDeductions);
+        }
       }
+      // else: itemized-partial with NO parseable deductions (e.g. the user hit
+      // "Skip"). Do NOT fall through to keptEverything (that demanded the FULL
+      // deposit, contradicting their own facts). Leave underived → the demand
+      // guard fails and the case routes to recovery rather than shipping junk.
     } else if (originalDeposit !== undefined) {
       const keptEverything =
         status === 'nothing' || amountReturned === undefined || amountReturned === 0;

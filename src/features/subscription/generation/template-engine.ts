@@ -483,12 +483,26 @@ function buildRefundLine(situation: UserSituation): string {
   if (!situation.wants_refund) {
     return '';
   }
+  // Only assert the "after my cancellation request" basis when the user ACTUALLY
+  // made a prior cancellation attempt — otherwise it's a false, rebuttable claim
+  // (a refund can be owed for reasons needing no prior cancel, e.g. auto-renewed
+  // without consent). Mirrors the guard in buildChargesSinceLine.
+  const hadPriorAttempt = Boolean(situation.previous_cancellation_date);
+
   const amount = situation.refund_amount
     ? formatMoney(situation.refund_amount)
-    : 'the amount charged after my cancellation request';
-  const basis = situation.refund_reason
-    ? ` The basis for this request is: ${situation.refund_reason}.`
-    : ' The basis for this request is that the charge was made after my cancellation request.';
+    : hadPriorAttempt
+      ? 'the amount charged after my cancellation request'
+      : 'the improper recurring charge(s)';
+
+  let basis: string;
+  if (situation.refund_reason) {
+    basis = ` The basis for this request is: ${situation.refund_reason}.`;
+  } else if (hadPriorAttempt) {
+    basis = ' The basis for this request is that the charge was made after my cancellation request.';
+  } else {
+    basis = '';
+  }
   return `I am also requesting a refund of ${amount}.${basis}`;
 }
 

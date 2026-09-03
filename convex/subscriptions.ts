@@ -9,6 +9,28 @@ import { serializeSubscription } from './lib/serialize';
  */
 
 /** The current user's most-recent active/past_due subscription (or null). */
+/**
+ * Whether a subscription row still ENTITLES the user to Unlimited access.
+ *
+ * active / past_due → entitled. A 'canceled' (or cancelAtPeriodEnd) sub only
+ * SCHEDULES the end — the customer keeps access until currentPeriodEnd, so we
+ * must keep entitling it until then. Dropping entitlement the instant a user
+ * clicks "cancel" would block a paid-through Monthly/Annual subscriber mid-period
+ * and push them to pay $49 again. Entitlement truly ends at subscription.revoked
+ * (status 'revoked'/'expired') or once currentPeriodEnd passes.
+ */
+function isEntitled(s: {
+  status: string;
+  cancelAtPeriodEnd?: boolean;
+  currentPeriodEnd?: number;
+}): boolean {
+  if (s.status === 'active' || s.status === 'past_due') return true;
+  if (s.status === 'canceled' || s.cancelAtPeriodEnd) {
+    return typeof s.currentPeriodEnd === 'number' && Date.now() < s.currentPeriodEnd;
+  }
+  return false;
+}
+
 export const currentMine = query({
   args: {},
   handler: async (ctx) => {
@@ -18,7 +40,7 @@ export const currentMine = query({
       .withIndex('by_user', (q) => q.eq('userId', userId))
       .collect();
     const relevant = rows
-      .filter((s) => s.status === 'active' || s.status === 'past_due')
+      .filter((s) => isEntitled(s))
       .sort((a, b) => b.createdAt - a.createdAt)[0];
     return relevant ? serializeSubscription(relevant) : null;
   },
@@ -125,7 +147,7 @@ export const hasActiveForUserInternal = internalQuery({
       .query('subscriptions')
       .withIndex('by_user', (q) => q.eq('userId', userId))
       .collect();
-    return rows.some((s) => s.status === 'active' || s.status === 'past_due');
+    return rows.some((s) => isEntitled(s));
   },
 });
 

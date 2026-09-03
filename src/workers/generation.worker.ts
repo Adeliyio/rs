@@ -28,6 +28,7 @@ import {
   generateSequence,
   type DiagnosticAnswers,
 } from '@/features/subscription/generation/sequence-generator';
+import { normalizeSubscriptionAnswers } from '@/features/diagnostic/anonymous/anonymous-answers';
 import { computeDeadlines } from '@/lib/deadlines/calculator';
 import { scheduleDeadlines } from '@/lib/deadlines/scheduler';
 import { loadKbEntry } from '@/lib/kb/loader';
@@ -268,9 +269,14 @@ async function processSubscriptionGeneration(
 ): Promise<void> {
   const { caseRow, skip } = await loadCaseData(caseId, userId);
   if (skip) return;
-  const answers = decryptAnswersPii(
+  const rawAnswers = decryptAnswersPii(
     (caseRow.diagnostic_state?.answers ?? {}) as Record<string, unknown>,
   );
+  // Same normalization the sync route uses (generate/route.ts) — flatten group
+  // nodes + coerce boolean-by-node-id keys. Skipping it here meant the
+  // background/queue-spike path shipped cancellation emails missing the charge
+  // amount, dates, and the refund request the user entered.
+  const answers = normalizeSubscriptionAnswers(rawAnswers);
 
   // R-3: refusal re-check (mirrors the /generate route's hard-block gate).
   const refusal = checkRefusal(answers, 'subscription');
