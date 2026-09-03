@@ -113,7 +113,7 @@ function maskUserValuesReversible(
   situation: UserSituation,
 ): { masked: string; restore: (s: string) => string } {
   const values = userValueList(situation);
-  const tokens: Array<{ token: string; value: string }> = [];
+  const tokens: { token: string; value: string }[] = [];
   let masked = text;
   values.forEach((v, i) => {
     const token = `XUSERVALUEX${i}X`; // not citation-shaped; untouched by the validator's normalize/removal passes

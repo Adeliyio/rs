@@ -97,7 +97,7 @@ export function normalizeDepositAnswers(
   //     basis_for_dispute }. Without this every disputed charge rendered as
   //     "Accepted" (disputed defaulted false).
   if (Array.isArray(out['deductions'])) {
-    out['deductions'] = (out['deductions'] as Array<Record<string, unknown>>).map((row) => ({
+    out['deductions'] = (out['deductions'] as Record<string, unknown>[]).map((row) => ({
       ...row,
       description: row.description ?? row['description'],
       amount: asNumber(row.amount) ?? row.amount,
@@ -137,7 +137,7 @@ export function normalizeDepositAnswers(
   //    - partial-with-a-returned-amount: withheld = deposit − returned.
   const status = out['itemization_status'];
   const deductions = Array.isArray(out['deductions'])
-    ? (out['deductions'] as Array<{ amount?: unknown }>)
+    ? (out['deductions'] as { amount?: unknown }[])
     : [];
   const sumDeductions = deductions.reduce<number>((acc, d) => {
     const n = asNumber(d?.amount);

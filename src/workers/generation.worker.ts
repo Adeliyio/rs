@@ -402,7 +402,7 @@ export function createLetterGenerationWorker(): Worker {
     // Rel-H3: on TERMINAL failure (all attempts exhausted) of a PAID deposit
     // case, refund the customer rather than leaving them charged with no letter
     // forever. Best-effort and guarded — never throw out of the event handler.
-    void handleTerminalGenerationFailure(job).catch((e) => {
+    void handleTerminalGenerationFailure(job).catch((e: unknown) => {
       // eslint-disable-next-line no-console
       console.error('[GenerationWorker] terminal-failure recovery errored:', e);
     });

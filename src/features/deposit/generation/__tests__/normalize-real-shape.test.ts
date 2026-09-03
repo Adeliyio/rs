@@ -52,7 +52,7 @@ describe('deposit normalizer — REAL node-id-keyed shape', () => {
         { description: 'Cleaning', amount: 150, dispute_basis: 'Charge is excessive / inflated', has_evidence: false },
       ],
     });
-    const deductions = n.deductions as Array<Record<string, unknown>>;
+    const deductions = n.deductions as Record<string, unknown>[];
     expect(deductions[0]!.disputed).toBe(true);
     expect(deductions[0]!.basis_for_dispute).toBe('Charge is excessive / inflated');
     expect(deductions[0]!.amount).toBe(150);

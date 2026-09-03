@@ -124,8 +124,10 @@ export function useSequence(caseId: string): UseSequenceReturn {
         });
 
         if (!response.ok) {
-          const body = await response.json().catch(() => ({ error: 'Request failed' }));
-          const errorBody = body as { error?: string };
+          const body: unknown = await response
+            .json()
+            .catch(() => ({ error: 'Request failed' }));
+          const errorBody = (body ?? {}) as { error?: string };
           throw new Error(errorBody.error ?? `HTTP ${response.status}`);
         }
 
