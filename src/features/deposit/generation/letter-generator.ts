@@ -19,6 +19,10 @@ import {
 } from '@/lib/ai/deposit-generation';
 import { validateCitations } from '@/lib/ai/citation-validator';
 import { scanCompliance } from '@/lib/ai/compliance-scanner';
+import {
+  maskUserValues,
+  maskUserValuesReversible,
+} from '@/lib/ai/user-value-mask';
 import { injectLetterDisclaimer } from '@/lib/ai/disclaimer-injector';
 import { loadKbEntry } from '@/lib/kb/loader';
 import type {
@@ -150,15 +154,38 @@ async function runPipeline(
   /* 4. Collect KB statutes for citation validation */
   const kbStatutes = collectStatutes(wedge, jurisdiction);
 
-  /* 5. Validate citations in the letter body */
-  const { result: citResult, cleanedText } = validateCitations(
+  /* 5. Validate citations in the letter body — SCANNING ONLY WHAT WE AUTHORED.
+   *
+   * The user's own free text (landlord name, property address, deduction
+   * descriptions, their added context) is masked out first. Without this, a
+   * tenant whose landlord or repair vendor was named using one of the
+   * compliance scanner's bare-listed words — ordinary business-name vocabulary,
+   * and real national brands use it — tripped the scan on their OWN data. The
+   * strict retry could not fix it (the prompt REQUIRES the letter to address the
+   * landlord by name), so generation hard-failed twice and the $49 customer was
+   * auto-refunded with no letter, through no fault of their own.
+   *
+   * The free subscription pipeline has had this protection for a while; the paid
+   * deposit letter never did, so the fix was inert for the product people pay
+   * for. Both now share src/lib/ai/user-value-mask.
+   *
+   * The citation mask is REVERSIBLE so the user's exact words are restored into
+   * the delivered letter after validation. */
+  const userValues = collectUserFreeText(tenantSituation);
+
+  const { masked: maskedForCitations, restore } = maskUserValuesReversible(
     raw.content,
+    userValues,
+  );
+  const { result: citResult, cleanedText: cleanedMasked } = validateCitations(
+    maskedForCitations,
     grounding.statute_ids,
     kbStatutes,
   );
+  const cleanedText = restore(cleanedMasked);
 
-  /* 6. Compliance scan on cleaned text */
-  const compResult = scanCompliance(cleanedText);
+  /* 6. Compliance scan — on OUR text only, with user values neutralised. */
+  const compResult = scanCompliance(maskUserValues(cleanedText, userValues));
 
   /* 7. Inject disclaimer */
   const contentWithDisclaimer = injectLetterDisclaimer(cleanedText);
@@ -170,6 +197,27 @@ async function runPipeline(
     compliancePass: compResult.pass,
     groundingContextIds: grounding.kb_entry_ids,
   };
+}
+
+/**
+ * Every span of the letter that is the USER's own words rather than ours.
+ *
+ * These must never be scanned as our content (compliance) nor parsed as our
+ * citations. Deliberately excludes tenant_name: it comes from the signed-in
+ * account, is usually a short personal name, and masking short common words
+ * risks blanking unrelated letter text.
+ */
+function collectUserFreeText(situation: TenantSituation): string[] {
+  const values: Array<string | undefined> = [
+    situation.landlord_name,
+    situation.landlord_address,
+    situation.property_address,
+    situation.additional_context,
+  ];
+  for (const deduction of situation.deductions) {
+    values.push(deduction.description, deduction.basis_for_dispute);
+  }
+  return values.filter((v): v is string => typeof v === 'string');
 }
 
 /* ------------------------------------------------------------------ */

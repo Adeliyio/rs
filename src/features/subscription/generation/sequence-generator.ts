@@ -15,6 +15,10 @@ import type { UserSituation } from '@/lib/ai/generation';
 import { generateSubscriptionSequenceFromTemplates } from '@/features/subscription/generation/template-engine';
 import { validateCitations } from '@/lib/ai/citation-validator';
 import { scanCompliance } from '@/lib/ai/compliance-scanner';
+import {
+  maskUserValues as maskUserValuesShared,
+  maskUserValuesReversible as maskUserValuesReversibleShared,
+} from '@/lib/ai/user-value-mask';
 import { injectEmailDisclaimer } from '@/lib/ai/disclaimer-injector';
 import { loadKbEntry } from '@/lib/kb/loader';
 import type {
@@ -85,51 +89,22 @@ function userValueList(situation: UserSituation): string[] {
   ].filter((v): v is string => typeof v === 'string' && v.trim().length > 2);
 }
 
-const esc = (v: string): string => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/* The masking implementations now live in @/lib/ai/user-value-mask so the PAID
+ * deposit letter shares them. They used to be private to this file, which meant
+ * the protection existed only for the free product — a tenant whose landlord's
+ * name collided with a bare-listed compliance word still had their $49 letter
+ * hard-fail and refund. These thin wrappers keep this file's call sites
+ * unchanged. */
 
-/**
- * Replace user-supplied free-text spans with a neutral token before COMPLIANCE
- * scanning, so a banned phrase inside the USER's own words can't fail the
- * deliverable. Only template-authored scaffolding remains scanned.
- */
 function maskUserValues(text: string, situation: UserSituation): string {
-  let masked = text;
-  for (const v of userValueList(situation)) {
-    masked = masked.replace(new RegExp(esc(v), 'g'), '[USER_VALUE]');
-  }
-  return masked;
+  return maskUserValuesShared(text, userValueList(situation));
 }
 
-/**
- * REVERSIBLE mask for the CITATION-validation path: swaps each user value for a
- * unique sentinel, so the citation validator never sees (and never strips) a
- * user's company name / account identifier that happens to look like a legal
- * citation (e.g. an account id containing "§1950.5" or a company named
- * "FTC Act Gyms"). Validate on the masked text, then restore the exact user
- * values into the cleaned output.
- */
 function maskUserValuesReversible(
   text: string,
   situation: UserSituation,
 ): { masked: string; restore: (s: string) => string } {
-  const values = userValueList(situation);
-  const tokens: { token: string; value: string }[] = [];
-  let masked = text;
-  values.forEach((v, i) => {
-    const token = `XUSERVALUEX${i}X`; // not citation-shaped; untouched by the validator's normalize/removal passes
-    if (masked.includes(v)) {
-      masked = masked.replace(new RegExp(esc(v), 'g'), token);
-      tokens.push({ token, value: v });
-    }
-  });
-  const restore = (s: string): string => {
-    let out = s;
-    for (const { token, value } of tokens) {
-      out = out.split(token).join(value);
-    }
-    return out;
-  };
-  return { masked, restore };
+  return maskUserValuesReversibleShared(text, userValueList(situation));
 }
 
 function extractUserSituation(answers: DiagnosticAnswers): UserSituation {
@@ -197,10 +172,19 @@ function mergeCitationResults(
     allStripped.push(...r.stripped);
   }
 
+  // FAIL CLOSED, matching the deposit validator. The old `<= 2` shipped emails
+  // containing up to two citations already detected as ungrounded — and since
+  // stripping removes only the citation STRING, the false legal assertion built
+  // around it survived into the customer's outgoing email.
+  //
+  // Note this path is template-generated (no LLM) and user text is masked before
+  // validation, so a legitimate sequence should strip nothing. A non-empty
+  // `stripped` here means our own templates cite something the KB cannot ground
+  // — which is exactly when we should stop, not continue.
   return {
     valid: allValid,
     stripped: allStripped,
-    pass: allStripped.length <= 2 && allValid.length > 0,
+    pass: allStripped.length === 0 && allValid.length > 0,
   };
 }
 

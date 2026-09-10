@@ -188,6 +188,9 @@ async function processDepositGeneration(
   await workerConvex.mutation(api.service.createLetter, {
     caseId: caseId as Id<'cases'>,
     content: finalContent,
+    // Must match the sync route: without this the mailed PDF omits the
+    // itemized dispute table entirely.
+    rebuttalTable: generatedLetter.rebuttal_table,
     groundingContextIds: generatedLetter.grounding_context_ids,
     citationValidation: {
       valid: generatedLetter.citation_validation.valid,

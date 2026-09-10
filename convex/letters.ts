@@ -27,6 +27,7 @@ export const createInternal = internalMutation({
   args: {
     caseId: v.id('cases'),
     content: v.string(),
+    rebuttalTable: v.optional(v.string()),
     groundingContextIds: v.optional(v.array(v.string())),
     citationValidation: v.optional(v.any()),
   },
@@ -35,6 +36,7 @@ export const createInternal = internalMutation({
     const id = await ctx.db.insert('letters', {
       caseId: args.caseId,
       content: args.content,
+      rebuttalTable: args.rebuttalTable,
       groundingContextIds: args.groundingContextIds,
       citationValidation: args.citationValidation,
       createdAt: now,

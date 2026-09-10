@@ -71,6 +71,7 @@ export function serializeLetter(doc: Doc<'letters'>) {
     case_id: doc.caseId,
     content: doc.content,
     pdf_url: doc.pdfUrl ?? null,
+    rebuttal_table: doc.rebuttalTable ?? null,
     grounding_context_ids: doc.groundingContextIds ?? null,
     citation_validation: doc.citationValidation ?? null,
     created_at: iso(doc.createdAt),

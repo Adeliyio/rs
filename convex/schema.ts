@@ -133,6 +133,12 @@ export default defineSchema({
     caseId: v.id('cases'),
     content: v.string(),
     pdfUrl: v.optional(v.string()), // R2 object key
+    // The itemized rebuttal table, as markdown. The deposit graph advertises it
+    // as a first-class deliverable and the model generates it, but there was no
+    // column to put it in — so both generation callers dropped it and the
+    // mailable PDF (the document the LANDLORD reads) never contained the one
+    // output whose whole purpose is rebutting their itemization.
+    rebuttalTable: v.optional(v.string()),
     groundingContextIds: v.optional(v.array(v.string())),
     citationValidation: v.optional(v.any()),
     createdAt: v.number(),

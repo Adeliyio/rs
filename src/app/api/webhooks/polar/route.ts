@@ -128,11 +128,27 @@ export async function POST(request: Request): Promise<NextResponse> {
     const convex = createServiceConvexClient();
     const svcSecret = serviceSecret();
 
+    // Store the SDK-PARSED event, not JSON.parse(rawBody).
+    //
+    // This is load-bearing for the recovery path. Polar's wire JSON is
+    // snake_case (`total_amount`, `current_period_end`, `recurring_interval`);
+    // `validateEvent` remaps it to the camelCase shape every handler's Zod
+    // schema requires. Storing the raw body meant the reprocessing worker
+    // replayed snake_case into camelCase schemas:
+    //   - order.paid  -> `totalAmount` is required, so the parse THREW on every
+    //     replay, forever. The one path that could rescue a paying customer
+    //     whose fulfillment blipped was dead code.
+    //   - subscription.* -> every field is optional, so the parse SUCCEEDED and
+    //     silently wrote a record with no period dates and a wrong plan, which
+    //     later stripped entitlement from a paid-through subscriber.
+    // Since this route returns 200 even on handler failure (Polar never
+    // retries), the replay worker is the ONLY recovery path — it must see the
+    // same shape the live dispatch sees.
     const record = await convex.mutation(api.service.recordWebhook, {
       secret: svcSecret,
       eventId: webhookId,
       provider: 'polar',
-      payload: JSON.parse(rawBody) as Record<string, unknown>,
+      payload: JSON.parse(JSON.stringify(event)) as Record<string, unknown>,
     });
 
     if (record.duplicate) {

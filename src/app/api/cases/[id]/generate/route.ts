@@ -440,6 +440,9 @@ async function handleDepositGeneration(
       secret: serviceSecret(),
       caseId: caseId as Id<'cases'>,
       content: finalLetterContent,
+      // The itemized rebuttal table. Dropped here previously, so it never
+      // reached the PDF the customer mails to their landlord.
+      rebuttalTable: generatedLetter.rebuttal_table,
       groundingContextIds: generatedLetter.grounding_context_ids,
       citationValidation: {
         valid: generatedLetter.citation_validation.valid,

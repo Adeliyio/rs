@@ -76,7 +76,14 @@ export async function POST(
     }
 
     /* ---- Render + upload ---- */
-    const pdfBuffer = await renderLetterPdf({ content: letter.content });
+    // Pass the persisted rebuttal table so the MAILED document contains the
+    // itemized dispute. The renderer has always had the table styling; nothing
+    // ever handed it a table, so that code was dead and the landlord received a
+    // letter with no itemized rebuttal at all.
+    const pdfBuffer = await renderLetterPdf({
+      content: letter.content,
+      rebuttalTable: letter.rebuttal_table ?? undefined,
+    });
     const storageKey = `${user.id}/${caseId}/demand-letter.pdf`;
     // Copy into a fresh ArrayBuffer (renderLetterPdf may return a Node Buffer
     // whose .buffer is a pooled/shared allocation).

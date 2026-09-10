@@ -174,6 +174,7 @@ export const createLetter = mutation({
     ...secretArg,
     caseId: v.id('cases'),
     content: v.string(),
+    rebuttalTable: v.optional(v.string()),
     groundingContextIds: v.optional(v.array(v.string())),
     citationValidation: v.optional(v.any()),
   },

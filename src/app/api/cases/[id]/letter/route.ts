@@ -37,10 +37,13 @@ export async function GET(
       return NextResponse.json({ error: 'No letter found for this case.' }, { status: 404 });
     }
 
-    // Extract a rebuttal table if present in the content (unchanged logic).
-    let rebuttalTable: string | undefined;
-    const tableMatch = letter.content.match(/\|.*Landlord.*Deduction.*\|[\s\S]*?\|.*\|/);
-    if (tableMatch) rebuttalTable = tableMatch[0];
+    // Read the PERSISTED table. This used to scrape it back out of the letter
+    // body with a regex whose lazy `[\s\S]*?` stopped at the markdown separator
+    // row — so it could only ever capture "header + separator", which the
+    // renderer then filtered down to ZERO rows. And since the model returns the
+    // table in its own field rather than inline, the regex usually matched
+    // nothing at all. Now that the field is stored, read it directly.
+    const rebuttalTable = letter.rebuttal_table ?? undefined;
 
     return NextResponse.json({
       id: letter.id,

@@ -155,10 +155,22 @@ export async function handleOrderPaid(
     }
   }
 
-  // Idempotent — already paid.
-  if (caseRow.payment_status === 'paid') {
-    return { ok: true, event_type: eventType };
-  }
+  // Already charged — but NOT necessarily fulfilled.
+  //
+  // This used to `return { ok: true }` here, which was the second half of the
+  // stranded-payer bug. The failure it created: setPaymentStatus('paid')
+  // succeeds, then the enqueue below throws (Redis blip / redeploy), so the
+  // handler throws to keep the event unprocessed for replay — correct. But on
+  // replay this short-circuit saw payment_status === 'paid', declared success,
+  // and the worker marked the event PROCESSED. The letter was never enqueued and
+  // nothing would ever try again: the customer stayed charged with no letter,
+  // permanently.
+  //
+  // "Already paid" must therefore skip only the payment WRITE (and the
+  // confirmation email), never the fulfillment enqueue. Falling through is safe:
+  // the enqueue is idempotent via jobId `gen-<caseId>`, and the generation worker
+  // only acts on a paid case still in 'intake'.
+  const alreadyPaid = caseRow.payment_status === 'paid';
 
   // SECURITY: verify the order actually paid at least the deposit-letter price
   // before granting. Without this, a checkout crafted with a cheaper/foreign
@@ -167,23 +179,25 @@ export async function handleOrderPaid(
   // floor check is safe and doesn't false-reject a legitimate variant.
   // Fail CLOSED: reject if the amount is missing/non-numeric OR below the floor.
   const MIN_DEPOSIT_LETTER_CENTS = 4900;
-  if (typeof order.totalAmount !== 'number' || order.totalAmount < MIN_DEPOSIT_LETTER_CENTS) {
-    // eslint-disable-next-line no-console
-    console.error(
-      `[Webhook] order ${order.id} amount ${String(order.totalAmount)}c is missing or below ` +
-        `the deposit-letter floor (${MIN_DEPOSIT_LETTER_CENTS}c). NOT granting entitlement.`,
-    );
-    return {
-      ok: false,
-      event_type: eventType,
-      error: `Order amount missing or below expected deposit-letter price`,
-    };
-  }
+  if (!alreadyPaid) {
+    if (typeof order.totalAmount !== 'number' || order.totalAmount < MIN_DEPOSIT_LETTER_CENTS) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[Webhook] order ${order.id} amount ${String(order.totalAmount)}c is missing or below ` +
+          `the deposit-letter floor (${MIN_DEPOSIT_LETTER_CENTS}c). NOT granting entitlement.`,
+      );
+      return {
+        ok: false,
+        event_type: eventType,
+        error: `Order amount missing or below expected deposit-letter price`,
+      };
+    }
 
-  await workerConvex.mutation(api.service.setPaymentStatus, {
-    caseId: caseRow.id as Id<'cases'>,
-    paymentStatus: 'paid',
-  });
+    await workerConvex.mutation(api.service.setPaymentStatus, {
+      caseId: caseRow.id as Id<'cases'>,
+      paymentStatus: 'paid',
+    });
+  }
 
   /* ---- R-1: defense-in-depth auto-refund ---- */
   // The create-case + checkout routes already block unsupported deposit
@@ -238,6 +252,12 @@ export async function handleOrderPaid(
   }
 
   /* ---- payment confirmation email (best-effort) ---- */
+  // Skipped when the case was already paid: this is a REPLAY of an event whose
+  // payment write already landed, and the buyer was emailed the first time.
+  // Re-sending "your payment was received" days later reads as a second charge.
+  if (alreadyPaid) {
+    return { ok: true, event_type: eventType };
+  }
   try {
     const userEmail = await workerConvex.query(api.service.userEmailById, {
       userId: caseRow.user_id as Id<'users'>,
