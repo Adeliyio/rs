@@ -507,8 +507,15 @@ export default function HomePage(): React.JSX.Element {
               },
               {
                 state: 'Texas',
+                // Wording tracks kb/deposit/TX/kb-entry.json verbatim on both
+                // elements the earlier copy dropped: the 30-day clock starts
+                // only once the tenant has given a WRITTEN forwarding address
+                // (\u00A792.103), and the $100 + 3x remedy requires BAD FAITH
+                // retention, not merely a failure to return (\u00A792.109). The old
+                // text stated a fault-based remedy as strict liability, which
+                // overstated what a Texas tenant is likely owed.
                 quote:
-                  'Under Tex. Prop. Code \u00A7 92.103, the deposit must be refunded within 30 days. Under Tex. Prop. Code \u00A7 92.109, a landlord who fails to return the deposit or provide an itemized accounting may be liable for $100 plus three times the amount wrongfully withheld, plus reasonable attorney\u2019s fees.',
+                  'Under Tex. Prop. Code \u00A7 92.103, the deposit must be refunded within 30 days after you surrender the property and give your landlord a written forwarding address. Under Tex. Prop. Code \u00A7 92.109, a landlord who retains the deposit in bad faith may be liable for $100 plus three times the portion wrongfully withheld, plus reasonable attorney\u2019s fees.',
                 statute: 'Tex. Prop. Code \u00A7\u00A7 92.103, 92.109',
                 remedy: 'Statutory remedies may include financial penalties',
               },
