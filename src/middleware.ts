@@ -44,6 +44,17 @@ const PUBLIC_ROUTES = [
   // cancellation} endpoints (already public above) — nothing that costs money —
   // so the page itself must be public too.
   '/start',
+  // Post-login resume of an anonymous diagnostic. This MUST be listed here, and
+  // the reason is subtle: the answers collected before sign-in live in
+  // sessionStorage, which is PER-ORIGIN. A non-public path triggers the
+  // authenticated root-domain → app-subdomain redirect below, which is a
+  // different origin — so the stash would be unreadable and the visitor would be
+  // sent back to an empty funnel to re-answer everything (the exact bug this
+  // page exists to prevent). Keeping it public keeps it on the origin that holds
+  // the answers. It is NOT a security hole: the page renders only a spinner and
+  // calls authenticated APIs (POST /api/cases, PUT /api/diagnostic/state) which
+  // each verify the session server-side, so an anonymous visitor gains nothing.
+  '/start/resume',
 ];
 
 /** Path prefixes for public marketing/SEO pages (SEC-25). */

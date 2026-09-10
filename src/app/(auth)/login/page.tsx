@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { LogoIcon } from '@/components/logo';
 
@@ -23,10 +23,23 @@ export default function LoginPage() {
   );
 }
 
+/**
+ * Only same-origin, absolute-path destinations are honoured. A value like
+ * '//evil.com' or 'https://evil.com' would otherwise turn `?next=` into an open
+ * redirect that carries an authenticated session off-site.
+ */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith('/') || raw.startsWith('//')) return null;
+  return raw;
+}
+
 function LoginPageContent() {
   const searchParams = useSearchParams();
   const urlError = searchParams.get('error');
   const urlMessage = searchParams.get('message');
+  const next = safeNext(searchParams.get('next'));
+  const router = useRouter();
   const auth = useResolvaioAuth();
 
   const [formError, setFormError] = useState<string | null>(null);
@@ -39,11 +52,16 @@ function LoginPageContent() {
       setFormError('Please enter both your email and password.');
       return;
     }
-    const result = await auth.login(email, password);
-    // login() redirects on success; only returns on error
+    // With `next`, we own the destination: suppress login()'s built-in push to
+    // '/new' so it cannot race our navigation (the same race that dropped
+    // deposit-funnel visitors back at the start of the diagnostic).
+    const result = await auth.login(email, password, { redirect: next === null });
+    // Without `next`, login() redirects on success and only returns on error.
     if (result.error) {
       setFormError(result.error);
+      return;
     }
+    if (next) router.push(next);
   }
 
   const errorMessage =

@@ -24,12 +24,35 @@ import { checkAuthRateLimit } from './rate-limit-action';
  *
  * The return-shape contract ({ error?, pending?, alreadyExists?, sent?, success? })
  * is unchanged so the login/register pages did not need edits.
+ *
+ * REDIRECT OWNERSHIP: `login` and `verifyEmail` navigate to '/new' on success,
+ * which is right for the standalone /login and /register pages but WRONG for a
+ * caller that owns its own destination. Passing `{ redirect: false }` suppresses
+ * that navigation so the caller can route itself.
+ *
+ * This is not cosmetic. The anonymous deposit funnel awaits verifyEmail and then
+ * creates + hydrates a case over two network round-trips before routing to
+ * /case/[id]. With an unconditional router.push('/new') the two navigations race,
+ * '/new' (the wedge picker) wins, and the visitor is dropped back at the START of
+ * the diagnostic with every answer lost — and the hydration PUT may be torn down
+ * mid-flight, so the answers never persist either.
  */
+
+/** Options for auth flows that navigate on success. */
+interface RedirectOptions {
+  /** Set false to suppress the built-in success navigation. Default true. */
+  redirect?: boolean;
+}
+
 export function useResolvaioAuth() {
   const router = useRouter();
 
   return {
-    async login(email: string, password: string): Promise<{ error?: string }> {
+    async login(
+      email: string,
+      password: string,
+      opts?: RedirectOptions,
+    ): Promise<{ error?: string }> {
       const rl = await checkAuthRateLimit('login');
       if (!rl.allowed) return { error: 'Too many login attempts. Please try again in a few minutes.' };
       const { error } = await authClient.signIn.email({ email, password });
@@ -41,7 +64,7 @@ export function useResolvaioAuth() {
         }
         return { error: 'Invalid email or password. Please try again.' };
       }
-      router.push('/new');
+      if (opts?.redirect !== false) router.push('/new');
       return {};
     },
 
@@ -112,7 +135,11 @@ export function useResolvaioAuth() {
       return { sent: true };
     },
 
-    async verifyEmail(email: string, code: string): Promise<{ error?: string }> {
+    async verifyEmail(
+      email: string,
+      code: string,
+      opts?: RedirectOptions,
+    ): Promise<{ error?: string }> {
       // Rate-limit code submission (per-IP+email via the 'login' bucket) so the
       // 8-digit OTP can't be brute-forced for account takeover.
       const rl = await checkAuthRateLimit('login');
@@ -127,7 +154,7 @@ export function useResolvaioAuth() {
         }
         return { error: 'We could not confirm your code right now. Please try again in a moment.' };
       }
-      router.push('/new');
+      if (opts?.redirect !== false) router.push('/new');
       return {};
     },
 

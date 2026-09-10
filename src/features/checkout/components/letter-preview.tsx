@@ -20,7 +20,12 @@ import { Shield, FileText, Scale, CheckCircle } from 'lucide-react';
 interface LetterPreviewProps {
   jurisdiction: string;
   jurisdictionFullName: string;
-  depositAmount: number;
+  /**
+   * The deposit the visitor entered, or null when it could not be resolved.
+   * NEVER coerce a missing amount to 0 — this screen asks for $49, and a
+   * fabricated "$0 deposit" destroys the credibility it exists to build.
+   */
+  depositAmount: number | null;
   statuteCount: number;
   deadlineCount: number;
   penaltyAvailable: boolean;
@@ -97,7 +102,7 @@ export function LetterPreview({
         <div className="rounded-lg border border-neutral-200 bg-white p-3 text-center">
           <Shield className="mx-auto mb-1 h-5 w-5 text-neutral-600" />
           <div className="text-lg font-bold text-neutral-900">
-            ${depositAmount.toLocaleString()}
+            {depositAmount === null ? '—' : `$${depositAmount.toLocaleString()}`}
           </div>
           <div className="text-xs text-neutral-500">Deposit Amount</div>
         </div>
@@ -149,7 +154,10 @@ export function LetterPreview({
               Property: [Your Property Address]
             </p>
             <p className="text-neutral-600">
-              Security Deposit Paid: ${depositAmount.toLocaleString()}
+              Security Deposit Paid:{' '}
+              {depositAmount === null
+                ? '[Your Deposit Amount]'
+                : `$${depositAmount.toLocaleString()}`}
             </p>
           </div>
 
@@ -158,9 +166,12 @@ export function LetterPreview({
             Dear [Landlord Name],
           </p>
           <p className="mb-4 text-neutral-700">
-            I am writing regarding the security deposit of $
-            {depositAmount.toLocaleString()} paid in connection with my tenancy
-            at the above-referenced property...
+            I am writing regarding the security deposit of{' '}
+            {depositAmount === null
+              ? '[Your Deposit Amount]'
+              : `$${depositAmount.toLocaleString()}`}{' '}
+            paid in connection with my tenancy at the above-referenced
+            property...
           </p>
 
           {/* Statute section — one visible */}

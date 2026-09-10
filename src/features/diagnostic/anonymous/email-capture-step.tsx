@@ -9,7 +9,9 @@
  *
  * On submit:
  *   1. auth.register(name, email, password)  — Better Auth email/password signUp
- *   2. auth.verifyEmail(email, code)         — OTP step (see friction note below)
+ *   2. auth.verifyEmail(email, code, { redirect: false })  — OTP step; the
+ *      redirect opt-out is required so verifyEmail's own push to '/new' cannot
+ *      race steps 3-5 below (see the note in handleVerify)
  *   3. POST /api/cases { wedge:'deposit', jurisdiction }        — create the case
  *   4. PUT  /api/diagnostic/state { caseId, state }             — hydrate answers
  *   5. router.push(`/case/${id}`)                               — resume paid flow
@@ -30,6 +32,7 @@ import { Button } from '@/components/ui/button';
 import { useResolvaioAuth } from '@/lib/convex/use-auth';
 import type { DiagnosticState } from '@/types/diagnostic.types';
 import { buildHydratedState } from './anonymous-answers';
+import { savePendingDiagnostic } from './pending-answers';
 
 /* ------------------------------------------------------------------ */
 /*  Props                                                             */
@@ -228,15 +231,21 @@ export function EmailCaptureStep({
   const handleVerify = useCallback(async (): Promise<void> => {
     setError(null);
     setBusy(true);
-    const result = await auth.verifyEmail(email.trim(), code.trim());
+    // `redirect: false` is LOAD-BEARING. verifyEmail otherwise navigates to
+    // '/new' (the wedge picker) the moment the code is accepted, which races —
+    // and wins — against hydrateAndContinue()'s two round-trips below, dumping
+    // the visitor back at the start of the diagnostic with every answer lost.
+    // We own the destination here: /case/[id], after the answers are persisted.
+    const result = await auth.verifyEmail(email.trim(), code.trim(), {
+      redirect: false,
+    });
     setBusy(false);
 
     if (result.error) {
       setError(result.error);
       return;
     }
-    // verifyEmail's own router.push('/new') is superseded by our hydration
-    // redirect below; the session is authenticated at this point.
+    // The session is authenticated at this point.
     await hydrateAndContinue();
   }, [auth, email, code, hydrateAndContinue]);
 
@@ -265,7 +274,7 @@ export function EmailCaptureStep({
               continue to your case.
             </>
           ) : (
-            'Your answers are saved to this case so you can pick up right where you left off.'
+            'Create your account and we’ll carry your answers straight over — you won’t re-enter anything.'
           )}
         </p>
       </div>
@@ -280,7 +289,21 @@ export function EmailCaptureStep({
                   stuck mid-verification isn't in limbo. */}
               <button
                 type="button"
-                onClick={() => router.push(`/login?next=/start%3Fwedge%3Ddeposit`)}
+                onClick={() => {
+                  // Navigating to /login tears down this component tree, taking
+                  // the in-memory answers with it. Stash them first so the
+                  // post-login resume can hydrate a case instead of dropping
+                  // the visitor into an empty funnel to re-answer everything.
+                  savePendingDiagnostic({
+                    wedge: 'deposit',
+                    jurisdiction,
+                    graphVersion,
+                    boundaryNodeId,
+                    answers,
+                    completedNodes,
+                  });
+                  router.push('/login?next=/start/resume');
+                }}
                 className="text-left font-medium underline underline-offset-2 hover:no-underline"
               >
                 Sign in instead
@@ -344,6 +367,30 @@ export function EmailCaptureStep({
             {resendNote && (
               <p className="text-center text-[12px] text-emerald-600">{resendNote}</p>
             )}
+            {/* Better Auth cannot tell a genuine new signup from an existing
+                email on the client (anti-enumeration returns a fake success), so
+                a returning user can land here and wait for a code that will
+                never arrive. Give them a way out that KEEPS their answers. */}
+            <div className="text-center text-[13px] text-muted-foreground">
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => {
+                  savePendingDiagnostic({
+                    wedge: 'deposit',
+                    jurisdiction,
+                    graphVersion,
+                    boundaryNodeId,
+                    answers,
+                    completedNodes,
+                  });
+                  router.push('/login?next=/start/resume');
+                }}
+                className="font-medium text-primary underline underline-offset-2 hover:no-underline"
+              >
+                Sign in
+              </button>
+            </div>
           </form>
         ) : (
           <form

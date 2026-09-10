@@ -27,7 +27,8 @@ interface PreviewNodeProps {
 interface PreviewData {
   jurisdiction: string;
   jurisdiction_full_name: string;
-  deposit_amount: number;
+  /** null when the amount could not be resolved — never coerce to 0. */
+  deposit_amount: number | null;
   statute_count: number;
   deadline_count: number;
   penalty_available: boolean;

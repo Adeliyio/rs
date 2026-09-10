@@ -41,6 +41,39 @@ const CITATION_PATTERNS: RegExp[] = [
   // General state patterns with section
   /(?:Bus\.\s*&\s*Prof\.\s*Code|Gen\.\s*Bus\.\s*Law|GBL|Occ\.\s*Code)\s*§\s*\d+[\w.-]*/gi,
 
+  /* ---- PROSE / long-form citations -------------------------------------
+   * The patterns above all require a literal `§`, or `Code`/`Stat.`
+   * IMMEDIATELY before the digits. Nothing in the generation prompt forces the
+   * model to use those forms, and it frequently does not — so a fabricated
+   * "Section 92.108 of the Texas Property Code" or "Tex. Prop. Code Ann.
+   * 92.108" was never EXTRACTED, therefore never grounding-checked, and shipped
+   * to a paying customer with pass:true and zero stripped citations.
+   *
+   * This is the inert-fix shape: the grounding check below is strong and
+   * correct, but it was never handed the citation to check. These patterns feed
+   * it the prose forms so the existing check can do its job.
+   * -------------------------------------------------------------------- */
+
+  // "Section 92.108 of the Texas Property Code" / "Sec. 1950.5 of the Cal. Civil Code"
+  /(?:Section|Sec\.)\s*\d+[\d.\-()a-z]*\s+of\s+the\s+[A-Z][\w.'&\s]{0,40}?Code/gi,
+
+  // "Texas Property Code Ann. 92.108" / "Florida Statutes 83.49" / "California Civil Code Section 1950.5"
+  /(?:Tex\.|Texas|Cal\.|California|N\.Y\.|New\s+York|Fla\.|Florida)\s+[\w.'&\s]{0,40}?(?:Code|Stat(?:\.|utes?))\s*(?:Ann\.)?\s*(?:Section|Sec\.|§)?\s*\d+[\w.-]*/gi,
+
+  // "Code Ann. 92.108" (Bluebook form with no section symbol)
+  /Code\s+Ann\.\s*(?:Section|Sec\.|§)?\s*\d+[\w.-]*/gi,
+
+  /* KNOWN REMAINING GAP (verified, not theoretical): a fabricated NAMED ACT
+   * carrying no number — e.g. "The Texas Deceptive Deposit Practices Act
+   * further entitles a tenant to quadruple damages" — is not extractable by any
+   * pattern, because invented act names cannot be enumerated. Such a sentence
+   * still ships with pass:true and stripped:[].
+   *
+   * Regex cannot close this; it needs a generation-side constraint (require the
+   * model to attach a §-form or numbered citation to every legal assertion, and
+   * reject assertions that carry none). Tracked separately — do not mistake the
+   * patterns above for full coverage of fabricated authority. */
+
   // FTC-specific references
   /FTC\s+(?:Click-to-Cancel|Negative\s+Option)\s+Rule/gi,
   /FTC\s+Act\s*§?\s*\d*/gi,
@@ -249,8 +282,20 @@ export function validateCitations(
     .replace(/\n /g, '\n')
     .trim();
 
-  // pass = true if we stripped 2 or fewer AND at least 1 valid remains
-  const pass = stripped.length <= 2 && valid.length > 0;
+  // FAIL CLOSED. The public promise is absolute: "If a citation can't be
+  // verified, the letter doesn't ship."
+  //
+  // The previous rule (`stripped.length <= 2`) shipped letters containing up to
+  // TWO citations we had detected as ungrounded. Stripping only deletes the
+  // citation STRING — the sentence built around it survives, so the customer
+  // mailed a letter reading "Under Tex. Prop. Code a landlord who fails to
+  // comply is liable for double the amount withheld." That is worse than a
+  // wrong section number: it is an unfalsifiable false statement of law, sent
+  // to an adverse party, with the citation that would disprove it removed.
+  //
+  // Any ungrounded citation now fails the draft into the existing retry /
+  // recovery path, which already handles a failed generation correctly.
+  const pass = stripped.length === 0 && valid.length > 0;
 
   return {
     result: { valid, stripped, pass },
