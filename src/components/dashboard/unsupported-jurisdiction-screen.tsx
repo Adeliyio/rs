@@ -11,7 +11,7 @@
  * 4. Captures a waitlist email to signal demand
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { FileText, ExternalLink, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -83,7 +83,23 @@ export function UnsupportedJurisdictionScreen({
     [email, state],
   );
 
-  const stateName = stateResources?.name ?? state;
+  // `state` can itself be empty (an unmapped or missing code), which rendered
+  // headings like " Coverage Coming Soon" with a blank name. Fall back to
+  // neutral wording rather than a gap, and surface the miss so it is fixable
+  // instead of silently degrading a page that still looks complete.
+  const stateName = stateResources?.name ?? (state.trim() || 'Your state');
+
+  // Surface the miss so it is fixable, instead of silently degrading a page
+  // that still looks complete. In an effect, not the render body, so it logs
+  // once per mount rather than on every re-render.
+  useEffect(() => {
+    if (!stateResources) {
+      // eslint-disable-next-line no-console
+      console.error(
+        `[unsupported-jurisdiction] no resources for state code ${JSON.stringify(state)} — showing national fallback`,
+      );
+    }
+  }, [stateResources, state]);
 
   return (
     <div className="flex flex-1 flex-col items-center px-6 py-12">
@@ -168,6 +184,41 @@ export function UnsupportedJurisdictionScreen({
                 label="Attorney General Complaint"
                 description="File a consumer protection complaint"
                 url={stateResources.ag_complaint_url}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* NATIONAL FALLBACK — never show a visitor an empty page.
+            When the state code does not resolve (an unmapped code, or a field
+            rename upstream), the card above silently disappeared and the
+            heading rendered a blank state name. The page still LOOKED complete,
+            so the failure was invisible — and this exact bug had already
+            shipped once. The site promises every out-of-coverage visitor "links
+            to your state's consumer protection resources", so if we cannot name
+            their state we still owe them somewhere to go. */}
+        {!stateResources && (
+          <div className="rounded-lg border bg-card p-5">
+            <h2 className="text-base font-semibold">Consumer Protection Resources</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              We could not load the resource links for your state. These national
+              resources apply everywhere in the US.
+            </p>
+            <div className="mt-4 space-y-3">
+              <ResourceLink
+                label="State Consumer Protection Offices"
+                description="Find the consumer protection office for your state"
+                url="https://consumer.ftc.gov/consumer-protection-offices"
+              />
+              <ResourceLink
+                label="Find Free Legal Aid"
+                description="Locate free legal assistance near you"
+                url="https://www.lsc.gov/about-lsc/what-legal-aid/get-legal-help"
+              />
+              <ResourceLink
+                label="File an FTC Complaint"
+                description="Report an unfair or deceptive business practice"
+                url="https://reportfraud.ftc.gov/"
               />
             </div>
           </div>

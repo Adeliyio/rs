@@ -63,16 +63,23 @@ const CITATION_PATTERNS: RegExp[] = [
   // "Code Ann. 92.108" (Bluebook form with no section symbol)
   /Code\s+Ann\.\s*(?:Section|Sec\.|§)?\s*\d+[\w.-]*/gi,
 
-  /* KNOWN REMAINING GAP (verified, not theoretical): a fabricated NAMED ACT
-   * carrying no number — e.g. "The Texas Deceptive Deposit Practices Act
-   * further entitles a tenant to quadruple damages" — is not extractable by any
-   * pattern, because invented act names cannot be enumerated. Such a sentence
-   * still ships with pass:true and stripped:[].
+  /* NAMED-ACT FABRICATIONS are handled on the GENERATION side, not here.
    *
-   * Regex cannot close this; it needs a generation-side constraint (require the
-   * model to attach a §-form or numbered citation to every legal assertion, and
-   * reject assertions that carry none). Tracked separately — do not mistake the
-   * patterns above for full coverage of fabricated authority. */
+   * A fabricated act carrying no number — e.g. "The Texas Deceptive Deposit
+   * Practices Act entitles a tenant to quadruple damages" — is not extractable
+   * by any pattern, because invented act names cannot be enumerated. No regex
+   * added below can close that.
+   *
+   * The mitigation is prompt rules 2a/2b in deposit-generation.ts: every legal
+   * assertion must carry a §-form citation drawn from the grounding context,
+   * and an assertion that cannot be so cited must be omitted. A model that
+   * obeys produces only checkable citations; a model that deviates produces a
+   * §-form citation this validator then rejects as ungrounded.
+   *
+   * Residual risk, stated plainly: a model that ignores the prompt AND invents
+   * a bare act name is still not caught by this file. Prompt rules only
+   * constrain the model; they are not a hard control. Do not read the patterns
+   * above as full coverage of fabricated authority. */
 
   // FTC-specific references
   /FTC\s+(?:Click-to-Cancel|Negative\s+Option)\s+Rule/gi,

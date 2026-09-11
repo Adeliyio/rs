@@ -27,7 +27,9 @@ export function GET(): NextResponse {
       status: 200,
       headers: {
         'Content-Type': 'text/markdown; charset=utf-8',
-        'Content-Disposition': 'inline; filename="generic-demand-letter.md"',
+        // `attachment`, not `inline`: the button says "Download Template", and
+        // inline made the browser render raw markdown in a tab instead.
+        'Content-Disposition': 'attachment; filename="security-deposit-demand-letter-template.md"',
         // Static content — cache aggressively at the edge.
         'Cache-Control': 'public, max-age=3600',
       },

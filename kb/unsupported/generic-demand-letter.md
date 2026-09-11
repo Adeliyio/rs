@@ -1,7 +1,6 @@
 # Generic Security Deposit Demand Letter Template
 
-**IMPORTANT: This is a static template for unsupported jurisdictions. It is NOT generated per-user.**
-**Legal review required before launch. Per PRD §7.9.**
+**Please read before sending.** This is a general template for states we do not yet cover, so it is not tailored to your state's law or to your situation. Replace every [BRACKETED] field with your own details, check your state's deposit statute and deadline using the resource links we provided, and review the whole letter before you send it. Resolvaio is a writing and research assistance tool, not a law firm.
 
 ---
 

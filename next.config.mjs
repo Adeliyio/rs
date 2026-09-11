@@ -29,6 +29,18 @@ const nextConfig = {
   // 'standalone' output requires symlinks — enabled in Docker/Linux builds.
   // On Windows dev, comment this out or run as Administrator.
   output: process.env.DOCKER_BUILD === '1' ? 'standalone' : undefined,
+
+  // The knowledge base is read from disk at RUNTIME (readFileSync on kb/…) by
+  // the statute loader, the packet loaders and the free generic-template route
+  // — it is never imported, so Next's static tracer cannot see it. The
+  // Dockerfile copies kb/ into the runtime image, so the current VPS deploy is
+  // safe; this entry makes any non-Docker/serverless build safe too. Without
+  // it, an out-of-coverage visitor clicking "Download Template" — the one thing
+  // the site promises them — would get a 500.
+  outputFileTracingIncludes: {
+    '/api/**': ['./kb/**'],
+    '/**': ['./kb/**'],
+  },
   experimental: {
     // Runs instrumentation.ts at server boot — this is what initializes Sentry.
     instrumentationHook: true,

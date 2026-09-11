@@ -699,9 +699,15 @@ describe('6f: Subscription management in settings', () => {
     expect(source).toContain('Cancels on');
   });
 
-  it('links to the Polar customer portal', () => {
-    expect(source).toContain('polar.sh');
-    expect(source).toContain('Manage subscription');
+  it('opens an AUTHENTICATED portal session rather than a generic link', () => {
+    // This assertion previously required a hard-coded `polar.sh` URL — i.e. it
+    // pinned the defect in place. That link went to Polar's GENERIC portal
+    // entry, which shows nothing to a customer who checked out without a Polar
+    // login or used a different email, while the site promises "cancel
+    // anytime". The page now mints a per-customer session server-side.
+    expect(source).toContain('/api/account/subscription/portal');
+    expect(source).not.toContain('polar.sh/purchases/subscriptions');
+    expect(source.toLowerCase()).toContain('cancel subscription');
   });
 
   it('no longer references the Paddle customer portal', () => {

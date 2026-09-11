@@ -44,6 +44,45 @@ export default function SettingsPage(): React.JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [subLoading, setSubLoading] = useState(true);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [portalError, setPortalError] = useState<string | null>(null);
+
+  /**
+   * Mints a short-lived authenticated Polar portal session and sends the user
+   * there. Any failure must still leave them a way to cancel, so the server's
+   * message (which names support@resolvaio.com) is surfaced verbatim rather
+   * than swallowed.
+   */
+  const openBillingPortal = useCallback(async (): Promise<void> => {
+    setPortalError(null);
+    setPortalLoading(true);
+    try {
+      const res = await fetch('/api/account/subscription/portal', {
+        method: 'POST',
+      });
+      const data = (await res.json().catch(() => ({}))) as {
+        portal_url?: string;
+        error?: string;
+      };
+
+      if (!res.ok || !data.portal_url) {
+        setPortalError(
+          data.error ??
+            'We could not open your billing portal. Email support@resolvaio.com and we will cancel your subscription for you.',
+        );
+        return;
+      }
+      // Same tab: the portal is a destination, not a popup, and a blocked
+      // popup would look like the button silently doing nothing.
+      window.location.href = data.portal_url;
+    } catch {
+      setPortalError(
+        'We could not reach the billing portal. Email support@resolvaio.com and we will cancel your subscription for you.',
+      );
+    } finally {
+      setPortalLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetch('/api/account/subscription')
@@ -218,20 +257,39 @@ export default function SettingsPage(): React.JSX.Element {
                       </p>
                     )}
                   </div>
-                  {/* Polar customer portal. TODO(M4.5): generate a per-customer
-                      portal session server-side (polar.customerSessions.create /
-                      the @polar-sh/nextjs CustomerPortal adapter) for a
-                      deep-linked, authenticated portal. For now this links to
-                      Polar's hosted portal entry, which is not blocking. */}
-                  <a
-                    href="https://polar.sh/purchases/subscriptions"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[14px] text-primary transition-colors hover:text-primary/80"
-                  >
-                    Manage subscription on Polar
-                    <ExternalLink className="h-3 w-3" />
-                  </a>
+                  {/* Opens an AUTHENTICATED, per-customer Polar portal session.
+                      This used to be a plain link to Polar's generic portal
+                      entry, which shows nothing to a customer who checked out
+                      without a Polar login or used a different email — while the
+                      site promises "cancel anytime". For a product built to help
+                      people escape cancellation friction, our own had to go. */}
+                  <div className="flex flex-col items-start gap-1.5">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void openBillingPortal()}
+                      disabled={portalLoading}
+                      className="gap-1.5"
+                    >
+                      {portalLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      )}
+                      Manage or cancel subscription
+                    </Button>
+                    {portalError && (
+                      <p className="max-w-xs text-[12px] leading-[1.6] text-destructive">
+                        {portalError}
+                      </p>
+                    )}
+                    {subscription.cancel_at_period_end && (
+                      <p className="text-[12px] text-muted-foreground">
+                        Your plan is already set to cancel — you keep access
+                        until the date above.
+                      </p>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <p className="mt-1.5 text-[14px] leading-[1.7] text-muted-foreground">
