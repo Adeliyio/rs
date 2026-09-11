@@ -32,6 +32,13 @@ const serverEnvSchema = z.object({
   POLAR_PRODUCT_LETTER: z.string().optional().default(''),
   POLAR_PRODUCT_MONTHLY: z.string().optional().default(''),
   POLAR_PRODUCT_YEARLY: z.string().optional().default(''),
+  /**
+   * LIVE-PAYMENT-TEST ONLY. Lowers the minimum order amount that unlocks the
+   * deposit letter (normally 4900 = $49) so a cheap product — e.g. $1 (100) —
+   * can exercise the real checkout → webhook → fulfillment path end to end.
+   * Ignored entirely when POLAR_SERVER=production. Unset before going live.
+   */
+  DEPOSIT_LETTER_MIN_CENTS: z.string().optional().default(''),
   RESEND_API_KEY: z.string().optional().default(''),
   REDIS_URL: z.string().optional().default(''),
   SENTRY_DSN: z.string().optional().default(''),

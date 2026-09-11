@@ -49,6 +49,65 @@ export interface WebhookProcessResult {
   error?: string;
 }
 
+/** The real deposit-letter price floor, in integer cents ($49). */
+const DEFAULT_MIN_DEPOSIT_LETTER_CENTS = 4900;
+
+/**
+ * The minimum order amount that unlocks the deposit letter, in cents.
+ *
+ * Normally $49. `DEPOSIT_LETTER_MIN_CENTS` lowers it ONLY for live end-to-end
+ * payment testing (e.g. a $1 Polar product used to exercise the real
+ * checkout → webhook → fulfillment path without spending $49 per run).
+ *
+ * This is a security control — it is the check that stops a cheap or foreign
+ * product from unlocking a paid deliverable — so lowering it is deliberately
+ * hard to do by accident:
+ *
+ *  - IGNORED whenever Polar is in production mode (`POLAR_SERVER=production`),
+ *    so a stray value in a prod env file cannot weaken the real floor. The
+ *    Polar server flag is used rather than NODE_ENV because a live payment
+ *    test still runs a production-built app against Polar's sandbox.
+ *  - Ignored unless it parses to a positive integer.
+ *  - Can only ever LOWER the floor, never raise it above the real price.
+ *  - Logs loudly every time it takes effect, so a forgotten override is
+ *    visible in logs rather than silent.
+ */
+function minDepositLetterCents(): number {
+  const raw = process.env.DEPOSIT_LETTER_MIN_CENTS;
+  if (!raw) return DEFAULT_MIN_DEPOSIT_LETTER_CENTS;
+
+  if (process.env.POLAR_SERVER === 'production') {
+    // eslint-disable-next-line no-console
+    console.error(
+      '[Webhook] DEPOSIT_LETTER_MIN_CENTS is set but Polar is in PRODUCTION mode — ' +
+        'ignoring it and enforcing the real $49 floor.',
+    );
+    return DEFAULT_MIN_DEPOSIT_LETTER_CENTS;
+  }
+
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    // eslint-disable-next-line no-console
+    console.error(
+      `[Webhook] DEPOSIT_LETTER_MIN_CENTS=${raw} is not a positive integer — ` +
+        'ignoring it and enforcing the real $49 floor.',
+    );
+    return DEFAULT_MIN_DEPOSIT_LETTER_CENTS;
+  }
+
+  // Never let the override RAISE the floor: that would reject legitimate $49
+  // orders, which is a worse failure than the one we are enabling.
+  const floor = Math.min(parsed, DEFAULT_MIN_DEPOSIT_LETTER_CENTS);
+
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[Webhook] TEST MODE: deposit-letter price floor lowered to ${floor}c ` +
+      `(normally ${DEFAULT_MIN_DEPOSIT_LETTER_CENTS}c) via DEPOSIT_LETTER_MIN_CENTS. ` +
+      'Unset this before going live.',
+  );
+  return floor;
+}
+
 /** Formats integer cents (Polar amounts) as a `$x.xx` dollar string. */
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
@@ -178,13 +237,13 @@ export async function handleOrderPaid(
   // valid deposit price is $49 (4900). A/B variants only ever cost MORE, so a
   // floor check is safe and doesn't false-reject a legitimate variant.
   // Fail CLOSED: reject if the amount is missing/non-numeric OR below the floor.
-  const MIN_DEPOSIT_LETTER_CENTS = 4900;
+  const minDepositCents = minDepositLetterCents();
   if (!alreadyPaid) {
-    if (typeof order.totalAmount !== 'number' || order.totalAmount < MIN_DEPOSIT_LETTER_CENTS) {
+    if (typeof order.totalAmount !== 'number' || order.totalAmount < minDepositCents) {
       // eslint-disable-next-line no-console
       console.error(
         `[Webhook] order ${order.id} amount ${String(order.totalAmount)}c is missing or below ` +
-          `the deposit-letter floor (${MIN_DEPOSIT_LETTER_CENTS}c). NOT granting entitlement.`,
+          `the deposit-letter floor (${minDepositCents}c). NOT granting entitlement.`,
       );
       return {
         ok: false,
