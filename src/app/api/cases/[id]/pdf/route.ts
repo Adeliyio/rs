@@ -10,7 +10,8 @@ import { NextResponse } from 'next/server';
 
 import { q, currentUser, api } from '@/lib/convex/server';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
-import { renderLetterPdf } from '@/lib/pdf/renderer';
+import { renderLetterPdf, PdfRendererBusyError } from '@/lib/pdf/renderer';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import type { Id } from '@convex/dataModel';
 
 // This route calls Convex at request time; force-dynamic so Next does not
@@ -27,6 +28,21 @@ export async function POST(
     const user = await currentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    /* ---- Rate limit ----
+     * This route spawns headless Chromium — the heaviest operation in the app
+     * (~512MB per instance, capped at 3 concurrent). It was previously
+     * unlimited, so one authenticated user clicking "Download PDF" repeatedly
+     * could saturate every render slot and stall PDF generation for everyone.
+     * Keyed by user id: a cached PDF short-circuits below, so a legitimate
+     * re-download rarely reaches the renderer at all. */
+    const rateResult = await checkRateLimit('general', user.id);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many PDF requests. Please wait a moment and try again.' },
+        { status: 429, headers: rateLimitHeaders(rateResult) },
+      );
     }
 
     const caseRow = await q(api.cases.getMine, { caseId: caseId as Id<'cases'> });
@@ -80,10 +96,27 @@ export async function POST(
     // itemized dispute. The renderer has always had the table styling; nothing
     // ever handed it a table, so that code was dead and the landlord received a
     // letter with no itemized rebuttal at all.
-    const pdfBuffer = await renderLetterPdf({
-      content: letter.content,
-      rebuttalTable: letter.rebuttal_table ?? undefined,
-    });
+    let pdfBuffer: Buffer;
+    try {
+      pdfBuffer = await renderLetterPdf({
+        content: letter.content,
+        rebuttalTable: letter.rebuttal_table ?? undefined,
+      });
+    } catch (renderErr) {
+      // Saturated renderer (all slots busy / queue full) is a TRANSIENT
+      // condition, not a failure of this request — say so, so the customer
+      // retries instead of believing their document is broken.
+      if (renderErr instanceof PdfRendererBusyError) {
+        return NextResponse.json(
+          {
+            error:
+              'We are generating a lot of documents right now. Please try again in a minute.',
+          },
+          { status: 503, headers: { 'Retry-After': '60' } },
+        );
+      }
+      throw renderErr;
+    }
     const storageKey = `${user.id}/${caseId}/demand-letter.pdf`;
     // Copy into a fresh ArrayBuffer (renderLetterPdf may return a Node Buffer
     // whose .buffer is a pooled/shared allocation).

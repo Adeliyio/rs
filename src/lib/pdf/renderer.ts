@@ -16,26 +16,95 @@ import puppeteer, { type Browser } from 'puppeteer';
 /* ------------------------------------------------------------------ */
 
 const MAX_CONCURRENT = 3;
+
+/**
+ * How long a caller will wait for a slot before giving up. Without this the
+ * queue was UNBOUNDED and UNTIMED: `releaseSlot()` is only reachable from a
+ * render's `finally`, so a single stalled Puppeteer page meant the queue never
+ * drained and every later caller waited forever. The customer saw "Generating
+ * PDF…" indefinitely, with no error and no route to their mailable document —
+ * against a public claim that this takes under a minute.
+ */
+const SLOT_WAIT_TIMEOUT_MS = 30_000;
+
+/** Hard ceiling on queued waiters, so a burst sheds load instead of piling up. */
+const MAX_QUEUE_DEPTH = 20;
+
+/** Per-operation Puppeteer timeouts — a stalled page must never hold its slot. */
+const PAGE_CONTENT_TIMEOUT_MS = 15_000;
+const PAGE_PDF_TIMEOUT_MS = 20_000;
+
+/** Thrown when the renderer is saturated. The route maps this to HTTP 503. */
+export class PdfRendererBusyError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PdfRendererBusyError';
+  }
+}
+
 let activeRenders = 0;
-const waitQueue: (() => void)[] = [];
+interface Waiter {
+  grant: () => void;
+  reject: (err: Error) => void;
+  timer: ReturnType<typeof setTimeout>;
+}
+const waitQueue: Waiter[] = [];
 
 async function acquireSlot(): Promise<void> {
   if (activeRenders < MAX_CONCURRENT) {
     activeRenders++;
     return;
   }
-  return new Promise<void>((resolve) => {
-    waitQueue.push(() => {
-      activeRenders++;
-      resolve();
-    });
+
+  if (waitQueue.length >= MAX_QUEUE_DEPTH) {
+    throw new PdfRendererBusyError(
+      'PDF renderer queue is full; try again shortly.',
+    );
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const waiter: Waiter = {
+      grant: () => {
+        clearTimeout(waiter.timer);
+        activeRenders++;
+        resolve();
+      },
+      reject,
+      timer: setTimeout(() => {
+        // Drop this waiter so a timed-out caller cannot later be granted a slot
+        // that nothing would release.
+        const idx = waitQueue.indexOf(waiter);
+        if (idx !== -1) waitQueue.splice(idx, 1);
+        reject(
+          new PdfRendererBusyError(
+            `Timed out after ${SLOT_WAIT_TIMEOUT_MS}ms waiting for a PDF render slot.`,
+          ),
+        );
+      }, SLOT_WAIT_TIMEOUT_MS),
+    };
+    waitQueue.push(waiter);
   });
 }
 
 function releaseSlot(): void {
   activeRenders--;
   const next = waitQueue.shift();
-  if (next) next();
+  if (next) next.grant();
+}
+
+/** Test-only view of limiter state. Not used in production paths. */
+export function __rendererQueueState(): {
+  active: number;
+  queued: number;
+  maxConcurrent: number;
+  maxQueueDepth: number;
+} {
+  return {
+    active: activeRenders,
+    queued: waitQueue.length,
+    maxConcurrent: MAX_CONCURRENT,
+    maxQueueDepth: MAX_QUEUE_DEPTH,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -247,11 +316,18 @@ export async function renderLetterPdf(
 
     try {
       const html = letterToHtml(options.content, options.rebuttalTable);
-      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      // Explicit timeouts: a page that never settles must not hold its slot
+      // forever, because releaseSlot() is only reachable from the finally below.
+      // A stalled render used to wedge PDF generation for EVERY user.
+      await page.setContent(html, {
+        waitUntil: 'domcontentloaded',
+        timeout: PAGE_CONTENT_TIMEOUT_MS,
+      });
 
       const pdf = await page.pdf({
         format: 'Letter',
         printBackground: true,
+        timeout: PAGE_PDF_TIMEOUT_MS,
         margin: {
           top: '1in',
           bottom: '1in',
@@ -262,7 +338,11 @@ export async function renderLetterPdf(
 
       return Buffer.from(pdf);
     } finally {
-      await page.close();
+      // Never await a close that could itself hang — that would hold the slot
+      // the outer finally is about to release, reintroducing the wedge.
+      void page.close().catch(() => {
+        /* page already gone / browser disconnected */
+      });
     }
   } finally {
     releaseSlot();

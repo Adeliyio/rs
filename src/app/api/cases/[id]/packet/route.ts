@@ -12,6 +12,7 @@ import { NextResponse } from 'next/server';
 import { q, currentUser, api } from '@/lib/convex/server';
 import { normalizeDepositAnswers } from '@/features/deposit/generation/normalize-answers';
 import { createServiceConvexClient, serviceSecret } from '@/lib/convex/service';
+import { checkRateLimit, rateLimitHeaders } from '@/lib/rate-limit';
 import { decryptAnswersPii } from '@/lib/crypto';
 import {
   loadSmallClaimsPacket,
@@ -38,6 +39,18 @@ export async function POST(
     const user = await currentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    /* ---- Rate limit ----
+     * Assembling a packet fills PDF forms and builds a ZIP bundle. Cheaper than
+     * the Puppeteer render, but still unbounded work that was previously
+     * unlimited for an authenticated caller. */
+    const rateResult = await checkRateLimit('general', user.id);
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { error: 'Too many packet requests. Please wait a moment and try again.' },
+        { status: 429, headers: rateLimitHeaders(rateResult) },
+      );
     }
 
     /* ---- Parse body ---- */
